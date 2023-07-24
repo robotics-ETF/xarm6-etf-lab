@@ -1,0 +1,42 @@
+[submodule "src/external_modules/xarm_ros2"]
+	path = src/external_modules/xarm_ros2
+	url = https://github.com/xArm-Developer/xarm_ros2.git
+	branch = humble
+[submodule "src/external_modules/gazebo_ros2_control"]
+	path = src/external_modules/gazebo_ros2_control
+	url = https://github.com/ros-controls/gazebo_ros2_control.git
+	branch = humble
+[submodule "src/etf_modules/RPMPLv2"]
+	path = src/etf_modules/RPMPLv2
+	url = https://github.com/roboticsETF/RPMPLv2.git
+	branch = main
+
+[submodule "src/etf_modules/perception_etflab/external/glog"]
+	path = src/etf_modules/perception_etflab/external/glog
+	url = https://github.com/google/glog.git
+[submodule "src/etf_modules/perception_etflab/external/nanoflann"]
+	path = src/etf_modules/perception_etflab/external/nanoflann
+	url = https://github.com/jlblancoc/nanoflann.git
+[submodule "src/etf_modules/perception_etflab/external/googletest"]
+	path = src/etf_modules/perception_etflab/external/googletest
+	url = https://github.com/google/googletest
+
+[submodule "src/etf_modules/real_bringup/external/glog"]
+	path = src/etf_modules/real_bringup/external/glog
+	url = https://github.com/google/glog.git
+[submodule "src/etf_modules/real_bringup/external/nanoflann"]
+	path = src/etf_modules/real_bringup/external/nanoflann
+	url = https://github.com/jlblancoc/nanoflann.git
+[submodule "src/etf_modules/real_bringup/external/googletest"]
+	path = src/etf_modules/real_bringup/external/googletest
+	url = https://github.com/google/googletest
+
+[submodule "src/etf_modules/sim_bringup/external/glog"]
+	path = src/etf_modules/sim_bringup/external/glog
+	url = https://github.com/google/glog.git
+[submodule "src/etf_modules/sim_bringup/external/nanoflann"]
+	path = src/etf_modules/sim_bringup/external/nanoflann
+	url = https://github.com/jlblancoc/nanoflann.git
+[submodule "src/etf_modules/sim_bringup/external/googletest"]
+	path = src/etf_modules/sim_bringup/external/googletest
+	url = https://github.com/google/googletest

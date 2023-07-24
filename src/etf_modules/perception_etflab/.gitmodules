@@ -1,0 +1,9 @@
+[submodule "external/glog"]
+	path = external/glog
+	url = https://github.com/google/glog.git
+[submodule "external/nanoflann"]
+	path = external/nanoflann
+	url = https://github.com/jlblancoc/nanoflann.git
+[submodule "external/googletest"]
+	path = external/googletest
+	url = https://github.com/google/googletest

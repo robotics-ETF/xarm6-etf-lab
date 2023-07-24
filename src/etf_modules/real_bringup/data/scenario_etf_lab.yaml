@@ -1,0 +1,15 @@
+obstacles:
+  - box:
+      dim: [1.5, 1.5, 0.1]
+      trans: [0, 0, -0.05]
+      rot: [0, 0, 0, 0]
+
+robot:
+  type: "xARM6"
+  urdf: "/RPMPLv2/data/xarm6/xarm6.urdf"
+  space: "RealVectorSpace"
+  dimensions: 6
+  start: [0, 0, 0, 3.1415, 1.5708, 0]
+  goal: [1.5708, 0, 0, 3.1415, 1.5708, 0]
+
+configurations: "/RPMPLv2"

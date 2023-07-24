@@ -1,0 +1,5 @@
+#!/bin/bash
+
+source /opt/ros/humble/setup.bash
+source ./install/setup.bash
+source /usr/share/gazebo/setup.bash

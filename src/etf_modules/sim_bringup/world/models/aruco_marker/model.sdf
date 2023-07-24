@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<sdf version="1.6">
+  <model name="aruco_marker">
+    <link name="link">
+      <inertial>
+        <pose>0 0 0 0 0 0</pose>
+        <mass>0.001</mass>
+        <inertia>
+          <ixx>3.7499999999999997e-06</ixx>
+          <ixy>0.0</ixy>
+          <ixz>0.0</ixz>
+          <iyy>1.8750008333333333e-06</iyy>
+          <iyz>0.0</iyz>
+          <izz>1.8750008333333333e-06</izz>
+        </inertia>
+      </inertial>
+      <visual name="front_visual">
+        <pose>0.00005 0 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.0001 0.15 0.15</size>
+          </box>
+        </geometry>
+        <material>
+          <script>
+            <uri>model://aruco_marker/materials/scripts</uri>
+            <uri>model://aruco_marker/materials/textures</uri>
+            <name>Marker</name>
+          </script>
+        </material>
+      </visual>
+      <!-- Hide the marker from the back -->
+      <visual name="rear_visual">
+        <pose>-0.00005 0 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.0001 0.15 0.15</size>
+          </box>
+        </geometry>
+      </visual>
+      <collision name="collision">
+        <pose>0 0 0 0 0 0</pose>
+        <geometry>
+          <box>
+            <size>0.0001 0.15 0.15</size>
+          </box>
+        </geometry>
+      </collision>
+    </link>
+  </model>
+</sdf>
