@@ -49,6 +49,8 @@ private:
     std::shared_ptr<scenario::Scenario> scenario;
     std::shared_ptr<robots::AbstractRobot> robot;
     std::shared_ptr<env::Environment> env;
+    std::shared_ptr<base::State> start;
+    std::shared_ptr<base::State> goal;
     std::vector<std::shared_ptr<base::State>> planner_path;
 	std::vector<float> path_times;
 	trajectory_msgs::msg::JointTrajectory trajectory;
@@ -59,8 +61,8 @@ private:
     std::vector<std::vector<int>> convex_hulls_polygons;
     std::shared_ptr<rclcpp::Node> read_octomap_node;
     int state;
-    const int period = 3;               // in sec.
-    const float max_ang_vel = 1.5;      // in rad/sec.
+    const int period = 1;               // in [s]
+    const float max_ang_vel = 1.5;      // in [rad/s]
 
     void testPlannersCallback();
     void jointStatesCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg);

@@ -25,6 +25,8 @@ TestPlannersNode::TestPlannersNode() : Node("test_planners_node")
     scenario = std::make_shared<scenario::Scenario>(scenario_file_path, project_path);
     robot = scenario->getRobot();
     env = scenario->getEnvironment();
+    start = scenario->getStart();
+    goal = scenario->getGoal();
 
     YAML::Node node = YAML::LoadFile(project_path + scenario_file_path);
     ConfigurationReader::initConfiguration(project_path + node["configurations"].as<std::string>());
@@ -37,7 +39,15 @@ void TestPlannersNode::testPlannersCallback()
     switch (state)
     {
     case 0:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Case 0"); 
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Case 0");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going home...");
+        scenario->setStart(robot->getConfiguration());
+        scenario->setGoal(start);
+        state++;
+        break;
+
+    case 1:
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Case 1"); 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Updating the environment..."); 
         updateEnvironment();
 
@@ -49,8 +59,8 @@ void TestPlannersNode::testPlannersCallback()
         }
         break;
     
-    case 1:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Case 1");
+    case 2:
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Case 2");
         publishTrajectory(0.1);
         state = -1;
         break;
@@ -59,12 +69,13 @@ void TestPlannersNode::testPlannersCallback()
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Case: Executing trajectory...");
         if ((robot->getConfiguration()->getCoord() - scenario->getGoal()->getCoord()).norm() < 0.1)
         {
-            // Swap start and goal, and repeat the procedure
-            std::shared_ptr<base::State> start_ = scenario->getStart();
-            std::shared_ptr<base::State> goal_ = scenario->getGoal();
-            scenario->setStart(goal_);
-            scenario->setGoal(start_);
-            state = 0;
+            scenario->setStart(start);
+            scenario->setGoal(goal);
+
+            // Swap start and goal for next motion, and repeat the procedure
+            start = scenario->getGoal();
+            goal = scenario->getStart();
+            state = 1;
         }
         break;
     }
@@ -297,34 +308,36 @@ void TestPlannersNode::publishTrajectory(float init_time)
         trajectory.points.emplace_back(point);
     }
 
-    RCLCPP_INFO(this->get_logger(), "Publishing the trajectory ...\n");
     trajectory_publisher->publish(trajectory);
+    RCLCPP_INFO(this->get_logger(), "Publishing the trajectory ...\n");
 }
 
+// If needed: DO NOT forget to set the configuration parameters for the used planner in the folder RPMPLv2/data/configurations
 bool TestPlannersNode::planPath()
 {
     bool res = false;
     std::shared_ptr<base::StateSpace> ss = scenario->getStateSpace();
-    std::shared_ptr<base::State> start = scenario->getStart();
-    std::shared_ptr<base::State> goal = scenario->getGoal();
+    std::shared_ptr<base::State> start_ = scenario->getStart();
+    std::shared_ptr<base::State> goal_ = scenario->getGoal();
     
     LOG(INFO) << "Number of collision objects: " << env->getParts().size();
     LOG(INFO) << "Dimensions: " << ss->getDimensions();
     LOG(INFO) << "State space type: " << ss->getStateSpaceType();
-    LOG(INFO) << "Start: " << start;
-    LOG(INFO) << "Goal: " << goal;
+    LOG(INFO) << "Start: " << start_;
+    LOG(INFO) << "Goal: " << goal_;
 
     try
     {
-        // std::unique_ptr<planning::AbstractPlanner> planner = std::make_unique<planning::rrt::RRTConnect>(ss, start, goal);
-        // std::unique_ptr<planning::AbstractPlanner> planner = std::make_unique<planning::rbt::RBTConnect>(ss, start, goal);
-        // std::unique_ptr<planning::AbstractPlanner> planner = std::make_unique<planning::rbt::RGBTConnect>(ss, start, goal);
-        std::unique_ptr<planning::AbstractPlanner> planner = std::make_unique<planning::rbt_star::RGBMTStar>(ss, start, goal);
+        // std::unique_ptr<planning::AbstractPlanner> planner = std::make_unique<planning::rrt::RRTConnect>(ss, start_, goal_);
+        // std::unique_ptr<planning::AbstractPlanner> planner = std::make_unique<planning::rbt::RBTConnect>(ss, start_, goal_);
+        // std::unique_ptr<planning::AbstractPlanner> planner = std::make_unique<planning::rbt::RGBTConnect>(ss, start_, goal_);
+        std::unique_ptr<planning::AbstractPlanner> planner = std::make_unique<planning::rbt_star::RGBMTStar>(ss, start_, goal_);
         res = planner->solve();
         LOG(INFO) << "Planning is finished with " << (res ? "SUCCESS!" : "FAILURE!");
         LOG(INFO) << "Number of states in the trees: " << planner->getPlannerInfo()->getNumStates();
         LOG(INFO) << "Number of states in the path: " << planner->getPath().size();
         LOG(INFO) << "Planning time: " << planner->getPlannerInfo()->getPlanningTime() << " [ms]";
+        LOG(INFO) << "Path cost: " << planner->getPlannerInfo()->getCostConvergence().back();   // Only for optimal planners
         planner->outputPlannerData(project_path + "/sim_bringup/data/planner_data.log");
 
         if (res)
