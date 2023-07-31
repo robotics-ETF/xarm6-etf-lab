@@ -23,19 +23,16 @@ ObjectSegmentation::ObjectSegmentation() : Node("segmentation_node")
 	marker_array_free_cells_publisher = this->create_publisher<visualization_msgs::msg::MarkerArray>("/free_cells_vis_array", 10);
 	marker_array_occupied_cells_publisher = this->create_publisher<visualization_msgs::msg::MarkerArray>("/occupied_cells_vis_array", 10);
 
-	std::string file_path(__FILE__);
+	std::string project_path(__FILE__);
 	for (int i = 0; i < 3; i++)
-		file_path = file_path.substr(0, file_path.find_last_of("/\\"));
+		project_path = project_path.substr(0, project_path.find_last_of("/\\"));
 
-	scenario = std::make_shared<scenario::Scenario>(scenario_file_path, file_path);
-	robot = scenario->getRobot();
-	skeleton = robot->computeSkeleton(scenario->getStart());
-    joint_states = scenario->getStart();
+    robot = std::make_shared<robots::xARM6>(project_path + urdf_file_path);
+    robot->setConfiguration(std::make_shared<base::RealVectorSpaceState>(6));
+    joint_states = nullptr;
 
     xarm_client_node = std::make_shared<rclcpp::Node>("xarm_client_node");
-    xarm_client.init(xarm_client_node, "xarm");   
-    // xarm_client.clean_error();
-    // xarm_client.clean_warn();
+    xarm_client.init(xarm_client_node, "xarm");
 }
 
 void ObjectSegmentation::pointCloudCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
@@ -103,8 +100,8 @@ void ObjectSegmentation::pointCloudCallback(const sensor_msgs::msg::PointCloud2:
     std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> pcl_clusters;
     computeClusters(output_cloud_xyzrgb2, pcl_clusters);
 
-	// removeClustersOccupiedByRobot(pcl_clusters);
-	removeClustersOccupiedByRobot_v2(pcl_clusters);
+	removeClustersOccupiedByRobot(pcl_clusters);
+	// removeClustersOccupiedByRobot_v2(pcl_clusters);
     
   	publishObjectsPointCloud(pcl_clusters);
 
@@ -122,7 +119,7 @@ void ObjectSegmentation::jointStatesCallback(const control_msgs::msg::JointTraje
 	std::vector<double> positions = msg->actual.positions;
 	Eigen::VectorXf q(6);
 	q << positions[0], positions[1], positions[2], positions[3], positions[4], positions[5];
-	joint_states = scenario->getStateSpace()->newState(q);
+    joint_states = std::make_shared<base::RealVectorSpaceState>(q);
 	// RCLCPP_INFO(this->get_logger(), "Robot joint states: (%f, %f, %f, %f, %f, %f).", q(0), q(1), q(2), q(3), q(4), q(5));
 }
 
@@ -335,6 +332,9 @@ void ObjectSegmentation::removeOutliers(pcl::PointCloud<pcl::PointXYZRGB> &pcl)
 // 'tolerance_factor' (default: 1.5) determines the factor of capsule enlargement, which is always needed due to measurements uncertainty.
 void ObjectSegmentation::removeClustersOccupiedByRobot(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters, int tolerance_factor)
 {
+    if (joint_states == nullptr)
+        return;
+
 	// Compute robot skeleton only if the robot changed its configuration
 	if ((joint_states->getCoord() - robot->getConfiguration()->getCoord()).norm() > 1e-3)
 	{

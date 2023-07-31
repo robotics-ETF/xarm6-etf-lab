@@ -1,21 +1,9 @@
-#include "test_pick_and_place.h"
+#include "pick_and_place.h"
 
-TestPickAndPlaceNode::TestPickAndPlaceNode() : Node("test_pick_and_place_node")
-{
-    timer = this->create_wall_timer(std::chrono::seconds(period), std::bind(&TestPickAndPlaceNode::timerCallback, this));
-    xarm_client_node = std::make_shared<rclcpp::Node>("xarm_client_node");
-    xarm_client.init(xarm_client_node, "xarm");    
-    xarm_client.clean_error();
-    xarm_client.clean_warn();
-    xarm_client.motion_enable(true);
-    xarm_client.set_mode(0);
-    xarm_client.set_state(0);
-    xarm_client.set_gripper_enable(true);
-    xarm_client.set_gripper_mode(0);
-    xarm_client.set_gripper_speed(2000);
-}
+PickAndPlaceNode::PickAndPlaceNode(const std::string node_name, const int period, const std::string time_unit) 
+    : MoveXArm6Node(node_name, period, time_unit) {}
 
-void TestPickAndPlaceNode::timerCallback()
+void PickAndPlaceNode::pickAndPlaceCallback()
 {
     switch (state)
     {
@@ -92,12 +80,4 @@ void TestPickAndPlaceNode::timerCallback()
     }
 
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "---------------------------------------------"); 
-}
-
-int main(int argc, char *argv[])
-{
-    rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<TestPickAndPlaceNode>());
-    rclcpp::shutdown();
-    return 0;
 }

@@ -1,23 +1,13 @@
-#include "test_pick_and_place_using_cameras.h"
+#include "pick_and_place_using_cameras.h"
 
-TestPickAndPlaceUsingCamerasNode::TestPickAndPlaceUsingCamerasNode() : Node("test_pick_and_place_using_cameras_node")
+PickAndPlaceUsingCamerasNode::PickAndPlaceUsingCamerasNode(const std::string node_name, const int period, const std::string time_unit) 
+    : PickAndPlaceNode(node_name, period, time_unit)
 {
-    timer = this->create_wall_timer(std::chrono::seconds(period), std::bind(&TestPickAndPlaceUsingCamerasNode::timerCallback, this));
     bounding_boxes_subscription = this->create_subscription<sensor_msgs::msg::PointCloud2>
-        ("/bounding_boxes", 10, std::bind(&TestPickAndPlaceUsingCamerasNode::boundingBoxesCallback, this, std::placeholders::_1));
-    xarm_client_node = std::make_shared<rclcpp::Node>("xarm_client_node");
-    xarm_client.init(xarm_client_node, "xarm");    
-    xarm_client.clean_error();
-    xarm_client.clean_warn();
-    xarm_client.motion_enable(true);
-    xarm_client.set_mode(0);
-    xarm_client.set_state(0);
-    xarm_client.set_gripper_enable(true);
-    xarm_client.set_gripper_mode(0);
-    xarm_client.set_gripper_speed(2000);
+        ("/bounding_boxes", 10, std::bind(&PickAndPlaceUsingCamerasNode::boundingBoxesCallback, this, std::placeholders::_1));
 }
 
-void TestPickAndPlaceUsingCamerasNode::boundingBoxesCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
+void PickAndPlaceUsingCamerasNode::boundingBoxesCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
 {
     if (state == 0)
     {
@@ -63,7 +53,7 @@ void TestPickAndPlaceUsingCamerasNode::boundingBoxesCallback(const sensor_msgs::
     }
 }
 
-void TestPickAndPlaceUsingCamerasNode::testRobotOrientation()
+void PickAndPlaceUsingCamerasNode::testRobotOrientation()
 {
     xarm_client.get_position(current_pose);
     RCLCPP_INFO(this->get_logger(), "Robot end-effector pose: (%f, %f, %f)", current_pose[0], current_pose[1], current_pose[2]);     // XYZ in [m]
@@ -108,7 +98,7 @@ void TestPickAndPlaceUsingCamerasNode::testRobotOrientation()
     RCLCPP_INFO(this->get_logger(), "Vector a: (%f, %f, %f)", R(0,2), R(1,2), R(2,2));
 }
 
-void TestPickAndPlaceUsingCamerasNode::chooseObject()
+void PickAndPlaceUsingCamerasNode::chooseObject()
 {
     float z_max = -INFINITY;
     obj_idx = -1;
@@ -125,7 +115,7 @@ void TestPickAndPlaceUsingCamerasNode::chooseObject()
     }
 }
 
-void TestPickAndPlaceUsingCamerasNode::computeObjectApproachAndPickPose()
+void PickAndPlaceUsingCamerasNode::computeObjectApproachAndPickPose()
 {
     Eigen::Matrix3f R;
     Eigen::Vector3f RPY, YPR;
@@ -164,7 +154,7 @@ void TestPickAndPlaceUsingCamerasNode::computeObjectApproachAndPickPose()
     object_pick_pose = {1000*objects_pos[obj_idx](0), 1000*objects_pos[obj_idx](1), 1000*objects_pos[obj_idx](2) + offset_z, RPY(0), RPY(1), RPY(2)};
 }
 
-void TestPickAndPlaceUsingCamerasNode::timerCallback()
+void PickAndPlaceUsingCamerasNode::pickAndPlaceUsingCamerasCallback()
 {
     // testRobotOrientation();
     
@@ -278,12 +268,4 @@ void TestPickAndPlaceUsingCamerasNode::timerCallback()
     }
 
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "---------------------------------------------"); 
-}
-
-int main(int argc, char *argv[])
-{
-    rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<TestPickAndPlaceUsingCamerasNode>());
-    rclcpp::shutdown();
-    return 0;
 }

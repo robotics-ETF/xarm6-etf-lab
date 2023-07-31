@@ -93,18 +93,7 @@ def generate_launch_description():
             'camera_right_Y': camera_right_Y,
         }.items(),
     )
-    
-    pointcloud_combiner_node = Node(
-            package='perception_etflab',
-            executable='pointcloud_combiner',
-            name='pointcloud_combiner',
-            output='screen',
-            parameters=[
-            	{"point_cloud_topics": ["/camera_left/points", "/camera_right/points"]},
-            	{"output_topic": "pointcloud_combined"}
-            ]
-    )
-    
+        
     rviz_pkg = get_package_share_directory('sim_bringup')
     default_rviz_config_path = os.path.join(rviz_pkg, 'rviz/etflab.rviz')
     
@@ -115,6 +104,17 @@ def generate_launch_description():
         output='log',
         arguments=['-d', default_rviz_config_path],
         parameters=[{'use_sim_time': use_sim_time}]
+    )
+    
+    pointcloud_combiner_node = Node(
+            package='perception_etflab',
+            executable='pointcloud_combiner',
+            name='pointcloud_combiner',
+            output='screen',
+            parameters=[
+            	{"point_cloud_topics": ["/camera_left/points", "/camera_right/points"]},
+            	{"output_topic": "pointcloud_combined"}
+            ]
     )
     
     object_segmentation_node = Node(

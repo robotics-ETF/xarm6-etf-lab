@@ -3,7 +3,8 @@
 <package format="3">
   <name>sim_bringup</name>
   <version>0.0.0</version>
-  <description>TODO: Package description</description>
+  <description>Package for testing Xarm 6 robot setup</description>
+  <maintainer email="nermin.covic@etf.unsa.ba">root</maintainer>
   <maintainer email="dinko.osmankovic@etf.unsa.ba">root</maintainer>
   <license>TODO: License declaration</license>
 
@@ -11,22 +12,28 @@
   <buildtool_depend>ament_cmake_python</buildtool_depend>
 
   <depend>rclcpp</depend>
+  <depend>rclcpp_action</depend>
   <depend>rclpy</depend>
-  <depend>perception_pcl</depend>
   <depend>trajectory_msgs</depend>
-  <depend>visualization_msgs</depend>
-  <depend>sensor_msgs</depend>
-  <depend>octomap_msgs</depend>
   <depend>control_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>visualization_msgs</depend>
+  <depend>octomap_msgs</depend>
+  <depend>octomap</depend>
+  <depend>xarm_msgs</depend>
+  <depend>xarm_api</depend>
+  <depend>perception_pcl</depend>
   <depend>pcl_conversions</depend>
   <depend>rpmpl_library</depend>
+
+  <exec_depend>ros2launch</exec_depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>
 
   <export>
     <build_type>ament_cmake</build_type>
-    <gazebo_ros gazebo_media_path="${prefix}" />
-    <gazebo_ros gazebo_model_path="${prefix}/world/models" />
+    <gazebo_ros gazebo_media_path="${prefix}"/>
+    <gazebo_ros gazebo_model_path="${prefix}/world/models"/>
   </export>
 </package>

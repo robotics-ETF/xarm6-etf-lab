@@ -1,21 +1,9 @@
-#include "test_bottle_and_glass.h"
+#include "bottle_and_glass.h"
 
-TestBottleAndGlassNode::TestBottleAndGlassNode() : Node("test_bottle_and_glass_node")
-{
-    timer = this->create_wall_timer(std::chrono::seconds(period), std::bind(&TestBottleAndGlassNode::timerCallback, this));
-    xarm_client_node = std::make_shared<rclcpp::Node>("xarm_client_node");
-    xarm_client.init(xarm_client_node, "xarm");    
-    xarm_client.clean_error();
-    xarm_client.clean_warn();
-    xarm_client.motion_enable(true);
-    xarm_client.set_mode(0);
-    xarm_client.set_state(0);
-    xarm_client.set_gripper_enable(true);
-    xarm_client.set_gripper_mode(0);
-    xarm_client.set_gripper_speed(2000);
-}
+BottleAndGlassNode::BottleAndGlassNode(const std::string node_name, const int period, const std::string time_unit) 
+    : MoveXArm6Node(node_name, period, time_unit) {}
 
-void TestBottleAndGlassNode::timerCallback()
+void BottleAndGlassNode::bottleAndGlassCallback()
 {
     switch (state)
     {
@@ -121,12 +109,4 @@ void TestBottleAndGlassNode::timerCallback()
         break;
     }
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "---------------------------------------------"); 
-}
-
-int main(int argc, char *argv[])
-{
-    rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<TestBottleAndGlassNode>());
-    rclcpp::shutdown();
-    return 0;
 }

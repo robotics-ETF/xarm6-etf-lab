@@ -1,16 +1,11 @@
-#include "test_planners.h"
+#include "planning.h"
 
-TestPlannersNode::TestPlannersNode() : Node("test_planners_node")
+PlanningNode::PlanningNode(const std::string scenario_file_path, const std::string node_name, const int period, 
+    const std::string time_unit) : BaseNode(node_name, period, time_unit)
 {
-    timer = this->create_wall_timer(std::chrono::seconds(period), std::bind(&TestPlannersNode::testPlannersCallback, this));
-    trajectory_publisher = this->create_publisher<trajectory_msgs::msg::JointTrajectory>("/xarm6_traj_controller/joint_trajectory", 10);
-    
-    joint_states_subscription = this->create_subscription<control_msgs::msg::JointTrajectoryControllerState>
-        ("/xarm6_traj_controller/state", 10, std::bind(&TestPlannersNode::jointStatesCallback, this, std::placeholders::_1));
     bounding_boxes_subscription = this->create_subscription<sensor_msgs::msg::PointCloud2>
-        ("/bounding_boxes", 10, std::bind(&TestPlannersNode::boundingBoxesCallback, this, std::placeholders::_1));
+        ("/bounding_boxes", 10, std::bind(&PlanningNode::boundingBoxesCallback, this, std::placeholders::_1));
 
-    
     project_path = std::string(__FILE__);
     for (int i = 0; i < 3; i++)
         project_path = project_path.substr(0, project_path.find_last_of("/\\"));
@@ -23,44 +18,46 @@ TestPlannersNode::TestPlannersNode() : Node("test_planners_node")
 
     YAML::Node node = YAML::LoadFile(project_path + scenario_file_path);
     ConfigurationReader::initConfiguration(project_path + node["configurations"].as<std::string>());
-    trajectory.joint_names = {"joint1", "joint2", "joint3", "joint4", "joint5", "joint6"};
-    state = 0;
+    max_lin_vel = node["robot"]["max_lin_vel"].as<float>();
+    max_lin_acc = node["robot"]["max_lin_acc"].as<float>();
+    max_ang_vel = node["robot"]["max_ang_vel"].as<float>();
+    max_ang_acc = node["robot"]["max_ang_acc"].as<float>();
 }
 
-void TestPlannersNode::testPlannersCallback()
+void PlanningNode::planningCallback()
 {
     switch (state)
     {
     case 0:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Case 0");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "State 0");
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going home...");
-        scenario->setStart(robot->getConfiguration());
+        scenario->setStart(std::make_shared<base::RealVectorSpaceState>(joint_states));
         scenario->setGoal(start);
         state++;
         break;
 
     case 1:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Case 1"); 
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "State 1"); 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Updating the environment..."); 
         updateEnvironment();
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Planning the path..."); 
         if (planPath())
         {
-            parametrizePath(max_ang_vel);
+            parametrizePath();
             state++;
         }
         break;
     
     case 2:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Case 2");
-        publishTrajectory(0.1);
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "State 2");
+        publishTrajectory(path, path_times, 0.1);
         state = -1;
         break;
 
     default:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Case: Executing trajectory...");
-        if ((robot->getConfiguration()->getCoord() - scenario->getGoal()->getCoord()).norm() < 0.1)
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "State: Executing trajectory...");
+        if ((joint_states - scenario->getGoal()->getCoord()).norm() < 0.1)
         {
             scenario->setStart(start);
             scenario->setGoal(goal);
@@ -75,16 +72,7 @@ void TestPlannersNode::testPlannersCallback()
     RCLCPP_INFO(this->get_logger(), "----------------------------------------------------------------\n");
 }
 
-void TestPlannersNode::jointStatesCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg)
-{
-    std::vector<double> positions = msg->actual.positions;
-    Eigen::VectorXf q(6);
-    q << positions[0], positions[1], positions[2], positions[3], positions[4], positions[5];
-    robot->setConfiguration(scenario->getStateSpace()->newState(q));
-    // RCLCPP_INFO(this->get_logger(), "Robot joint states: (%f, %f, %f, %f, %f, %f).", q(0), q(1), q(2), q(3), q(4), q(5));
-}
-
-void TestPlannersNode::boundingBoxesCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
+void PlanningNode::boundingBoxesCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
 {
     bounding_boxes.clear();
 	pcl::PointCloud<pcl::PointXYZ>::Ptr pcl(new pcl::PointCloud<pcl::PointXYZ>);	
@@ -100,7 +88,7 @@ void TestPlannersNode::boundingBoxesCallback(const sensor_msgs::msg::PointCloud2
     }
 }
 
-void TestPlannersNode::updateEnvironment()
+void PlanningNode::updateEnvironment()
 {
     env->removeCollisionObjects(1);  // table: idx = 0
     
@@ -117,55 +105,71 @@ void TestPlannersNode::updateEnvironment()
     // std::shared_ptr<fcl::CollisionGeometryf> box = std::make_shared<fcl::Boxf>(fcl::Vector3f(0.1, 0.1, 0.3));
     // std::shared_ptr<fcl::CollisionObjectf> ob = std::make_shared<fcl::CollisionObjectf>(box, rot, fcl::Vector3f(0.2, 0.2, 0.15));
     // env->addCollisionObject(ob);
+
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Environment is updated."); 
 }
 
 // Parametrize the obtained path 'planner_path' in order to satisfy the maximal angular velocity 'max_ang_vel'
-void TestPlannersNode::parametrizePath(float max_ang_vel)
+void PlanningNode::parametrizePath()
 {
-    path_times.clear();
     float time = 0;
+    path_times.clear();
     path_times.emplace_back(time);
-    for (int i = 0; i < planner_path.size()-1; i++)
+
+    Eigen::VectorXf q = planner_path[0]->getCoord();
+    Eigen::VectorXf q_next;
+    path.clear();
+    path.emplace_back(q);
+
+    for (int i = 1; i < planner_path.size(); i++)
     {
-        Eigen::VectorXf q = planner_path[i]->getCoord();
-        Eigen::VectorXf q_next = planner_path[i+1]->getCoord();
+        q_next = planner_path[i]->getCoord();
         time += (q_next - q).norm() / max_ang_vel;
         path_times.emplace_back(time);
+        path.emplace_back(q_next);
+        q = q_next;
     }
 }
 
-void TestPlannersNode::publishTrajectory(float init_time)
+// Interpolate the obtained path 'planner_path' in order to satisfy the maximal angular velocity 'max_ang_vel'
+void PlanningNode::parametrizePath(float delta_time)
 {
-    if (planner_path.empty())
+    float time = 0;
+    path_times.clear();
+    path_times.emplace_back(time);
+
+    Eigen::VectorXf q = planner_path[0]->getCoord();
+    Eigen::VectorXf q_next;
+    path.clear();
+    path.emplace_back(q);
+
+    float max_delta_angle = max_ang_vel * delta_time;
+    for (int i = 1; i < planner_path.size(); i++)
     {
-        RCLCPP_INFO(this->get_logger(), "There is no trajectory to publish!\n");
-        return;
+        q_next = planner_path[i]->getCoord();
+        float d = (q_next - q).norm();
+        bool status = false;
+        while (!status)
+        {
+            if (d > max_delta_angle)
+            {
+                q += ((q_next - q) / d) * max_delta_angle;
+                d -= max_delta_angle;
+            }
+            else
+            {
+                q = q_next;
+                status = true;
+            }
+            path.emplace_back(q);
+            time += delta_time;
+            path_times.emplace_back(time);
+        }
     }
-    
-    trajectory.points.clear();
-
-    RCLCPP_INFO(this->get_logger(), "Trajectory: ");
-    for (int i = 0; i < planner_path.size(); i++)
-    {
-        Eigen::VectorXf q = planner_path[i]->getCoord();
-        RCLCPP_INFO(this->get_logger(), "Num. %d. Time: %f [s]. Point: (%f, %f, %f, %f, %f, %f)", 
-            i, path_times[i] + init_time, q(0), q(1), q(2), q(3), q(4), q(5));
-
-        trajectory_msgs::msg::JointTrajectoryPoint point;
-        for (int j = 0; j < q.size(); j++)
-            point.positions.emplace_back(q(j));
-
-        point.time_from_start.sec = int32_t(path_times[i] + init_time);
-        point.time_from_start.nanosec = (path_times[i] + init_time - point.time_from_start.sec) * 1e9;
-        trajectory.points.emplace_back(point);
-    }
-
-    trajectory_publisher->publish(trajectory);
-    RCLCPP_INFO(this->get_logger(), "Publishing the trajectory ...\n");
 }
 
 // If needed: DO NOT forget to set the configuration parameters for the used planner in the folder RPMPLv2/data/configurations
-bool TestPlannersNode::planPath()
+bool PlanningNode::planPath()
 {
     bool res = false;
     std::shared_ptr<base::StateSpace> ss = scenario->getStateSpace();
@@ -201,18 +205,4 @@ bool TestPlannersNode::planPath()
     }
     
     return res;
-}
-
-int main(int argc, char *argv[])
-{
-	google::InitGoogleLogging(argv[0]);
-	std::srand((unsigned int) time(0));
-	FLAGS_logtostderr = true;
-	LOG(INFO) << "GLOG successfully initialized!";
-
-    rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<TestPlannersNode>());
-    rclcpp::shutdown();
-	google::ShutDownCommandLineFlags();
-    return 0;
 }

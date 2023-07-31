@@ -30,7 +30,7 @@
 #include <pcl/surface/convex_hull.h>
 #include <pcl/PolygonMesh.h>
 
-#include <Scenario.h>
+#include <xArm6.h>
 #include <RealVectorSpace.h>
 
 using namespace std::chrono_literals;
@@ -41,12 +41,10 @@ public:
 	ObjectSegmentation();
 
 private:
-	const std::string scenario_file_path = "/sim_bringup/data/scenario_etf_lab.yaml";
-	// const std::string scenario_file_path = "/real_bringup/data/scenario_etf_lab.yaml";
-	std::shared_ptr<scenario::Scenario> scenario;
+	const std::string urdf_file_path = "/RPMPLv2/data/xarm6/xarm6.urdf";
 	std::shared_ptr<robots::AbstractRobot> robot;
 	std::shared_ptr<Eigen::MatrixXf> skeleton;
-	std::shared_ptr<base::State> joint_states;	
+	std::shared_ptr<base::State> joint_states;
 	std::string input_cloud;
 	std::string objects_cloud;
     std::shared_ptr<rclcpp::Node> xarm_client_node;

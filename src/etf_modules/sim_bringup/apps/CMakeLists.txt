@@ -1,0 +1,17 @@
+add_executable(test_move_xarm6 test_move_xarm6.cpp)
+target_compile_features(test_move_xarm6 PUBLIC c_std_99 cxx_std_17)
+target_link_libraries(test_move_xarm6 PUBLIC sim_bringup_library)
+
+add_executable(test_read_octomap test_read_octomap.cpp)
+target_compile_features(test_read_octomap PUBLIC c_std_99 cxx_std_17)
+target_link_libraries(test_read_octomap PUBLIC sim_bringup_library)
+
+add_executable(test_planning test_planning.cpp)
+target_compile_features(test_planning PUBLIC c_std_99 cxx_std_17)
+target_link_libraries(test_planning PUBLIC sim_bringup_library)
+
+install(TARGETS 
+  test_move_xarm6
+  test_read_octomap
+  test_planning
+  DESTINATION lib/${PROJECT_NAME})
