@@ -20,6 +20,8 @@ from launch.actions import OpaqueFunction
 
     
 def launch_setup(context, *args, **kwargs):
+    report_type = LaunchConfiguration('report_type', default='rich')     # normal, rich, dev (see: https://github.com/xArm-Developer/xarm_ros#report_type-argument)
+    dof = LaunchConfiguration('dof', default=6)
     prefix = LaunchConfiguration('prefix', default='')
     hw_ns = LaunchConfiguration('hw_ns', default='xarm')
     limited = LaunchConfiguration('limited', default=False)
@@ -27,7 +29,6 @@ def launch_setup(context, *args, **kwargs):
     velocity_control = LaunchConfiguration('velocity_control', default=False)
     add_gripper = LaunchConfiguration('add_gripper', default=True)
     add_vacuum_gripper = LaunchConfiguration('add_vacuum_gripper', default=False)
-    dof = LaunchConfiguration('dof', default=7)
     robot_type = LaunchConfiguration('robot_type', default='xarm')
     ros2_control_plugin = LaunchConfiguration('ros2_control_plugin', default='gazebo_ros2_control/GazeboSystem')
     
@@ -81,8 +82,9 @@ def launch_setup(context, *args, **kwargs):
         'robot_description': get_xacro_file_content(
             xacro_file=PathJoinSubstitution([FindPackageShare('sim_bringup'), 'urdf', 'xarm_device.urdf.xacro']), 
             arguments={
-                'prefix': prefix,
+                'report_type': report_type,
                 'dof': dof,
+                'prefix': prefix,
                 'robot_type': robot_type,
                 'add_gripper': add_gripper,
                 'add_vacuum_gripper': add_vacuum_gripper,

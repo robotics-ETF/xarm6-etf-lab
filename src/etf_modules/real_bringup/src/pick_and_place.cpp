@@ -1,7 +1,11 @@
 #include "pick_and_place.h"
 
 PickAndPlaceNode::PickAndPlaceNode(const std::string node_name, const int period, const std::string time_unit) 
-    : MoveXArm6Node(node_name, period, time_unit) {}
+    : MoveXArm6Node(node_name, period, time_unit) 
+{
+    xarm_client.set_mode(0);
+    xarm_client.set_state(0);
+}
 
 void PickAndPlaceNode::pickAndPlaceCallback()
 {

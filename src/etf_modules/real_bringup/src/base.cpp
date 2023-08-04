@@ -13,10 +13,9 @@ BaseNode::BaseNode(const std::string node_name, const int period, const std::str
         timer = this->create_wall_timer(std::chrono::nanoseconds(period), std::bind(&BaseNode::baseCallback, this));
     
     trajectory_publisher = this->create_publisher<trajectory_msgs::msg::JointTrajectory>
-        ("/xarm6_traj_controller/joint_trajectory", 10);    
-    // gripper_publisher = this->create_publisher<trajectory_msgs::msg::JointTrajectory>
-    //     ("/xarm_gripper_traj_controller/joint_trajectory", 10);
-    gripper_client = rclcpp_action::create_client<control_msgs::action::GripperCommand>(this, "/xarm_gripper/gripper_action");
+        ("/xarm6_traj_controller/joint_trajectory", 10);
+    gripper_node = std::make_shared<rclcpp::Node>("gripper_node");
+    gripper_client = rclcpp_action::create_client<control_msgs::action::GripperCommand>(gripper_node, "/xarm_gripper/gripper_action");
     
     joint_states_subscription = this->create_subscription<control_msgs::msg::JointTrajectoryControllerState>
         ("/xarm6_traj_controller/state", 10, std::bind(&BaseNode::jointStatesCallback, this, std::placeholders::_1));
@@ -65,48 +64,84 @@ void BaseNode::publishTrajectory(const std::vector<Eigen::VectorXf> path, const 
     RCLCPP_INFO(this->get_logger(), "Publishing trajectory ...\n");
 }
 
-// Close gripper: position = 0.1
-// Open gripper: position = 1
+void BaseNode::publishTrajectory(const std::vector<std::vector<float>> path, const std::vector<float> path_times, float init_time)
+{
+    if (path.empty())
+    {
+        RCLCPP_INFO(this->get_logger(), "There is no trajectory to publish!\n");
+        return;
+    }
+    
+    trajectory.points.clear();
+
+    RCLCPP_INFO(this->get_logger(), "Trajectory: ");
+    for (int i = 0; i < path.size(); i++)
+    {
+        std::vector<float> q = path[i];
+        RCLCPP_INFO(this->get_logger(), "Num. %d. Time: %f [s]. Point: (%f, %f, %f, %f, %f, %f)", 
+            i, path_times[i] + init_time, q[0], q[1], q[2], q[3], q[4], q[5]);
+
+        trajectory_msgs::msg::JointTrajectoryPoint point;
+        for (int j = 0; j < q.size(); j++)
+            point.positions.emplace_back(q[j]);
+
+        point.time_from_start.sec = int32_t(path_times[i] + init_time);
+        point.time_from_start.nanosec = (path_times[i] + init_time - point.time_from_start.sec) * 1e9;
+        trajectory.points.emplace_back(point);
+    }
+
+    trajectory_publisher->publish(trajectory);
+    RCLCPP_INFO(this->get_logger(), "Publishing trajectory ...\n");
+}
+
+// Close gripper: position = 0.0
+// Open gripper: position = 1.0
 void BaseNode::moveGripper(float position, float max_effort)
 {
-    // trajectory.points.clear();
-    // trajectory_msgs::msg::JointTrajectoryPoint point;
-    // point.positions = {position};
-    // point.effort = {max_effort};
-    // point.time_from_start.sec = period;
-    // trajectory.points.emplace_back(point);
-    // gripper_publisher->publish(trajectory);
+    if (!gripper_client->wait_for_action_server()) 
+    {
+      RCLCPP_ERROR(this->get_logger(), "Action server not available after waiting!");
+      rclcpp::shutdown();
+    }
 
-    control_msgs::action::GripperCommand::Goal gripper_command;
-    control_msgs::msg::GripperCommand command;
-    command.position = 1.0 - position;  // Inverse logic
-    command.max_effort = max_effort;
-    gripper_command.command = command;
-    auto result = gripper_client->async_send_goal(gripper_command);
-    // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Sending gripper commad... Position: %f. Max. effort: %f", position, max_effort); 
+    auto goal = control_msgs::action::GripperCommand::Goal();
+    goal.command.position = 1.0 - position;  // Inverse logic
+    goal.command.max_effort = max_effort;
 
-    // // Create the goal message
-    // auto goal = control_msgs::action::GripperCommand::Goal();
-    // goal.command.position = position;
-    // goal.command.max_effort = max_effort;
+    // RCLCPP_INFO(this->get_logger(), "Sending goal...");
 
-    // // Send the goal to the gripper controller and wait for the result
-    // auto future_result = gripper_client->async_send_goal(goal);
+    auto send_goal_options = rclcpp_action::Client<control_msgs::action::GripperCommand>::SendGoalOptions();
+    
+    send_goal_options.goal_response_callback = [this](auto goal_response) 
+    { 
+        auto goal_handle = goal_response.get();
+        if (!goal_handle)
+            RCLCPP_ERROR(this->get_logger(), "Goal was rejected by server!");
+        else
+            RCLCPP_INFO(this->get_logger(), "Goal accepted by server, waiting for result.");
+    };
 
-    // if (rclcpp::spin_until_future_complete(std::make_shared<rclcpp::Node>("gripper_node"), future_result) !=
-    //     rclcpp::FutureReturnCode::SUCCESS)
-    // {
-    //     RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to send GripperCommand goal.");
-    //     return;
-    // }
+    send_goal_options.result_callback = [this](const auto &result) 
+    {  
+        switch (result.code) 
+        {
+        case rclcpp_action::ResultCode::SUCCEEDED:
+            break;
+        case rclcpp_action::ResultCode::ABORTED:
+            RCLCPP_ERROR(this->get_logger(), "Goal was aborted!");
+            return;
+        case rclcpp_action::ResultCode::CANCELED:
+            RCLCPP_ERROR(this->get_logger(), "Goal was canceled!");
+            return;
+        default:
+            RCLCPP_ERROR(this->get_logger(), "Unknown result code!");
+            return;
+        }
 
-    // auto result = future_result.get();
-    // // if (result.code != rclcpp_action::ResultCode::SUCCEEDED)
-    // // {
-    // //     RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "GripperCommand action failed.");
-    // //     return;
-    // // }
+        std::stringstream ss;
+        ss << "Result received. Position: " << result.result->position << "\tMax. effort: " << result.result->effort;
+        RCLCPP_INFO(this->get_logger(), ss.str().c_str());
+    };
 
-    // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "GripperCommand action succeeded.");
-
+    gripper_client->async_send_goal(goal, send_goal_options);
 }

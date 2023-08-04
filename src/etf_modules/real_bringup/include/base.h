@@ -22,9 +22,9 @@ public:
 
     rclcpp::TimerBase::SharedPtr timer;
     rclcpp::Publisher<trajectory_msgs::msg::JointTrajectory>::SharedPtr trajectory_publisher;
-    // rclcpp::Publisher<trajectory_msgs::msg::JointTrajectory>::SharedPtr gripper_publisher;   // Does not work?
     rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_publisher;
     rclcpp::Subscription<control_msgs::msg::JointTrajectoryControllerState>::SharedPtr joint_states_subscription;
+    std::shared_ptr<rclcpp::Node> gripper_node;
     rclcpp_action::Client<control_msgs::action::GripperCommand>::SharedPtr gripper_client;
 
     int period;
@@ -43,6 +43,7 @@ public:
     virtual void baseCallback() = 0;
     void jointStatesCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg);
 	void publishTrajectory(const std::vector<Eigen::VectorXf> path, const std::vector<float> path_times, float init_time = 0);
+	void publishTrajectory(const std::vector<std::vector<float>> path, const std::vector<float> path_times, float init_time = 0);
     void moveGripper(float position, float max_effort = 5.0);
-    
+
 };

@@ -11,11 +11,12 @@ public:
 protected:
     std::shared_ptr<rclcpp::Node> xarm_client_node;
     xarm_api::XArmROSClient xarm_client;
+    std::shared_ptr<rclcpp::Node> set_position_node;
     rclcpp::Client<xarm_msgs::srv::MoveCartesian>::SharedPtr set_position_client;
 
     void baseCallback() override { moveXArm6Callback(); }
     virtual void moveXArm6Callback();
     void goHome();
     void moveInJointSpace();
-    void setPosition(const std::vector<float> &pose, float speed = 100, float acceleration = 100);
+    void setPosition(const std::vector<float> &pose, float speed = 100, float acceleration = 1000);
 };

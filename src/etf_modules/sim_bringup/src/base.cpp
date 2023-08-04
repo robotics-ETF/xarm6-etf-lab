@@ -13,10 +13,7 @@ BaseNode::BaseNode(const std::string node_name, const int period, const std::str
         timer = this->create_wall_timer(std::chrono::nanoseconds(period), std::bind(&BaseNode::baseCallback, this));
     
     trajectory_publisher = this->create_publisher<trajectory_msgs::msg::JointTrajectory>
-        ("/xarm6_traj_controller/joint_trajectory", 10);    
-    // gripper_publisher = this->create_publisher<trajectory_msgs::msg::JointTrajectory>
-    //     ("/xarm_gripper_traj_controller/joint_trajectory", 10);
-    gripper_client = rclcpp_action::create_client<control_msgs::action::GripperCommand>(this, "/xarm_gripper/gripper_action");
+        ("/xarm6_traj_controller/joint_trajectory", 10);
     
     joint_states_subscription = this->create_subscription<control_msgs::msg::JointTrajectoryControllerState>
         ("/xarm6_traj_controller/state", 10, std::bind(&BaseNode::jointStatesCallback, this, std::placeholders::_1));
@@ -65,48 +62,32 @@ void BaseNode::publishTrajectory(const std::vector<Eigen::VectorXf> path, const 
     RCLCPP_INFO(this->get_logger(), "Publishing trajectory ...\n");
 }
 
-// Close gripper: position = 0.1
-// Open gripper: position = 1
-void BaseNode::moveGripper(float position, float max_effort)
+void BaseNode::publishTrajectory(const std::vector<std::vector<float>> path, const std::vector<float> path_times, float init_time)
 {
-    // trajectory.points.clear();
-    // trajectory_msgs::msg::JointTrajectoryPoint point;
-    // point.positions = {position};
-    // point.effort = {max_effort};
-    // point.time_from_start.sec = period;
-    // trajectory.points.emplace_back(point);
-    // gripper_publisher->publish(trajectory);
+    if (path.empty())
+    {
+        RCLCPP_INFO(this->get_logger(), "There is no trajectory to publish!\n");
+        return;
+    }
+    
+    trajectory.points.clear();
 
-    control_msgs::action::GripperCommand::Goal gripper_command;
-    control_msgs::msg::GripperCommand command;
-    command.position = 1.0 - position;  // Inverse logic
-    command.max_effort = max_effort;
-    gripper_command.command = command;
-    auto result = gripper_client->async_send_goal(gripper_command);
-    // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Sending gripper commad... Position: %f. Max. effort: %f", position, max_effort); 
+    RCLCPP_INFO(this->get_logger(), "Trajectory: ");
+    for (int i = 0; i < path.size(); i++)
+    {
+        std::vector<float> q = path[i];
+        RCLCPP_INFO(this->get_logger(), "Num. %d. Time: %f [s]. Point: (%f, %f, %f, %f, %f, %f)", 
+            i, path_times[i] + init_time, q[0], q[1], q[2], q[3], q[4], q[5]);
 
-    // // Create the goal message
-    // auto goal = control_msgs::action::GripperCommand::Goal();
-    // goal.command.position = position;
-    // goal.command.max_effort = max_effort;
+        trajectory_msgs::msg::JointTrajectoryPoint point;
+        for (int j = 0; j < q.size(); j++)
+            point.positions.emplace_back(q[j]);
 
-    // // Send the goal to the gripper controller and wait for the result
-    // auto future_result = gripper_client->async_send_goal(goal);
+        point.time_from_start.sec = int32_t(path_times[i] + init_time);
+        point.time_from_start.nanosec = (path_times[i] + init_time - point.time_from_start.sec) * 1e9;
+        trajectory.points.emplace_back(point);
+    }
 
-    // if (rclcpp::spin_until_future_complete(std::make_shared<rclcpp::Node>("gripper_node"), future_result) !=
-    //     rclcpp::FutureReturnCode::SUCCESS)
-    // {
-    //     RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to send GripperCommand goal.");
-    //     return;
-    // }
-
-    // auto result = future_result.get();
-    // // if (result.code != rclcpp_action::ResultCode::SUCCEEDED)
-    // // {
-    // //     RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "GripperCommand action failed.");
-    // //     return;
-    // // }
-
-    // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "GripperCommand action succeeded.");
-
+    trajectory_publisher->publish(trajectory);
+    RCLCPP_INFO(this->get_logger(), "Publishing trajectory ...\n");
 }
