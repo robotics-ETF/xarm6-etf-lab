@@ -31,8 +31,9 @@ ObjectSegmentation::ObjectSegmentation() : Node("segmentation_node")
     robot->setConfiguration(std::make_shared<base::RealVectorSpaceState>(6));
     joint_states = nullptr;
 
-    xarm_client_node = std::make_shared<rclcpp::Node>("xarm_client_node");
-    xarm_client.init(xarm_client_node, "xarm");
+    // Uncomment if you are using removeClustersOccupiedByRobot_v2 function
+    // xarm_client_node = std::make_shared<rclcpp::Node>("xarm_client_node");
+    // xarm_client.init(xarm_client_node, "xarm");
 }
 
 void ObjectSegmentation::pointCloudCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
@@ -101,7 +102,7 @@ void ObjectSegmentation::pointCloudCallback(const sensor_msgs::msg::PointCloud2:
     computeClusters(output_cloud_xyzrgb2, pcl_clusters);
 
 	removeClustersOccupiedByRobot(pcl_clusters);
-	// removeClustersOccupiedByRobot_v2(pcl_clusters);
+	// removeClustersOccupiedByRobot_v2(pcl_clusters);  // Uncomment "xarm_client_node" and "xarm_client" in the constructor
     
   	publishObjectsPointCloud(pcl_clusters);
 
@@ -555,12 +556,17 @@ void ObjectSegmentation::visualizeRobotCapsules()
         marker.ns = "robot_capsules";
         marker.header.frame_id = "world";
         marker.header.stamp = now();
-    Eigen::Vector3f A, B, C;
+    Eigen::Vector3f A, B, C, AB;
+    float theta;
 
     for (int i = 0; i < skeleton->cols() - 1; i++) 
     {
         A = skeleton->col(i);
         B = skeleton->col(i+1);
+        AB = B - A;
+        C = Eigen::Vector3f::UnitZ().cross(AB);
+        C.normalize();
+        theta = acos(Eigen::Vector3f::UnitZ().dot(AB) / AB.norm());
         // LOG(INFO) << "Skeleton: " << A.transpose() << " --- " << B.transpose();
 
         marker.type = visualization_msgs::msg::Marker::CYLINDER;
@@ -568,17 +574,17 @@ void ObjectSegmentation::visualizeRobotCapsules()
         marker.pose.position.x = (A(0) + B(0)) / 2;
         marker.pose.position.y = (A(1) + B(1)) / 2;
         marker.pose.position.z = (A(2) + B(2)) / 2;
-        marker.pose.orientation.x = B(0) - A(0);
-        marker.pose.orientation.y = B(1) - A(1);
-        marker.pose.orientation.z = B(2) - A(2);
-        marker.pose.orientation.w = 0.0;
+        marker.pose.orientation.x = C.x() * sin(theta/2);
+        marker.pose.orientation.y = C.y() * sin(theta/2);
+        marker.pose.orientation.z = C.z() * sin(theta/2);
+        marker.pose.orientation.w = cos(theta/2);
         marker.scale.x = 2 * robot->getRadius(i);
         marker.scale.y = 2 * robot->getRadius(i);
-        marker.scale.z = (B - A).norm();
+        marker.scale.z = AB.norm();
         marker.color.r = 1.0;
         marker.color.g = 0.0;
         marker.color.b = 0.0;
-        marker.color.a = 0.5;
+        marker.color.a = 0.2;
         marker_array_msg.markers.emplace_back(marker);
 
         for (int j = 0; j < 2; j++)
@@ -599,7 +605,7 @@ void ObjectSegmentation::visualizeRobotCapsules()
             marker.color.r = 1.0;
             marker.color.g = 0.0;
             marker.color.b = 0.0;
-            marker.color.a = 0.5;
+            marker.color.a = 0.2;
             marker_array_msg.markers.emplace_back(marker);
         }
     }
