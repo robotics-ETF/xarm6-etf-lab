@@ -23,6 +23,7 @@ BaseNode::BaseNode(const std::string node_name, const int period, const std::str
     BaseNode::period = period;
     BaseNode::state = 0;
     joint_states = Eigen::VectorXf(6);
+    joint_states_ready = false;
     trajectory.joint_names = {"joint1", "joint2", "joint3", "joint4", "joint5", "joint6"};
 }
 
@@ -30,6 +31,7 @@ void BaseNode::jointStatesCallback(const control_msgs::msg::JointTrajectoryContr
 {
     std::vector<double> positions = msg->actual.positions;
 	joint_states << positions[0], positions[1], positions[2], positions[3], positions[4], positions[5];
+    joint_states_ready = true;
 	// RCLCPP_INFO(this->get_logger(), "Robot joint states: (%f, %f, %f, %f, %f, %f).", 
     //     joint_states(0), joint_states(1), joint_states(2), joint_states(3), joint_states(4), joint_states(5));
 }

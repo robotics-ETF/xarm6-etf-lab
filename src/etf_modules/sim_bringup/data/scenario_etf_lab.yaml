@@ -1,5 +1,5 @@
 obstacles:
-  # table
+  # fixed obstacle - table
   - box:
       dim: [1.5, 1.5, 0.1]
       trans: [0, 0, -0.05]
@@ -9,6 +9,7 @@ robot:
   type: "xARM6"
   urdf: "/RPMPLv2/data/xarm6/xarm6.urdf"
   space: "RealVectorSpace"
+  # space: "RealVectorSpaceFCL"   # Currently, it does not consider a gripper!
   dimensions: 6
   # start: [0, 0, 0, 0, 0, 0]
   # goal: [1.5708, 0, -1.5708, 0, 0, 0]
@@ -20,3 +21,12 @@ robot:
   max_ang_acc: 0.9      # in [rad/s²]
 
 configurations: "/RPMPLv2"
+
+planner:
+  # name: "RRTConnect"
+  # name: "RBTConnect"
+  # name: "RGBTConnect"
+  name: "RGBMTStar"
+  max_planning_time: 800  # in [ms]
+
+min_num_captures: 5    # Minimal number of captures/frames of a single STATIC obstacle to become valid.

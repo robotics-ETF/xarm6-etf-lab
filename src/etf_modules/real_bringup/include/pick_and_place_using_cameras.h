@@ -15,22 +15,18 @@ protected:
     std::vector<Eigen::Vector3f> objects_pos;
     std::vector<Eigen::Vector3f> objects_dim;
     std::vector<int> num_captures;
-    const int max_num_captures = 10;
-
-    void boundingBoxesCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
-    void testRobotOrientation();
-    void chooseObject();
-    void computeObjectApproachAndPickPose();
-    void pickAndPlaceCallback() override { pickAndPlaceUsingCamerasCallback(); };
-    void pickAndPlaceUsingCamerasCallback();
-    
-private:
+    const int min_num_captures = 10;
     std::vector<float> object_approach_pose;
     std::vector<float> object_pick_pose;
     int obj_idx;
     float delta_z = 120;
     float offset_z = 10;
-    float gripper_pos;
-    float theta_obj;
 
+    void pickAndPlaceCallback() override { pickAndPlaceUsingCamerasCallback(); };
+    void pickAndPlaceUsingCamerasCallback();
+    void boundingBoxesCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
+    void testRobotOrientation();
+    void chooseObject();
+    void computeObjectApproachAndPickPose();
+    
 };

@@ -34,10 +34,11 @@ public:
     const std::vector<float> home_angles = {0, 0, 0, M_PI, M_PI_2, 0};
     std::vector<float> current_angles;
     std::vector<float> current_pose;
+    bool joint_states_ready;
 
     virtual void baseCallback() = 0;
     void jointStatesCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg);
 	void publishTrajectory(const std::vector<Eigen::VectorXf> path, const std::vector<float> path_times, float init_time = 0);
 	void publishTrajectory(const std::vector<std::vector<float>> path, const std::vector<float> path_times, float init_time = 0);
-
+    
 };

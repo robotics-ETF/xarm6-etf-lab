@@ -3,12 +3,6 @@
 TaskPlanningNode::TaskPlanningNode(const std::string scenario_file_path, const std::string node_name, const int period, 
     const std::string time_unit) : PlanningNode(scenario_file_path, node_name, period, time_unit)
 {
-    xarm_client_node = std::make_shared<rclcpp::Node>("xarm_client_node");
-    xarm_client.init(xarm_client_node, "xarm");
-    xarm_client.set_gripper_enable(true);
-    xarm_client.set_gripper_mode(0);
-    xarm_client.set_gripper_speed(3000);
-
     task = 0;
 }
 
@@ -59,23 +53,11 @@ void TaskPlanningNode::taskPlanningCallback()
         break;
 
     case 5:
-        float gripper_pos;
-        xarm_client.get_gripper_position(&gripper_pos);
-        // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Gripper position: %f", gripper_pos);
-        if (gripper_pos < 10)  // Nothing is caught
-        {
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Trying to pick the object again...");
-            xarm_client.set_gripper_position(850, true, 1);     
-            task = 0;      // Go from the beginning
-        }
-        else
-        {
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Moving the object to destination...");
-            scenario->setStart(std::make_shared<base::RealVectorSpaceState>(joint_states));
-            scenario->setGoal(q_goal);
-            task = 100;
-            task_next = 6;
-        }
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Moving the object to destination...");
+        scenario->setStart(std::make_shared<base::RealVectorSpaceState>(joint_states));
+        scenario->setGoal(q_goal);
+        task = 100;
+        task_next = 6;
         break;
     
     case 6:
@@ -182,10 +164,10 @@ void TaskPlanningNode::computeObjectApproachAndPickAngles()
 
     KDL::Vector p_approach = KDL::Vector(r * float(cos(fi)), 
                                          r * float(sin(fi)), 
-                                         objects_pos[obj_idx].z() + delta_z);
+                                         objects_pos[obj_idx].z() + offset_z + delta_z);
     KDL::Vector p_pick = KDL::Vector(objects_pos[obj_idx].x(), 
                                      objects_pos[obj_idx].y(), 
-                                     objects_pos[obj_idx].z());    
+                                     objects_pos[obj_idx].z() + offset_z);    
     int num = 0;
     while (num++ <= 1000)
     {

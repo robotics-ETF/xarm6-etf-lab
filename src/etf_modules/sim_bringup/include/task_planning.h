@@ -1,7 +1,5 @@
 #include "planning.h"
 
-#include <xarm_api/xarm_ros_client.h>
-
 class TaskPlanningNode : public PlanningNode
 {
 public:
@@ -17,13 +15,12 @@ protected:
     bool whetherToRemoveBoundingBox(Eigen::Vector3f &object_pos, Eigen::Vector3f &object_dim) override;
 
 private:
-    std::shared_ptr<rclcpp::Node> xarm_client_node;
-    xarm_api::XArmROSClient xarm_client;
     int task, task_next;
     std::shared_ptr<base::State> q_object_approach;
     std::shared_ptr<base::State> q_object_pick;
     std::shared_ptr<base::State> q_goal;
     int obj_idx;
     float delta_z = 0.1;
+    float offset_z = 0;
     Eigen::Vector3f goal_pos = Eigen::Vector3f(-0.5, 0, 0.2);
 };

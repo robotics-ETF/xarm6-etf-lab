@@ -32,11 +32,18 @@ protected:
     std::vector<Eigen::VectorXf> path;
     std::vector<float> path_times;
     std::vector<std::shared_ptr<base::State>> planner_path;
-    std::vector<fcl::Vector3f> bounding_boxes;
+    std::vector<Eigen::Vector3f> objects_pos;
+    std::vector<Eigen::Vector3f> objects_dim;
+    std::vector<int> num_captures;
+    int min_num_captures;
+    std::string planner_name;
+    bool planner_ready;
 
     virtual void baseCallback() override { planningCallback(); }
     virtual void planningCallback();
     void boundingBoxesCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
+    virtual void boundingBoxesCallbackWithFiltering(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
+    virtual bool whetherToRemoveBoundingBox(Eigen::Vector3f &object_pos, Eigen::Vector3f &object_dim);
     void updateEnvironment();
     void parametrizePath();
     void parametrizePath(float delta_time);

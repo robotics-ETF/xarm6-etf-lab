@@ -24,6 +24,7 @@ target_link_libraries(sim_bringup_library PUBLIC ${RPMPL_LIBRARY} ${RPMPL_LIBRAR
 
 ament_target_dependencies(sim_bringup_library PUBLIC 
   rclcpp
+  rclcpp_action
   trajectory_msgs
   control_msgs 
   sensor_msgs
