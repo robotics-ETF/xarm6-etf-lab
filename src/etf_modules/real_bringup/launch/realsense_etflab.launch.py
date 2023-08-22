@@ -91,20 +91,20 @@ def generate_launch_description():
     tf_node_aruco_marker_camera_left_link = Node(package = "tf2_ros", 
             name="left_transform",
             executable = "static_transform_publisher",
-            arguments = ["-1.13", "0", "0.92", "0.35", "0.65", "0.05", \
-                        "aruco_marker", "camera_left_link"]     # (x,y,z, pich, yaw, roll)
+            arguments = ["-1.15", "0", "0.94", "0.35", "0.65", "0.08", \
+                        "aruco_marker", "camera_left_link"]     # (x,y,z, yaw(z), pich(y), roll(x))
 	)
 
     tf_node_aruco_marker_from_right_camera_right_link = Node(package = "tf2_ros", 
             name="right_transform",
             executable = "static_transform_publisher",
-            arguments = ["0.85", "0", "1.2", "0.2", "2.2", "0.2", \
-                        "aruco_marker_from_right", "camera_right_link"]    # (x,y,z, pich, yaw, roll)
+            arguments = ["0.85", "0", "1.19", "0.2", "2.2", "0.2", \
+                        "aruco_marker_from_right", "camera_right_link"]    # (x,y,z, yaw(z), pich(y), roll(x))
 	)
 
     tf_node_aruco_marker_aruco_marker_from_right = Node(package = "tf2_ros",
             executable = "static_transform_publisher",
-            arguments = ["0", "-0.09", "0", "3.14159", "-1.57079", "0", \
+            arguments = ["0", "-0.06", "0", "3.14159", "-1.57079", "0", \
                         "aruco_marker", "aruco_marker_from_right"]
 	)
     ########################################################################
@@ -126,14 +126,14 @@ def generate_launch_description():
     #         name="left_transform",
     #         executable = "static_transform_publisher",
     #         arguments = ["0.480", "0.054", "1.363", "-1.059", "-0.832", "2.681", \
-    #                     "aruco_marker", "camera_left"]     # (x,y,z, pich(z), yaw(y), roll(x))
+    #                     "aruco_marker", "camera_left"]     # (x,y,z, yaw(z), pich(y), roll(x))
 	# )
 
     # # Needs to correct the transformation in order to align with camera_left_color_optical_frame
     # tf_node_camera_left_camera_left_link = Node(package = "tf2_ros",
     #         executable = "static_transform_publisher",
     #         arguments = ["0", "0", "0", "-1.57079", "0", "-1.57079", \
-    #                     "camera_left", "camera_left_link"]     # (x,y,z, pich(z), yaw(y), roll(x))
+    #                     "camera_left", "camera_left_link"]     # (x,y,z, yaw(z), pich(y), roll(x))
 	# )
     
     # rviz_pkg = get_package_share_directory('sim_bringup')
