@@ -157,19 +157,20 @@ void ObjectSegmentation::publishBoundingBoxes(std::vector<pcl::PointCloud<pcl::P
     {
         // Compute the bounding-box for each cluster
         pcl::getMinMax3D(*cluster, min_point, max_point);
-        // RCLCPP_INFO(this->get_logger(), "Cluster %d. Bounding-box points: min = (%f, %f, %f), max = (%f, %f, %f)",
-        //     j++, min_point(0), min_point(1), min_point(2), max_point(0), max_point(1), max_point(2));
+        RCLCPP_INFO(this->get_logger(), "Bounding-box %d. min: (%f, %f, %f), max: (%f, %f, %f)",
+            j++, min_point.x(), min_point.y(), min_point.z(), max_point.x(), max_point.y(), max_point.z());
 
-        dim.x = max_point(0) - min_point(0);
-        dim.y = max_point(1) - min_point(1);
-        dim.z = max_point(2) - min_point(2);
+        dim.x = max_point.x() - min_point.x();
+        dim.y = max_point.y() - min_point.y();
+        dim.z = max_point.z() - min_point.z();
         bounding_boxes->emplace_back(dim);
 
-        pos.x = (min_point(0) + max_point(0)) / 2;
-        pos.y = (min_point(1) + max_point(1)) / 2;
-        pos.z = (min_point(2) + max_point(2)) / 2;
+        pos.x = (min_point.x() + max_point.x()) / 2;
+        pos.y = (min_point.y() + max_point.y()) / 2;
+        pos.z = (min_point.z() + max_point.z()) / 2;
         bounding_boxes->emplace_back(pos);
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Bounding-box position: (%f, %f, %f)", pos.x, pos.y, pos.z);
+        // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Bounding-box position: (%f, %f, %f) and dimensions: (%f, %f, %f)", 
+        //     pos.x, pos.y, pos.z, dim.x, dim.y, dim.z);
     }
 
     sensor_msgs::msg::PointCloud2 output_cloud_ros;
@@ -266,16 +267,16 @@ void ObjectSegmentation::computeSubclusters(std::vector<pcl::PointCloud<pcl::Poi
     for (pcl::PointCloud<pcl::PointXYZRGB>::Ptr cluster : clusters)
     {
         pcl::getMinMax3D(*cluster, min_point, max_point);
-        std::vector<float> dim = {max_point(0) - min_point(0), 
-                                  max_point(1) - min_point(1), 
-                                  max_point(2) - min_point(2)};
+        std::vector<float> dim = {max_point.x() - min_point.x(), 
+                                  max_point.y() - min_point.y(), 
+                                  max_point.z() - min_point.z()};
         // RCLCPP_INFO(this->get_logger(), "Bouding-box dim: (%f, %f, %f)", dim[0], dim[1], dim[2]);
         std::vector<int> idx(dim.size());
         std::iota(idx.begin(), idx.end(), 0);
         std::sort(idx.begin(), idx.end(), [&dim](int a, int b) { return dim[a] > dim[b]; });
 
         // The cluster is firstly divided in axis which has the longest dimension
-        std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> subclusters1;
+        std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> subclusters1; 
         divideCluster(cluster, subclusters1, min_point(idx[0]), max_point(idx[0]), max_dim(idx[0]), axes[idx[0]]);
 
         std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> subclusters2;
@@ -285,18 +286,24 @@ void ObjectSegmentation::computeSubclusters(std::vector<pcl::PointCloud<pcl::Poi
         for (pcl::PointCloud<pcl::PointXYZRGB>::Ptr subcluster2 : subclusters2)
             divideCluster(subcluster2, subclusters, min_point(idx[2]), max_point(idx[2]), max_dim(idx[2]), axes[idx[2]]);
     }
-    RCLCPP_INFO(this->get_logger(), "Clusters are divided into %d subclusters with max. dimensions of (%f, %f, %f).", 
+    RCLCPP_INFO(this->get_logger(), "Clusters are divided into totally %d subclusters.", 
         subclusters.size(), max_dim.x(), max_dim.y(), max_dim.z());
 }
 
 void ObjectSegmentation::divideCluster(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cluster, 
-    std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &subclusters, float min_point, float max_point, float max_dim, std::string &axis)
+    std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &subclusters, float min_point, float max_point, float max_dim, 
+    std::string &axis, const float tolerance)
 {
     int num_pieces = std::ceil((max_point - min_point) / max_dim);
-    // RCLCPP_INFO(this->get_logger(), "Dividing cluster in %d pieces according to %s axis.", num_pieces, axis.c_str());
+    // RCLCPP_INFO(this->get_logger(), "Trying to divide cluster into %d pieces according to %s axis.", num_pieces, axis.c_str());
     if (num_pieces > 1)
     {
         float delta = (max_point - min_point) / num_pieces;
+        Eigen::Vector4f min_point_temp, max_point_temp;
+        Eigen::Vector4f min_point_result, max_point_result;
+        std::vector<std::string> axes = {"x", "y", "z"};
+        int idx_prev = 0, added_clusters = 0;
+
         for (int i = 0; i < num_pieces; i++)
         {
             pcl::PointCloud<pcl::PointXYZRGB>::Ptr subcluster(new pcl::PointCloud<pcl::PointXYZRGB>);
@@ -305,13 +312,60 @@ void ObjectSegmentation::divideCluster(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cl
             passThroughAxis.setFilterLimits(min_point + i*delta, min_point + (i+1)*delta);  	
             passThroughAxis.setInputCloud(cluster);
             passThroughAxis.filter(*subcluster);
-            if (!subcluster->empty())
-                subclusters.emplace_back(subcluster);
             
-            // RCLCPP_INFO(this->get_logger(), "Resulting subcluster %d is between %f and %f: ", i, min_point + i*delta, min_point + (i+1)*delta);
+            if (subcluster->empty())
+            {
+                idx_prev = i + 1;
+                continue;
+            }
+            // RCLCPP_INFO(this->get_logger(), "Resulting subcluster %d is between %f and %f w.r.t. %s axis.", 
+            //     i, min_point + i*delta, min_point + (i+1)*delta, axis.c_str());
             // for (auto pt : subcluster->points)
-            //     RCLCPP_INFO(this->get_logger(), "Point: (%f, %f, %f)", pt.x, pt.y, pt.z);            
+            //     RCLCPP_INFO(this->get_logger(), "Point: (%f, %f, %f)", pt.x, pt.y, pt.z);  
+
+            pcl::getMinMax3D(*subcluster, min_point_temp, max_point_temp);
+            if (i == idx_prev)
+            {
+                min_point_result = min_point_temp;
+                max_point_result = max_point_temp;
+                subclusters.emplace_back(subcluster);
+                added_clusters++;
+                // RCLCPP_INFO(this->get_logger(), "Adding as a new subcluster!");
+            }
+            else
+            {
+                idx_prev = i;
+                bool concatenate = true;
+                for (int j = 0; j < 3; j++)
+                {
+                    if (axes[j] != axis &&
+                        std::abs(min_point_temp(j) - min_point_result(j)) +
+                        std::abs(max_point_temp(j) - max_point_result(j)) > tolerance)
+                        {
+                            concatenate = false;
+                            break;
+                        }
+                }
+
+                if (concatenate)
+                {
+                    for (pcl::PointXYZRGB point : subcluster->points)
+                        subclusters.back()->emplace_back(point);
+                    min_point_result = min_point_result.cwiseMin(min_point_temp);
+                    max_point_result = max_point_result.cwiseMax(max_point_temp);
+                    // RCLCPP_INFO(this->get_logger(), "Concatenated with the previous subcluster!");
+                }
+                else
+                {
+                    min_point_result = min_point_temp;
+                    max_point_result = max_point_temp;
+                    subclusters.emplace_back(subcluster);
+                    added_clusters++;
+                    // RCLCPP_INFO(this->get_logger(), "Adding as a new subcluster!");
+                } 
+            }
         }
+        // RCLCPP_INFO(this->get_logger(), "Divided into %d subclusters.", added_clusters);
     }
     else
         subclusters.emplace_back(cluster);

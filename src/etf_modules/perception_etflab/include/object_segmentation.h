@@ -68,7 +68,7 @@ private:
 	void computeSubclusters(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters,
 		std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &subclusters, const Eigen::Vector3f &max_dim = Eigen::Vector3f(0.1, 0.1, 0.1));
 	void divideCluster(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cluster, std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &subclusters, 
-		float min_point, float max_point, float max_dim, std::string &axis);
+		float min_point, float max_point, float max_dim, std::string &axis, const float tolerance = 0.05);
 	void removeOutliers(pcl::PointCloud<pcl::PointXYZRGB> &pcl);
 	void removeClustersOccupiedByRobot(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters, int tolerance_factor = 1.5);
 	void removeClustersOccupiedByRobot_v2(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters, int tolerance_factor = 1.5);
