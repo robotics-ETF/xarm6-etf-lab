@@ -4,6 +4,7 @@ TaskPlanningNode::TaskPlanningNode(const std::string scenario_file_path, const s
     const std::string time_unit) : PlanningNode(scenario_file_path, node_name, period, time_unit)
 {
     task = 0;
+    IK_computed = -1;
 }
 
 void TaskPlanningNode::taskPlanningCallback()
@@ -11,56 +12,60 @@ void TaskPlanningNode::taskPlanningCallback()
     switch (task)
     {
     case 1:
+        task = 0;
         chooseObject();
         if (obj_idx != -1)
         {
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Object %d is recognized at the position (%f, %f, %f).", 
-                obj_idx, objects_pos[obj_idx].x(), objects_pos[obj_idx].y(), objects_pos[obj_idx].z());
-            computeObjectApproachAndPickAngles();
-
-            scenario->setStart(std::make_shared<base::RealVectorSpaceState>(joint_states));
-            scenario->setGoal(q_object_approach);
-            task = 100;
-            task_next = 2;
+            task = 101;
+            IK_computed = computeObjectApproachAndPickAngles();
         }
-        else
-            task = 0;
         break;
 
     case 2:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going towards the object..."); 
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going towards the object...");
         planner_path.clear();
-        planner_path.emplace_back(q_object_approach);
+        planner_path.emplace_back(q_object_approach1);
+        planner_path.emplace_back(q_object_approach2);
         planner_path.emplace_back(q_object_pick);
-        parametrizePath();
+        parametrizePlannerPath();
         publishTrajectory(path, path_times);
         task++;
         break;
 
     case 3:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Picking the object...");
         task++;
         break;
 
     case 4:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Raising the object...");
-        planner_path.clear();
-        planner_path.emplace_back(q_object_pick);
-        planner_path.emplace_back(q_object_approach);
-        parametrizePath();
-        publishTrajectory(path, path_times);
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Picking the object...");
         task++;
         break;
 
     case 5:
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Picking the object...");
+        task++;
+        break;
+
+    case 6:
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Raising the object...");
+        planner_path.clear();
+        planner_path.emplace_back(q_object_pick);
+        planner_path.emplace_back(q_object_approach1);
+        parametrizePlannerPath();
+        publishTrajectory(path, path_times);
+        task++;
+        break;
+
+    case 7:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Moving the object to destination...");
-        scenario->setStart(std::make_shared<base::RealVectorSpaceState>(joint_states));
+        scenario->setStart(q_object_approach1);
         scenario->setGoal(q_goal);
+        clearMeasurements();
         task = 100;
-        task_next = 6;
+        task_next = 8;
         break;
     
-    case 6:
+    case 8:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Releasing the object...");
         task = 0;
         break;
@@ -77,7 +82,7 @@ void TaskPlanningNode::taskPlanningCallback()
                 RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Planning the path..."); 
                 if (planPath())
                 {
-                    parametrizePath();
+                    parametrizePlannerPath();
                     state++;
                 }
             }
@@ -101,11 +106,24 @@ void TaskPlanningNode::taskPlanningCallback()
         }
         break;
 
+    case 101:    // IK computing
+        if (IK_computed == 1)
+        {
+            scenario->setStart(std::make_shared<base::RealVectorSpaceState>(joint_states));
+            scenario->setGoal(q_object_approach1);
+            clearMeasurements();
+            task = 100;
+            task_next = 2;
+            IK_computed = -1;
+        }
+        else if (IK_computed == 0)
+            task = 0;
+        
+        break;
+
     default:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting for the object...");
-        objects_pos.clear();
-        objects_dim.clear();
-        num_captures.clear();
+        clearMeasurements();
         if (joint_states_ready)
             task = 1;   // Do measurements
         break;
@@ -134,9 +152,13 @@ void TaskPlanningNode::chooseObject()
             obj_idx = i;
         }
     }
+
+    if (obj_idx != -1)
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Object %d is recognized at the position (%f, %f, %f).", 
+            obj_idx, objects_pos[obj_idx].x(), objects_pos[obj_idx].y(), objects_pos[obj_idx].z());
 }
 
-void TaskPlanningNode::computeObjectApproachAndPickAngles()
+bool TaskPlanningNode::computeObjectApproachAndPickAngles()
 {
     // For approaching from above
     KDL::Vector n(objects_pos[obj_idx].x(), objects_pos[obj_idx].y(), 0); n.Normalize();
@@ -162,34 +184,65 @@ void TaskPlanningNode::computeObjectApproachAndPickAngles()
     else
         r -= 1.5 * objects_dim[obj_idx].head(2).norm();
 
-    KDL::Vector p_approach = KDL::Vector(r * float(cos(fi)), 
-                                         r * float(sin(fi)), 
-                                         objects_pos[obj_idx].z() + offset_z + delta_z);
+    float p_pick_z = objects_pos[obj_idx].z() + offset_z;
+    if (objects_dim[obj_idx].z() > 0.14)
+        p_pick_z += objects_dim[obj_idx].z() / 2 - 0.07;    // finger length is 7 [cm]
+
+    KDL::Vector p_approach1 = KDL::Vector(r * float(cos(fi)), 
+                                          r * float(sin(fi)), 
+                                          p_pick_z + delta_z);
+    KDL::Vector p_approach2 = KDL::Vector(r * float(cos(fi)), 
+                                          r * float(sin(fi)), 
+                                          p_pick_z);
     KDL::Vector p_pick = KDL::Vector(objects_pos[obj_idx].x(), 
                                      objects_pos[obj_idx].y(), 
-                                     objects_pos[obj_idx].z() + offset_z);    
+                                     p_pick_z);
     int num = 0;
-    while (num++ <= 1000)
+    while (num++ <= 100)
     {
-        q_object_approach = robot->computeInverseKinematics(R, p_approach);
+        q_object_approach1 = robot->computeInverseKinematics(R, p_approach1);
+        if (q_object_approach1 == nullptr)
+            continue;
         
         // It is convenient for the purpose when picking objects from above
-        if (r > r_crit && std::abs(q_object_approach->getCoord(3)) < 0.1 ||
-            r <= r_crit && std::abs(q_object_approach->getCoord(3) - (-M_PI)) < 0.1)
+        if (r > r_crit && std::abs(q_object_approach1->getCoord(3)) < 0.1 ||
+            r <= r_crit && std::abs(q_object_approach1->getCoord(3) - (-M_PI)) < 0.1)
             break;
     }
-    q_object_pick = robot->computeInverseKinematics(R, p_pick, q_object_approach); // In order to ensure that 'q_object_pick' is relatively close to 'q_object_approach' 
+    if (q_object_approach1 == nullptr)
+        return false;
+
+    q_object_approach2 = robot->computeInverseKinematics(R, p_approach2, q_object_approach1);
+    if (q_object_approach2 == nullptr || std::abs(q_object_approach1->getCoord(3) - q_object_approach2->getCoord(3)) > 0.1)
+        return false;
+
+    q_object_pick = robot->computeInverseKinematics(R, p_pick, q_object_approach2); // In order to ensure that 'q_object_pick' is relatively close to 'q_object_approach1'
+    if (q_object_pick == nullptr || std::abs(q_object_approach2->getCoord(3) - q_object_pick->getCoord(3)) > 0.1)
+        return false;
 
     KDL::Vector p_goal = KDL::Vector(goal_pos.x(),
                                      goal_pos.y(),
                                      goal_pos.z() + objects_dim[obj_idx].z());
-    KDL::Vector n_goal(goal_pos.x(), goal_pos.y(), 0); n.Normalize();
-    KDL::Vector s_goal(goal_pos.y(), -goal_pos.x(), 0); s.Normalize();
+    KDL::Vector n_goal(goal_pos.x(), goal_pos.y(), 0); n_goal.Normalize();
+    KDL::Vector s_goal(goal_pos.y(), -goal_pos.x(), 0); s_goal.Normalize();
     KDL::Vector a_goal(0, 0, -1);
     KDL::Rotation R_goal(n_goal, s_goal, a_goal);
     Eigen::VectorXf goal_angles = q_object_pick->getCoord();
     goal_angles(0) = std::atan2(goal_pos.y(), goal_pos.x());
     q_goal = robot->computeInverseKinematics(R_goal, p_goal, std::make_shared<base::RealVectorSpaceState>(goal_angles));
+    if (q_goal == nullptr)
+        return false;
+    
+    // Just to take a shorter angle
+    if (std::abs(std::atan2(objects_pos[obj_idx].y(), objects_pos[obj_idx].x()) - q_goal->getCoord(0)) > M_PI)
+    {
+        if (q_goal->getCoord(0) > 0)
+            q_goal->setCoord(q_goal->getCoord(0) - 2*M_PI, 0);
+        else
+            q_goal->setCoord(q_goal->getCoord(0) + 2*M_PI, 0);
+    }
+
+    return true;
 }
 
 bool TaskPlanningNode::whetherToRemoveBoundingBox(Eigen::Vector3f &object_pos, Eigen::Vector3f &object_dim)

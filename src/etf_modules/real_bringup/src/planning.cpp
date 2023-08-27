@@ -20,12 +20,13 @@ PlanningNode::PlanningNode(const std::string scenario_file_path, const std::stri
     planner_ready = true;
 
     YAML::Node node = YAML::LoadFile(project_path + scenario_file_path);
-    ConfigurationReader::initConfiguration(project_path + node["configurations"].as<std::string>());
     max_lin_vel = node["robot"]["max_lin_vel"].as<float>();
     max_lin_acc = node["robot"]["max_lin_acc"].as<float>();
     max_ang_vel = node["robot"]["max_ang_vel"].as<float>();
     max_ang_acc = node["robot"]["max_ang_acc"].as<float>();
-    min_num_captures = node["min_num_captures"].as<int>();
+
+    ConfigurationReader::initConfiguration(project_path + node["configurations"].as<std::string>());
+    min_num_captures = node["min_num_captures"].as<int>();    
 
     planner_name = node["planner"]["name"].as<std::string>();
     if (planner_name == "RRTConnect")
@@ -34,7 +35,7 @@ PlanningNode::PlanningNode(const std::string scenario_file_path, const std::stri
         RBTConnectConfig::MAX_PLANNING_TIME = node["planner"]["max_planning_time"].as<float>();
     else if (planner_name == "RGBTConnect")
         RGBTConnectConfig::MAX_PLANNING_TIME = node["planner"]["max_planning_time"].as<float>();
-    else if (planner_name == "RGBMTStar")
+    else if (planner_name == "RGBMT*")
         RGBMTStarConfig::MAX_PLANNING_TIME = node["planner"]["max_planning_time"].as<float>();
 }
 
@@ -61,7 +62,7 @@ void PlanningNode::planningCallback()
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Planning the path..."); 
             if (planPath())
             {
-                parametrizePath();
+                parametrizePlannerPath();
                 state++;
             }
         }
@@ -70,7 +71,7 @@ void PlanningNode::planningCallback()
         break;
     
     case 2:
-        publishTrajectory(path, path_times, 0.1);
+        publishTrajectory(path, path_times);
         state = -1;   // Just to go to default
         break;
 
@@ -130,7 +131,7 @@ void PlanningNode::boundingBoxesCallbackWithFiltering(const sensor_msgs::msg::Po
         // Measurements are averaged online
         for (int j = 0; j < objects_dim.size(); j++)
         {
-            if ((new_object_dim - objects_dim[j]).norm() < 0.02 && (new_object_pos - objects_pos[j]).norm() < 0.02)
+            if ((new_object_dim - objects_dim[j]).norm() < 0.05 && (new_object_pos - objects_pos[j]).norm() < 0.05)
             {
                 objects_dim[j] = (num_captures[j] * objects_dim[j] + new_object_dim) / (num_captures[j] + 1);
                 objects_pos[j] = (num_captures[j] * objects_pos[j] + new_object_pos) / (num_captures[j] + 1);
@@ -176,15 +177,19 @@ void PlanningNode::updateEnvironment()
     // std::shared_ptr<fcl::CollisionObjectf> ob = std::make_shared<fcl::CollisionObjectf>(box, rot, fcl::Vector3f(0.2, 0.2, 0.15));
     // env->addCollisionObject(ob);
 
-    objects_pos.clear();
-    objects_dim.clear();
-    num_captures.clear();
-
+    clearMeasurements();
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Environment is updated."); 
 }
 
+void PlanningNode::clearMeasurements()
+{
+    objects_pos.clear();
+    objects_dim.clear();
+    num_captures.clear();
+}
+
 // Parametrize the obtained path 'planner_path' in order to satisfy the maximal angular velocity 'max_ang_vel'
-void PlanningNode::parametrizePath()
+void PlanningNode::parametrizePlannerPath()
 {
     float time = 0;
     path_times.clear();
@@ -206,7 +211,7 @@ void PlanningNode::parametrizePath()
 }
 
 // Interpolate the obtained path 'planner_path' in order to satisfy the maximal angular velocity 'max_ang_vel'
-void PlanningNode::parametrizePath(float delta_time)
+void PlanningNode::parametrizePlannerPath(float delta_time)
 {
     float time = 0;
     path_times.clear();
@@ -251,7 +256,7 @@ bool PlanningNode::planPath()
     std::shared_ptr<base::State> goal_ = scenario->getGoal();
     
     LOG(INFO) << "Number of collision objects: " << env->getParts().size();
-    LOG(INFO) << "Dimensions: " << ss->getDimensions();
+    LOG(INFO) << "Number of DOFs: " << ss->getNumDimensions();
     LOG(INFO) << "State space type: " << ss->getStateSpaceType();
     LOG(INFO) << "Start: " << start_;
     LOG(INFO) << "Goal: " << goal_;
@@ -265,15 +270,16 @@ bool PlanningNode::planPath()
             planner = std::make_unique<planning::rbt::RBTConnect>(ss, start_, goal_);
         else if (planner_name == "RGBTConnect")
             planner = std::make_unique<planning::rbt::RGBTConnect>(ss, start_, goal_);
-        else if (planner_name == "RGBMTStar")
+        else if (planner_name == "RGBMT*")
             planner = std::make_unique<planning::rbt_star::RGBMTStar>(ss, start_, goal_);
         
         res = planner->solve();
-        LOG(INFO) << "Planning is finished with " << (res ? "SUCCESS!" : "FAILURE!");
+        LOG(INFO) << planner_name << " planning finished with " << (res ? "SUCCESS!" : "FAILURE!");
         LOG(INFO) << "Number of states in the trees: " << planner->getPlannerInfo()->getNumStates();
         LOG(INFO) << "Number of states in the path: " << planner->getPath().size();
         LOG(INFO) << "Planning time: " << planner->getPlannerInfo()->getPlanningTime() << " [ms]";
-        LOG(INFO) << "Path cost: " << planner->getPlannerInfo()->getCostConvergence().back();   // Only for optimal planners
+        if (planner_name == "RGBMT*")
+            LOG(INFO) << "Path cost: " << planner->getPlannerInfo()->getCostConvergence().back();
         planner->outputPlannerData(project_path + "/real_bringup/data/planner_data.log");
 
         if (res)

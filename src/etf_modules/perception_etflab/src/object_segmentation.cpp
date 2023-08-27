@@ -27,11 +27,26 @@ ObjectSegmentation::ObjectSegmentation() : Node("segmentation_node")
 	for (int i = 0; i < 3; i++)
 		project_path = project_path.substr(0, project_path.find_last_of("/\\"));
 
-    robot = std::make_shared<robots::xARM6>(project_path + urdf_file_path);
-    robot->setConfiguration(std::make_shared<base::RealVectorSpaceState>(6));
-    joint_states = nullptr;
+    YAML::Node node = YAML::LoadFile(project_path + robot_config_file_path);
+    YAML::Node robot_node = node["robot"];
+    int num_DOFs = robot_node["num_DOFs"].as<int>();
+    std::vector<float> capsules_radius;
+    for (int i = 0; i < num_DOFs; ++i)
+        capsules_radius.emplace_back(robot_node["capsules_radius"][i].as<float>());
 
-    // Uncomment if you are using removeClustersOccupiedByRobot_v2 function
+    robot = std::make_shared<robots::xArm6>(project_path + robot_node["urdf"].as<std::string>(),
+                                            capsules_radius,
+                                            robot_node["gripper_length"].as<float>(),
+                                            robot_node["table_included"].as<bool>());
+                                            
+    Eigen::VectorXf start(num_DOFs);
+    for (int i = 0; i < num_DOFs; ++i)
+        start(i) = robot_node["start"][i].as<float>();
+    joint_states = std::make_shared<base::RealVectorSpaceState>(start);
+    robot->setConfiguration(joint_states);
+    skeleton = robot->computeSkeleton(joint_states);
+
+    // Uncomment if you are using 'removeClustersOccupiedByRobot_v2' function
     // xarm_client_node = std::make_shared<rclcpp::Node>("xarm_client_node");
     // xarm_client.init(xarm_client_node, "xarm");
 }
@@ -373,6 +388,9 @@ void ObjectSegmentation::divideCluster(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cl
 
 void ObjectSegmentation::removeOutliers(pcl::PointCloud<pcl::PointXYZRGB> &pcl)
 {
+    if (pcl.empty())
+        return;
+
     for (pcl::PointCloud<pcl::PointXYZRGB>::iterator pcl_point = pcl.end()-1; pcl_point >= pcl.begin(); pcl_point--)
 	{
         Eigen::Vector3f P(pcl_point->x, pcl_point->y, pcl_point->z);
@@ -387,7 +405,7 @@ void ObjectSegmentation::removeOutliers(pcl::PointCloud<pcl::PointXYZRGB> &pcl)
 // 'tolerance_factor' (default: 1.5) determines the factor of capsule enlargement, which is always needed due to measurements uncertainty.
 void ObjectSegmentation::removeClustersOccupiedByRobot(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters, int tolerance_factor)
 {
-    if (joint_states == nullptr)
+    if (clusters.empty())
         return;
 
 	// Compute robot skeleton only if the robot changed its configuration
@@ -410,8 +428,11 @@ void ObjectSegmentation::removeClustersOccupiedByRobot(std::vector<pcl::PointClo
             for (int k = robot->getParts().size()-1; k >= 0; k--)
             {
                 float d_c = std::get<0>(base::RealVectorSpace::distanceLineSegToPoint(skeleton->col(k), skeleton->col(k+1), point));
-                if (d_c < robot->getRadius(k) * tolerance_factor)
+                if (d_c < robot->getCapsuleRadius(k) * tolerance_factor)
                 {
+                    // RCLCPP_INFO(this->get_logger(), "Skeleton points for k = %d: (%f, %f, %f) to (%f, %f, %f) ", k,
+                    //     skeleton->col(k).x(), skeleton->col(k).y(), skeleton->col(k).z(), 
+                    //     skeleton->col(k+1).x(), skeleton->col(k+1).y(), skeleton->col(k+1).z());
                     // RCLCPP_INFO(this->get_logger(), "Point: (%f, %f, %f)", point.x(), point.y(), point.z());
                     // RCLCPP_INFO(this->get_logger(), "Distance from %d-th segment is %f.", k, d_c);
                     remove_cluster = true;
@@ -443,6 +464,9 @@ void ObjectSegmentation::removeClustersOccupiedByRobot(std::vector<pcl::PointClo
 // Only points around robot gripper and cable are filtered, assuming that color filter was used previously to filter other points occupied by the robot.
 void ObjectSegmentation::removeClustersOccupiedByRobot_v2(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters, int tolerance_factor)
 {
+    if (clusters.empty())
+        return;
+
     std::vector<float> pose;
     xarm_client.get_position(pose);
     Eigen::Vector3f TCP(pose[0]/1000, pose[1]/1000, pose[2]/1000);
@@ -632,8 +656,8 @@ void ObjectSegmentation::visualizeRobotCapsules()
         marker.pose.orientation.y = C.y() * sin(theta/2);
         marker.pose.orientation.z = C.z() * sin(theta/2);
         marker.pose.orientation.w = cos(theta/2);
-        marker.scale.x = 2 * robot->getRadius(i);
-        marker.scale.y = 2 * robot->getRadius(i);
+        marker.scale.x = 2 * robot->getCapsuleRadius(i);
+        marker.scale.y = 2 * robot->getCapsuleRadius(i);
         marker.scale.z = AB.norm();
         marker.color.r = 1.0;
         marker.color.g = 0.0;
@@ -653,9 +677,9 @@ void ObjectSegmentation::visualizeRobotCapsules()
             marker.pose.orientation.y = 0.0;
             marker.pose.orientation.z = 0.0;
             marker.pose.orientation.w = 0.0;
-            marker.scale.x = 2 * robot->getRadius(i);
-            marker.scale.y = 2 * robot->getRadius(i);
-            marker.scale.z = 2 * robot->getRadius(i);
+            marker.scale.x = 2 * robot->getCapsuleRadius(i);
+            marker.scale.y = 2 * robot->getCapsuleRadius(i);
+            marker.scale.z = 2 * robot->getCapsuleRadius(i);
             marker.color.r = 1.0;
             marker.color.g = 0.0;
             marker.color.b = 0.0;

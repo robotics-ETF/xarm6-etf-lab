@@ -45,8 +45,9 @@ protected:
     virtual void boundingBoxesCallbackWithFiltering(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
     virtual bool whetherToRemoveBoundingBox(Eigen::Vector3f &object_pos, Eigen::Vector3f &object_dim);
     void updateEnvironment();
-    void parametrizePath();
-    void parametrizePath(float delta_time);
+    void clearMeasurements();
+    void parametrizePlannerPath();
+    void parametrizePlannerPath(float delta_time);
 	bool planPath();
     
 };

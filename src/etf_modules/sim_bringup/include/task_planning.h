@@ -11,16 +11,16 @@ protected:
     void taskPlanningCallback();
     void boundingBoxesCallbackWithFiltering(const sensor_msgs::msg::PointCloud2::SharedPtr msg) override;
     void chooseObject();
-    void computeObjectApproachAndPickAngles();
+    bool computeObjectApproachAndPickAngles();
     bool whetherToRemoveBoundingBox(Eigen::Vector3f &object_pos, Eigen::Vector3f &object_dim) override;
 
 private:
     int task, task_next;
-    std::shared_ptr<base::State> q_object_approach;
+    std::shared_ptr<base::State> q_object_approach1, q_object_approach2;
     std::shared_ptr<base::State> q_object_pick;
     std::shared_ptr<base::State> q_goal;
     int obj_idx;
-    float delta_z = 0.1;
-    float offset_z = 0;
-    Eigen::Vector3f goal_pos = Eigen::Vector3f(-0.5, 0, 0.2);
+    int IK_computed;
+    const float delta_z = 0.2, offset_z = 0;
+    const Eigen::Vector3f goal_pos = Eigen::Vector3f(-0.5, 0, 0.2);
 };

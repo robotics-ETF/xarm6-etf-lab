@@ -62,8 +62,9 @@ protected:
 	void readOctomap();
     void visualizeOctreeBoxes();
     void updateEnvironment();
-    void parametrizePath();
-    void parametrizePath(float delta_time);
+    void clearMeasurements();
+    void parametrizePlannerPath();
+    void parametrizePlannerPath(float delta_time);
 	bool planPath();
     
 };

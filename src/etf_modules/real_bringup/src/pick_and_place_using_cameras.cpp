@@ -150,7 +150,7 @@ void PickAndPlaceUsingCamerasNode::boundingBoxesCallback(const sensor_msgs::msg:
         // Measurements are averaged online
         for (int j = 0; j < objects_dim.size(); j++)
         {
-            if ((new_object_dim - objects_dim[j]).norm() < 0.02 && (new_object_pos - objects_pos[j]).norm() < 0.02)
+            if ((new_object_dim - objects_dim[j]).norm() < 0.05 && (new_object_pos - objects_pos[j]).norm() < 0.05)
             {
                 objects_dim[j] = (num_captures[j] * objects_dim[j] + new_object_dim) / (num_captures[j] + 1);
                 objects_pos[j] = (num_captures[j] * objects_pos[j] + new_object_pos) / (num_captures[j] + 1);

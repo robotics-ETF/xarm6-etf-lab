@@ -44,40 +44,8 @@ def generate_launch_description():
         }.items(),
     )
 
-    # Dinko:
-    # tf_node_world_link_base = Node(package = "tf2_ros", 
-    #         executable = "static_transform_publisher",
-    #         arguments = ["0", "0.5", "0", "0", "0", "0", "world", "link_base"]
-    # )
-
-    # tf_node_world_aruco = Node(package = "tf2_ros", 
-    #         executable = "static_transform_publisher",
-    #         arguments = ["0", "0", "0.5", "0", "0", "0", "link_base", "aruco_marker"]
-    # )
-
-    # tf_node_aruco_left_camera = Node(package = "tf2_ros", 
-    #         name="left_transform",
-    #         executable = "static_transform_publisher",
-    #         arguments = ["-1.0181", "-0.4781", "0.5363", "0.7991", "0.3533", "0", \
-    #                     "aruco_marker", "camera_left_link"]
-	# )
-
-    # tf_node_aruco_right_camera = Node(package = "tf2_ros", 
-    #         name="right_transform",
-    #         executable = "static_transform_publisher",
-    #         arguments = ["-0.3126", "0.1587", "0.9515", "2.1487", "0.8906", "0.5158", \
-    #                     "camera_right_color_optical_frame", "aruco_marker_from_right"]
-	# )
-
-    # tf_node_arucos_tf = Node(package = "tf2_ros", 
-    #         name="arucos_tf",
-    #         executable = "static_transform_publisher",
-    #         arguments = ["0", "0", "0", "0", "0", "0", \
-    #                     "aruco_marker_from_right", "aruco_marker"]
-	# )
-
     ########################################################################
-    # # Nermin (rucno):
+    # # Nermin (calibrated by hand):
     tf_node_world_link_base = Node(package = "tf2_ros", 
             executable = "static_transform_publisher",
             arguments = ["0", "0", "0", "0", "0", "0", "world", "link_base"]
@@ -85,13 +53,13 @@ def generate_launch_description():
 
     tf_node_link_base_aruco_marker = Node(package = "tf2_ros", 
             executable = "static_transform_publisher",
-            arguments = ["0.425", "0", "0", "1.57079", "0", "0", "link_base", "aruco_marker"]
+            arguments = ["0.46", "0", "0", "1.57079", "0", "0", "link_base", "aruco_marker"]
     )
 
     tf_node_aruco_marker_camera_left_link = Node(package = "tf2_ros", 
             name="left_transform",
             executable = "static_transform_publisher",
-            arguments = ["-1.15", "0", "0.94", "0.35", "0.65", "0.08", \
+            arguments = ["-1.13", "0", "0.95", "0.38", "0.66", "0.06", \
                         "aruco_marker", "camera_left_link"]     # (x,y,z, yaw(z), pich(y), roll(x))
 	)
 
@@ -109,7 +77,7 @@ def generate_launch_description():
 	)
     ########################################################################
 
-    # Nermin (preko aruco_calibration package):
+    # Nermin (calibrated using aruco_calibration package):
     # tf_node_world_link_base = Node(package = "tf2_ros", 
     #         executable = "static_transform_publisher",
     #         arguments = ["0", "0", "0", "0", "0", "0", "world", "link_base"]
@@ -188,12 +156,12 @@ def generate_launch_description():
 
     return LaunchDescription([
         camera_left_node,
-        camera_right_node,
+        # camera_right_node,
         tf_node_world_link_base,
         tf_node_link_base_aruco_marker,
         tf_node_aruco_marker_camera_left_link,
-        tf_node_aruco_marker_aruco_marker_from_right,
-        tf_node_aruco_marker_from_right_camera_right_link,
+        # tf_node_aruco_marker_aruco_marker_from_right,
+        # tf_node_aruco_marker_from_right_camera_right_link,
         # tf_node_aruco_marker_camera_left,
         # tf_node_camera_left_camera_left_link,
         rviz_node,

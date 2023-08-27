@@ -32,6 +32,10 @@
 
 #include <xArm6.h>
 #include <RealVectorSpace.h>
+#include <yaml-cpp/yaml.h>
+#include "yaml-cpp/parser.h"
+#include "yaml-cpp/node/node.h"
+#include "yaml-cpp/node/parse.h"
 
 using namespace std::chrono_literals;
 
@@ -41,7 +45,8 @@ public:
 	ObjectSegmentation();
 
 private:
-	const std::string urdf_file_path = "/RPMPLv2/data/xarm6/xarm6.urdf";
+	// const std::string robot_config_file_path = "/sim_bringup/data/scenario_etf_lab.yaml";
+	const std::string robot_config_file_path = "/real_bringup/data/scenario_etf_lab.yaml";
 	std::shared_ptr<robots::AbstractRobot> robot;
 	std::shared_ptr<Eigen::MatrixXf> skeleton;
 	std::shared_ptr<base::State> joint_states;
