@@ -34,7 +34,7 @@ Visualization Manager:
   Class: ""
   Displays:
     - Alpha: 0.5
-      Cell Size: 1
+      Cell Size: 0.10000000149011612
       Class: rviz_default_plugins/Grid
       Color: 160; 160; 164
       Enabled: true
@@ -48,7 +48,7 @@ Visualization Manager:
         Y: 0
         Z: 0
       Plane: XY
-      Plane Cell Count: 10
+      Plane Cell Count: 14
       Reference Frame: <Fixed Frame>
       Value: true
     - Alpha: 1
@@ -261,8 +261,7 @@ Visualization Manager:
       Enabled: true
       Name: MarkerArray
       Namespaces:
-        bounding-boxes: true
-        point_cloud: false
+        AABB: true
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -316,25 +315,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 1.8028326034545898
+      Distance: 1.7128283977508545
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: -0.08541645109653473
-        Y: 0.14329171180725098
-        Z: -0.06900320202112198
+        X: -0.05947481468319893
+        Y: -0.025486648082733154
+        Z: 0.10825268924236298
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.5697948336601257
+      Pitch: 0.2847972512245178
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.768528461456299
+      Yaw: 0.6803428530693054
     Saved: ~
 Window Geometry:
   Displays:

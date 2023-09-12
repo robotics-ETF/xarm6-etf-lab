@@ -1,13 +1,12 @@
-#include "pick_and_place.h"
+#include "base/PickAndPlaceNode.h"
 
 int main(int argc, char *argv[])
 {
     const std::string node_name = "pick_and_place_node";
-	const int period = 4;
-    const std::string time_unit = "seconds";
+	const std::string config_file_path = "/real_bringup/data/pick_and_place_config.yaml";
 
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<PickAndPlaceNode>(node_name, period, time_unit));
+    rclcpp::spin(std::make_shared<real_bringup::PickAndPlaceNode>(node_name, config_file_path));
     rclcpp::shutdown();
     return 0;
 }

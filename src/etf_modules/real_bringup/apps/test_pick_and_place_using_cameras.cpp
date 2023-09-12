@@ -1,13 +1,12 @@
-#include "pick_and_place_using_cameras.h"
+#include "base/PickAndPlaceUsingCamerasNode.h"
 
 int main(int argc, char *argv[])
 {
     const std::string node_name = "pick_and_place_using_cameras_node";
-	const int period = 5;
-    const std::string time_unit = "seconds";
+	const std::string config_file_path = "/real_bringup/data/pick_and_place_using_cameras_config.yaml";
 
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<PickAndPlaceUsingCamerasNode>(node_name, period, time_unit));
+    rclcpp::spin(std::make_shared<real_bringup::PickAndPlaceUsingCamerasNode>(node_name, config_file_path));
     rclcpp::shutdown();
     return 0;
 }

@@ -20,12 +20,12 @@
   <depend>visualization_msgs</depend>
   <depend>octomap_msgs</depend>
   <depend>octomap</depend>
-  <depend>xarm_msgs</depend>
-  <depend>xarm_api</depend>
   <depend>librealsense2</depend>
   <depend>realsense2_camera</depend>
   <depend>perception_pcl</depend>
   <depend>pcl_conversions</depend>
+  <depend>xarm_msgs</depend>
+  <depend>xarm_api</depend>
   <depend>rpmpl_library</depend>
 
   <exec_depend>ros2launch</exec_depend>

@@ -1,4 +1,4 @@
-#include "task_planning.h"
+#include "task_planning/TaskPlanningNode.h"
 
 int main(int argc, char *argv[])
 {
@@ -7,13 +7,11 @@ int main(int argc, char *argv[])
 	FLAGS_logtostderr = true;
 	LOG(INFO) << "GLOG successfully initialized!";
 
-	const std::string scenario_file_path = "/sim_bringup/data/scenario_etf_lab.yaml";
 	const std::string node_name = "task_planning_node";
-	const int period = 1;
-    const std::string time_unit = "seconds";
+	const std::string config_file_path = "/sim_bringup/data/task_planning_config.yaml";
 
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<TaskPlanningNode>(scenario_file_path, node_name, period, time_unit));
+    rclcpp::spin(std::make_shared<sim_bringup::TaskPlanningNode>(node_name, config_file_path));
     rclcpp::shutdown();
 	google::ShutDownCommandLineFlags();
     return 0;
