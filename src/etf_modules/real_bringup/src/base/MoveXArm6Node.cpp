@@ -8,20 +8,20 @@ real_bringup::MoveXArm6Node::MoveXArm6Node(const std::string node_name, const st
     // To modify the format, refer to xarm_api/config/xarm_params.yaml
     // See 5.4 xarm_api at: https://github.com/xArm-Developer/xarm_ros2/tree/humble
     Robot::xarm_client_node = std::make_shared<rclcpp::Node>("xarm_client_node");
-    Robot::xarm_client.init(Robot::xarm_client_node, "xarm");
-    Robot::xarm_client.clean_error();
-    Robot::xarm_client.clean_warn();
-    Robot::xarm_client.motion_enable(true);
+    //Robot::xarm_client.init(Robot::xarm_client_node, "xarm");
+    //Robot::xarm_client.clean_error();
+    //Robot::xarm_client.clean_warn();
+    //Robot::xarm_client.motion_enable(true);
 
     // See 6.1 Mode Explanation at: https://github.com/xArm-Developer/xarm_ros#report_type-argument
     // Mode 0: xArm controller (position) mode
     // Mode 1: External trajectory planner (position) mode
-    Robot::xarm_client.set_mode(0);
-    Robot::xarm_client.set_state(0);
+    //Robot::xarm_client.set_mode(0);
+    //Robot::xarm_client.set_state(0);
 
-    Robot::xarm_client.set_gripper_enable(true);
-    Robot::xarm_client.set_gripper_mode(0);
-    Robot::xarm_client.set_gripper_speed(3000);
+    //Robot::xarm_client.set_gripper_enable(true);
+    //Robot::xarm_client.set_gripper_mode(0);
+    //Robot::xarm_client.set_gripper_speed(3000);
 
     set_position_node = std::make_shared<rclcpp::Node>("set_position_node");
     set_position_client = set_position_node->create_client<xarm_msgs::srv::MoveCartesian>("/xarm/set_position");
@@ -35,8 +35,8 @@ void real_bringup::MoveXArm6Node::moveXArm6Callback()
     {
     case going_home:
         goHome();
-        // state = moving_in_joint_space;
-        state = setting_position1;
+        state = moving_in_joint_space;
+        //state = setting_position1;
         break;
 
     case moving_in_joint_space:
@@ -80,6 +80,15 @@ void real_bringup::MoveXArm6Node::goHome()
 
 void real_bringup::MoveXArm6Node::moveInJointSpace()
 {
+// Vektor pozicije p_approach cete dobiti sa mjerenja kamere. Mozete iskoristiti fju AABB::getPositions().
+// Nastimati matricu rotacije R = [n, s, a] i vektor pozicije p_approach. Iskoristiti ideju iz fje computeObjectApproachAndPickStates(), fajl TaskPlannnigNode.cpp
+// std::shared_ptr<base::State> q_goal = xarm6->computeInverseKinematics(R, p_approach, q_object_approach1);
+// Opcija1: std::shared_ptr<AbstractPlanner> planner = std::make_shared<planning::rbt::RBTConnect>(home, q_goal, state_space);
+// planner->solve();
+// Ljepsa opcija: Planner::planPath(), ali mozda trebate prosiriti ovu fju da prima i start i goal. Za sada ona samo prima start.
+// std::vector<std::shared_ptr<base::State>> path = planner->getPlannerInfo()->getPath();
+// Realizacija putanje (napraviti trajektoriju, tj. svakoj konfiguraciji dodijeliti time_instance), to je kod u nastavku (npr):
+
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Moving in joint space...");
     std::vector<Eigen::VectorXf> path;
     std::vector<float> time_instances;
@@ -90,6 +99,10 @@ void real_bringup::MoveXArm6Node::moveInJointSpace()
     time_instances.emplace_back(2);
     
     q << -M_PI_2, -M_PI_4, 0, M_PI, M_PI_2, 0;
+    path.emplace_back(q);
+    time_instances.emplace_back(3);
+    
+    q << 0, -M_PI_4, 0, M_PI, M_PI_2, 0;
     path.emplace_back(q);
     time_instances.emplace_back(4);
 

@@ -22,6 +22,10 @@ add_executable(test_task_planning test_task_planning.cpp)
 target_compile_features(test_task_planning PUBLIC c_std_99 cxx_std_17)
 target_link_libraries(test_task_planning PUBLIC real_bringup_library)
 
+add_executable(test_Dzelo test_Dzelo.cpp)
+target_compile_features(test_Dzelo PUBLIC c_std_99 cxx_std_17)
+target_link_libraries(test_Dzelo PUBLIC real_bringup_library)
+
 install(TARGETS 
   test_move_xarm6
   test_bottle_and_glass
@@ -29,4 +33,5 @@ install(TARGETS
   test_pick_and_place_using_cameras
   test_planning
   test_task_planning
+  test_Dzelo
   DESTINATION lib/${PROJECT_NAME})
