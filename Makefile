@@ -8,7 +8,7 @@ dependencies:
 submodules:
 	pip3 install git+https://github.com/dirk-thomas/vcstool.git
 	$(foreach folder, src, \
-		vcs pull -w 1 $(folder) < $(folder)/repos.yaml \
+		vcs pull -w 1 $(folder) < $(folder)/repositories.yaml \
 	;)
 	git submodule update --init --recursive
 
