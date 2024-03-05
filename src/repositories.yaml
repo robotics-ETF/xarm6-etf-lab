@@ -1,0 +1,25 @@
+repositories:
+  etf_modules/RPMPLv2:
+    type: git
+    url: https://github.com/roboticsETF/RPMPLv2.git
+    version: main
+  external_modules/gazebo_ros2_control:
+    type: git
+    url: https://github.com/ros-controls/gazebo_ros2_control.git
+    version: humble
+  external_modules/xarm_ros2:
+    type: git
+    url: https://github.com/xArm-Developer/xarm_ros2.git
+    version: humble
+  external_modules/glog:
+    type: git
+    url: https://github.com/google/glog.git
+    version: master
+  external_modules/nanoflann:
+    type: git
+    url: https://github.com/jlblancoc/nanoflann.git
+    version: master
+  external_modules/googletest:
+    type: git
+    url: https://github.com/google/googletest
+    version: main
