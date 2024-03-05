@@ -1,6 +1,8 @@
 .PHONY: clean build dependencies source-dirs sim
 
 dependencies:
+	rosdep update
+	sudo apt update
 	rosdep install --from-paths src --ignore-src -r -y
 
 clean:

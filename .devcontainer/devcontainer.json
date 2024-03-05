@@ -1,0 +1,72 @@
+{
+    "name": "ROS2-humble",
+    "remoteUser": "roboticsETF",
+    "containerEnv": {
+        "SHELL": "/bin/bash"
+    },
+    "build": {
+        "context": "..",
+        "dockerfile": "../.docker/Dockerfile",
+        "target": "ros2-dev-container"
+    },
+    // Features to add to the dev container. More info: https://containers.dev/features.
+    "features": {
+        "ghcr.io/devcontainers-contrib/features/bash-command:1": {},
+        "ghcr.io/devcontainers/features/common-utils:2": {
+            "upgradePackages": false,
+            "username": "roboticsETF"
+        },
+        "ghcr.io/stuartleeks/dev-container-features/shell-history:0": {
+            "version": "latest"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                // language support
+                "ms-python.python",
+                "ms-vscode.cpptools",
+                "josetr.cmake-language-support-vscode", // cmake syntax support
+                "ms-azuretools.vscode-docker", // dockerfile and linting support
+                "mrmlnc.vscode-json5",
+                // formatters
+                "llvm-vs-code-extensions.vscode-clangd", // linting and code-formatting
+                "foxundermoon.shell-format", // shell script formatting
+                "redhat.vscode-yaml", // yaml syntax highlighting and formatting
+                "charliermarsh.ruff", // fast python formatting
+                // productivity
+                "mhutchie.git-graph",
+                "matepek.vscode-catch2-test-adapter",
+                "ms-iot.vscode-ros",
+            ],
+            "settings": {}
+        }
+    },
+    "runArgs": [
+        "--env-file",
+        ".devcontainer/devcontainer.env",
+        // For maintaining ccache's cache between container rebuilds. The default is in the user $HOME
+        "-e",
+        "CCACHE_DIR=${containerWorkspaceFolder}/.ccache",
+        "--net",
+        "host",
+        "--privileged",
+        "-e",
+        "DISPLAY=${env:DISPLAY}",
+        "-v",
+        "/tmp/.X11-unix:/tmp/.X11-unix:rw",
+        "-v",
+        "${env:HOME}/.ssh:/home/roboticsETF/.ssh:ro",
+        "-v",
+        "/var/run/dbus:/var/run/dbus:rw",
+        "-v",
+        "/run/dbus:/run/dbus:rw",
+        "-v",
+        "/dev:/dev",
+        // For HW accelerated graphics
+        "--device",
+        "/dev/dri:/dev/dri",
+        "--gpus",
+        "all"
+    ],
+}
