@@ -34,6 +34,7 @@ RUN apt-get update \
     ros-${ROS_DISTRO}-kdl-parser \
     libkdl-parser-dev \
     libgoogle-glog-dev \
+    libnanoflann-dev \
     avahi-daemon \
     avahi-utils \
     lsb-release \

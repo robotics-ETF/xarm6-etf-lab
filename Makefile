@@ -5,14 +5,6 @@ dependencies:
 	sudo apt update
 	rosdep install --from-paths src --ignore-src -r -y
 
-submodules:
-	pip3 install git+https://github.com/dirk-thomas/vcstool.git
-	$(foreach folder, src, \
-		vcs import --force -w 1 $(folder) < $(folder)/repositories.yaml && \
-		vcs pull -w 1 $(folder) < $(folder)/repositories.yaml && \
-		(cd $(folder) && git submodule update --init --recursive) \
-	;)
-
 clean:
 	rm -r ./build/ ./install/ ./log/
 
@@ -31,3 +23,11 @@ real:
 	
 cameras:
 	ros2 launch real_bringup realsense_etflab.launch.py
+
+submodules:
+	pip3 install git+https://github.com/dirk-thomas/vcstool.git
+	$(foreach folder, src, \
+		vcs import --force -w 1 $(folder) < $(folder)/repositories.yaml && \
+		vcs pull -w 1 $(folder) < $(folder)/repositories.yaml && \
+		(cd $(folder) && git submodule update --init --recursive) \
+	;)
