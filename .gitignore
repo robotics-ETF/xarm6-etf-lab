@@ -5,8 +5,3 @@ log
 
 src/external_modules/gazebo_ros2_control/
 src/external_modules/xarm_ros2/
-src/etf_modules/perception_etflab/external/googletest
-src/etf_modules/perception_etflab/external/glog
-src/etf_modules/real_bringup/external/glog
-src/etf_modules/real_bringup/external/googletest
-src/etf_modules/sim_bringup/external/glog
