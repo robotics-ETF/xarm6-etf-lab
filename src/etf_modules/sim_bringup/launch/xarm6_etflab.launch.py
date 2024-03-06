@@ -147,11 +147,11 @@ def generate_launch_description():
         
     return LaunchDescription([    
     	TimerAction(
-            period=2.0,
+            period=5.0,
             actions=[
                      rviz_node, 
                      pointcloud_combiner_node, 
-                     #object_segmentation_node
+                     object_segmentation_node
                      ]
         ),
 		robot_gazebo_launch,
