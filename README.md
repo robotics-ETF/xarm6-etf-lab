@@ -14,7 +14,6 @@ Choose the location for a target workspace, e.g.:
 ```
 cd ~/
 ```
-DO NOT omit "--recursive"，or the source code of dependent submodules will not be downloaded:
 ```
 git clone https://github.com/roboticsETF/xarm6-etf-lab.git
 ```
