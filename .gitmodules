@@ -9,4 +9,4 @@ branch = humble
 [submodule "src/etf_modules/RPMPLv2"]
 path = src/etf_modules/RPMPLv2
 url = https://github.com/roboticsETF/RPMPLv2.git
-branch = main
+branch = feat/docker

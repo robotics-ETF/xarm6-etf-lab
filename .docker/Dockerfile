@@ -32,9 +32,11 @@ RUN apt-get update \
     bash \
     ros-${ROS_DISTRO}-plotjuggler-ros \
     ros-${ROS_DISTRO}-kdl-parser \
-    libkdl-parser-dev libgoogle-glog-dev libgtest-dev libnanoflann-dev \
+    libeigen3-dev libkdl-parser-dev libgflags-dev libgoogle-glog-dev liborocos-kdl-dev \
+    libyaml-cpp-dev liburdf-dev python3-pip libfcl-dev libnanoflann-dev \
     avahi-daemon avahi-utils lsb-release software-properties-common \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && pip3 install trimesh urdfpy
 
 ENV CLANG_VERSION=18
 RUN wget https://apt.llvm.org/llvm.sh && \
