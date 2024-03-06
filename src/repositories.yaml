@@ -2,7 +2,7 @@ repositories:
   etf_modules/RPMPLv2:
     type: git
     url: https://github.com/roboticsETF/RPMPLv2.git
-    version: main
+    version: feat/docker
   external_modules/gazebo_ros2_control:
     type: git
     url: https://github.com/ros-controls/gazebo_ros2_control.git

@@ -3,5 +3,6 @@ install
 log
 .vscode
 
+src/etf_modules/RPMPLv2/
 src/external_modules/gazebo_ros2_control/
 src/external_modules/xarm_ros2/

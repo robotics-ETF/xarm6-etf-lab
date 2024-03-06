@@ -30,9 +30,6 @@ else(RPMPL_LIBRARY)
   message(STATUS "Not found rpmpl_library")
 endif(RPMPL_LIBRARY)
 
-add_subdirectory(external/glog)
-add_subdirectory(external/googletest)
-
 find_package(Flann REQUIRED)
 find_package(kdl_parser REQUIRED)
 find_package(orocos_kdl REQUIRED)
@@ -41,4 +38,4 @@ find_package(yaml-cpp REQUIRED)
 find_package(fcl 0.7 REQUIRED)
 
 # RPMPL_LIBRARIES are libraries needed in order to use rpmpl_library
-set(RPMPL_LIBRARIES gtest glog nanoflann kdl_parser orocos-kdl fcl ccd yaml-cpp)
+set(RPMPL_LIBRARIES gtest glog nanoflann::nanoflann kdl_parser orocos-kdl fcl ccd yaml-cpp gflags)

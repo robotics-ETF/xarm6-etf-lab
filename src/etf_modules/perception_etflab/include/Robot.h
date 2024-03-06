@@ -21,13 +21,14 @@ namespace perception_etflab
     class Robot
     {
     public:
-        Robot(const std::string config_file_path);
+        Robot(const std::string &config_file_path);
 
-		inline const float getTableRadius() { return table_radius; }
+		inline float getTableRadius() const { return table_radius; }
 
 		void jointsStateCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg);
 		void removeFromScene(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters);
-		void removeFromScene_v2(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters);
+		void removeFromScene2(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl);
+		void removeFromScene3(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters);
 		void visualizeCapsules();
 		void visualizeSkeleton();
 

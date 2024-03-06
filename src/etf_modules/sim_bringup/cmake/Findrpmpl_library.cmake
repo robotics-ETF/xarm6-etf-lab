@@ -43,4 +43,4 @@ find_package(yaml-cpp REQUIRED)
 find_package(fcl 0.7 REQUIRED)
 
 # RPMPL_LIBRARIES are libraries needed in order to use rpmpl_library
-set(RPMPL_LIBRARIES gtest glog::glog nanoflann kdl_parser orocos-kdl fcl ccd yaml-cpp)
+set(RPMPL_LIBRARIES gtest glog nanoflann::nanoflann kdl_parser orocos-kdl fcl ccd yaml-cpp gflags)

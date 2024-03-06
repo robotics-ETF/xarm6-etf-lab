@@ -38,7 +38,7 @@ bool sim_bringup::Planner::planPath(std::shared_ptr<base::State> start)
     std::shared_ptr<base::State> goal = scenario->getGoal();
     std::shared_ptr<base::StateSpace> ss = scenario->getStateSpace();
     
-    LOG(INFO) << "Number of collision objects: " << scenario->getEnvironment()->getParts().size();
+    LOG(INFO) << "Number of collision objects: " << scenario->getEnvironment()->getNumObjects();
     LOG(INFO) << "Number of DOFs: " << ss->getNumDimensions();
     LOG(INFO) << "State space type: " << ss->getStateSpaceType();
     LOG(INFO) << "Start: " << start;
