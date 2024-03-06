@@ -16,15 +16,12 @@ cd ~/
 ```
 DO NOT omit "--recursive"，or the source code of dependent submodules will not be downloaded:
 ```
-git clone https://github.com/roboticsETF/xarm6-etf-lab.git --recursive
+git clone https://github.com/roboticsETF/xarm6-etf-lab.git
 ```
 
 ## 2.2 Update "xarm6-etf-lab" repository
 ```
-cd ~/xarm6-etf-lab
-git pull
-git submodule sync
-git submodule update --init --remote
+make submodules
 ```
 
 ## 2.3 Update "xarm_ros2" submodule
