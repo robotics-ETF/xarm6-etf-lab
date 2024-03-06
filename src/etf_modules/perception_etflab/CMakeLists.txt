@@ -33,6 +33,7 @@ find_package(xarm_msgs REQUIRED)
 find_package(xarm_api REQUIRED)
 find_package(rpmpl_library REQUIRED)
 find_package(nanoflann REQUIRED)
+find_package(backward_ros REQUIRED)
 
 include_directories(
 	include
