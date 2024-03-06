@@ -35,9 +35,6 @@ else(RPMPL_LIBRARY)
   message(STATUS "Not found rpmpl_library")
 endif(RPMPL_LIBRARY)
 
-add_subdirectory(external/glog)
-add_subdirectory(external/googletest)
-
 find_package(Flann REQUIRED)
 find_package(kdl_parser REQUIRED)
 find_package(orocos_kdl REQUIRED)
