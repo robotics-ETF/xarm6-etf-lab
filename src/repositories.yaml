@@ -1,0 +1,17 @@
+repositories:
+  etf_modules/RPMPLv2:
+    type: git
+    url: https://github.com/roboticsETF/RPMPLv2.git
+    version: feat/docker
+  external_modules/gazebo_ros2_control:
+    type: git
+    url: https://github.com/ros-controls/gazebo_ros2_control.git
+    version: humble
+  external_modules/xarm_ros2:
+    type: git
+    url: https://github.com/xArm-Developer/xarm_ros2.git
+    version: humble
+  external_modules/xarm_ros2/xarm_sdk/cxx:
+    type: git
+    url: https://github.com/xArm-Developer/xArm-CPLUS-SDK.git
+    version: master

@@ -14,7 +14,7 @@ add_executable(test_task_planning test_task_planning.cpp)
 target_compile_features(test_task_planning PUBLIC c_std_99 cxx_std_17)
 target_link_libraries(test_task_planning PUBLIC sim_bringup_library)
 
-install(TARGETS 
+install(TARGETS
   test_move_xarm6
   test_read_octomap
   test_planning

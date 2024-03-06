@@ -12,7 +12,7 @@ namespace real_bringup
     class AABB
     {
     public:
-        AABB(const std::string config_file_path);
+        AABB(const std::string &config_file_path);
 
         inline const std::vector<Eigen::Vector3f> &getDimensions() { return dimensions; }
         inline const Eigen::Vector3f &getDimensions(int idx) { return dimensions[idx]; }

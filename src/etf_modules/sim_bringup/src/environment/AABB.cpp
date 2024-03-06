@@ -1,6 +1,6 @@
 #include "environment/AABB.h"
 
-sim_bringup::AABB::AABB(const std::string config_file_path)
+sim_bringup::AABB::AABB(const std::string &config_file_path)
 {
     std::string project_abs_path = std::string(__FILE__);
     for (int i = 0; i < 4; i++)
@@ -75,16 +75,15 @@ bool sim_bringup::AABB::whetherToRemove(Eigen::Vector3f &object_pos, Eigen::Vect
 
 void sim_bringup::AABB::updateEnvironment()
 {
-    env->removeCollisionObjects(1);  // table (idx = 0) is preserved, and all other objects are deleted
+    env->removeObjects("table", false);
     
-    Eigen::Matrix3f rot = fcl::Quaternionf(0, 0, 0, 0).matrix();
     for (int i = 0; i < positions.size(); i++)
     {
         if (num_captures[i] >= min_num_captures)
         {
-            std::shared_ptr<fcl::CollisionGeometryf> box = std::make_shared<fcl::Boxf>(dimensions[i]);
-            std::shared_ptr<fcl::CollisionObjectf> ob = std::make_shared<fcl::CollisionObjectf>(box, rot, positions[i]);
-            env->addCollisionObject(ob);
+		    std::shared_ptr<env::Object> object = 
+                std::make_shared<env::Box>(dimensions[i], positions[i], fcl::Quaternionf::Identity(), "dynamic_obstacle");
+            env->addObject(object);
 
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "AABB %d: dim = (%f, %f, %f), pos = (%f, %f, %f), num. captures = %d",
                 i, dimensions[i].x(), dimensions[i].y(), dimensions[i].z(),                 // (x, y, z) in [m]
@@ -92,12 +91,9 @@ void sim_bringup::AABB::updateEnvironment()
         }
     }
 
-    // Predefined fixed obstacle
-    // std::shared_ptr<fcl::CollisionGeometryf> box = std::make_shared<fcl::Boxf>(fcl::Vector3f(0.1, 0.1, 0.3));
-    // std::shared_ptr<fcl::CollisionObjectf> ob = std::make_shared<fcl::CollisionObjectf>(box, rot, fcl::Vector3f(0.2, 0.2, 0.15));
-    // env->addCollisionObject(ob);
-
-    resetMeasurements();
+    if (min_num_captures > 0)
+        resetMeasurements();
+    
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Environment is updated."); 
 }
 
