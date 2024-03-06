@@ -48,14 +48,14 @@ void perception_etflab::ObjectSegmentationNode::pointCloudCallback(const sensor_
   	donwnsampler.setInputCloud(input_pcl_cloud);
   	donwnsampler.setLeafSize(0.01f, 0.01f, 0.01f);
   	donwnsampler.filter(*output_cloud);
-  	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Downsampled the dataset using a leaf size of 1 [cm].");
+  	// RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Downsampled the dataset using a leaf size of 1 [cm].");
   	
   	pcl::PointCloud<pcl::PointXYZRGB>::Ptr output_cloud_xyzrgb1(new pcl::PointCloud<pcl::PointXYZRGB>), 
 										   output_cloud_xyzrgb2(new pcl::PointCloud<pcl::PointXYZRGB>),
   										   output_cloud_xyzrgb3(new pcl::PointCloud<pcl::PointXYZRGB>);
   										   
   	pcl::fromPCLPointCloud2(*output_cloud, *output_cloud_xyzrgb1);
-  	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "After downsampling, point cloud size is %d.", output_cloud_xyzrgb1->size());
+  	// RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "After downsampling, point cloud size is %d.", output_cloud_xyzrgb1->size());
   	
 	// Green color filtering
   	pcl::ConditionalRemoval<pcl::PointXYZRGB> color_filter;
@@ -74,7 +74,7 @@ void perception_etflab::ObjectSegmentationNode::pointCloudCallback(const sensor_
     passThroughZAxis.setFilterLimits(-0.05, 1.5);
   	passThroughZAxis.setInputCloud(output_cloud_xyzrgb1);
   	passThroughZAxis.filter(*output_cloud_xyzrgb2);
-  	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "After green filtering, point cloud size is %d.", output_cloud_xyzrgb2->size());
+  	// RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "After green filtering, point cloud size is %d.", output_cloud_xyzrgb2->size());
   	
   	pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients());
   	pcl::PointIndices::Ptr inliers(new pcl::PointIndices());
@@ -97,7 +97,7 @@ void perception_etflab::ObjectSegmentationNode::pointCloudCallback(const sensor_
    	extract.filter(*output_cloud_xyzrgb3);
 
     removeOutliers(*output_cloud_xyzrgb3);
-  	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "After removing outliers, point cloud size is %d.", output_cloud_xyzrgb3->size());
+  	// RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "After removing outliers, point cloud size is %d.", output_cloud_xyzrgb3->size());
 
     std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> pcl_clusters;
     Cluster::computeClusters(output_cloud_xyzrgb3, pcl_clusters);
@@ -120,7 +120,7 @@ void perception_etflab::ObjectSegmentationNode::pointCloudCallback(const sensor_
     // ConvexHulls::publish();
     // ConvexHulls::visualize();
  
-   	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "---------------------------------------------------------------------");
+   	// RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "---------------------------------------------------------------------");
 }
 
 void perception_etflab::ObjectSegmentationNode::publishObjectsPointCloud(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters)
@@ -140,7 +140,7 @@ void perception_etflab::ObjectSegmentationNode::publishObjectsPointCloud(std::ve
     output_cloud_ros.header.frame_id = "world";
 	output_cloud_ros.header.stamp = now();
 	object_pcl_publisher->publish(output_cloud_ros);
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Publishing output point cloud of size %d...", pcl->size());
+    // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Publishing output point cloud of size %d...", pcl->size());
 }
 
 void perception_etflab::ObjectSegmentationNode::removeOutliers(pcl::PointCloud<pcl::PointXYZRGB> &pcl)
