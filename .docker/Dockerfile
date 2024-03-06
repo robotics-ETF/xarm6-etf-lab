@@ -32,13 +32,8 @@ RUN apt-get update \
     bash \
     ros-${ROS_DISTRO}-plotjuggler-ros \
     ros-${ROS_DISTRO}-kdl-parser \
-    libkdl-parser-dev \
-    libgoogle-glog-dev \
-    libnanoflann-dev \
-    avahi-daemon \
-    avahi-utils \
-    lsb-release \
-    software-properties-common \
+    libkdl-parser-dev libgoogle-glog-dev libgtest-dev libnanoflann-dev \
+    avahi-daemon avahi-utils lsb-release software-properties-common \
     && rm -rf /var/lib/apt/lists/*
 
 ENV CLANG_VERSION=18

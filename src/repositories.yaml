@@ -11,28 +11,3 @@ repositories:
     type: git
     url: https://github.com/xArm-Developer/xarm_ros2.git
     version: humble
-
-  etf_modules/perception_etflab/external/glog:
-    type: git
-    url: https://github.com/google/glog.git
-    version: master
-  etf_modules/perception_etflab/external/googletest:
-    type: git
-    url: https://github.com/google/googletest
-    version: main
-  etf_modules/real_bringup/external/glog:
-    type: git
-    url: https://github.com/google/glog.git
-    version: master
-  etf_modules/real_bringup/external/googletest:
-    type: git
-    url: https://github.com/google/googletest
-    version: main
-  etf_modules/sim_bringup/external/glog:
-    type: git
-    url: https://github.com/google/glog.git
-    version: master
-  etf_modules/sim_bringup/external/googletest:
-    type: git
-    url: https://github.com/google/googletest
-    version: main
