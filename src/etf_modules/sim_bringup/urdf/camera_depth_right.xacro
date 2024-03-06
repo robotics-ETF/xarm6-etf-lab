@@ -13,7 +13,7 @@
             <geometry>
                 <box size="0.04 0.1 0.04"/>
             </geometry>
-            <material name="grey"></material>
+            <!--<material name="grey"></material>-->
         </visual>
     </link>
 
