@@ -1,6 +1,6 @@
 #include "PointCloudCombinerNode.h"
 
-perception_etflab::PointCloudCombinerNode::PointCloudCombinerNode(const std::string node_name) : Node(node_name)
+perception_etflab::PointCloudCombinerNode::PointCloudCombinerNode(const std::string &node_name) : Node(node_name)
 {
 	this->declare_parameter<std::string>("output_topic", "pointcloud");
 	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Starting up %s...", node_name.c_str());

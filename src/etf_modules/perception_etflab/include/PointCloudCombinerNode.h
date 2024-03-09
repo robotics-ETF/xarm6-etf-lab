@@ -11,7 +11,7 @@ namespace perception_etflab
 	class PointCloudCombinerNode : public rclcpp::Node
 	{
 	public:
-		PointCloudCombinerNode(const std::string node_name);
+		PointCloudCombinerNode(const std::string &node_name);
 
 	private:
 		std::vector<rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr> subscriptions;

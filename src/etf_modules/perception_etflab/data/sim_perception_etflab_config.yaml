@@ -3,21 +3,21 @@ robot:
   urdf: "/RPMPLv2/data/xarm6/xarm6.urdf"
   q_start: [0, 0, 0, 3.1415, 1.5708, 0]
   num_DOFs: 6
-  capsules_radius: [0.047, 0.12, 0.11, 0.09, 0.05, 0.1] # When the gripper is attached
-  tolerance_factors: [1, 1.1, 1.2, 1.3, 1.4, 1.5] # i-th capsule is enlarged by i-th tolerance factor when removing robot from the scene
-  gripper_length: 0.17 # In [m]
-  table_included: true
-  table_radius: 0.67 # In [m]
-  max_vel_first_joint: 3.1415 # Maximal velocity of the first robot's joint in [rad/s]
-  WS_center: [0.0, 0.0, 0.267] # Workspace center point in [m]
-  WS_radius: 1.0 # Workspace radius in [m] assuming spherical workspace shape
-
+  capsules_radius: [0.047, 0.12, 0.11, 0.09, 0.05, 0.1]     # When the gripper is attached
+  tolerance_factors: [1, 1.1, 1.2, 1.3, 1.4, 1.5]           # i-th capsule is enlarged by i-th tolerance factor when removing robot from the scene
+  gripper_length: 0.17                                      # In [m]
+  table_included: true                                      
+  table_radius: 0.67                                        # In [m]
+  max_vel_first_joint: 3.1415                               # Maximal velocity of the first robot's joint in [rad/s]
+  WS_center: [0.0, 0.0, 0.267]                              # Workspace center point in [m]
+  WS_radius: 1.5                                            # Workspace radius in [m] assuming spherical workspace shape
+  
 perception:
-  max_dim_subcluster: [0.1, 0.1, 0.1] # Max. dimensions of a subcluster
-  concatenation_tolerance: 0.05 # Abs. tolerance when concatenating two subclusters
+  max_dim_subcluster: [0.1, 0.1, 0.1]                       # Max. dimensions of a subcluster
+  concatenation_tolerance: 0.05                             # Abs. tolerance when concatenating two subclusters
 
 random_obstacles:
-  num: 10 # Number of random obstacles to be added
-  max_vel: 1.6 # Maximal velocity of each obstacle in [m/s]
-  dim: [0.01, 0.01, 0.01] # Dimensions of each random obstacle in [m]
-  period: 100 # Period in [ms]
+  num: 10	                        # Number of random obstacles to be added
+  max_vel: 1.6 			              # Maximal velocity of each obstacle in [m/s]
+  dim: [0.05, 0.05, 0.05]         # Dimensions of each random obstacle in [m]
+  period: 50                      # Period in [ms]

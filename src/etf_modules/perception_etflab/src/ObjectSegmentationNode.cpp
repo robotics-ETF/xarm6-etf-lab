@@ -1,24 +1,44 @@
 #include "ObjectSegmentationNode.h"
 
-perception_etflab::ObjectSegmentationNode::ObjectSegmentationNode(const std::string node_name, const std::string config_file_path) : 
+perception_etflab::ObjectSegmentationNode::ObjectSegmentationNode(const std::string &node_name, const std::string &config_file_path) : 
     Node(node_name),
     Robot(config_file_path),
-    Cluster(config_file_path),
+    Clusters(config_file_path),
 	AABB(),
-	ConvexHulls()
+	ConvexHulls(),
+	Obstacles(config_file_path)
 {
-	this->declare_parameter<std::string>("input_cloud", "pointcloud_combined");
-	this->declare_parameter<std::string>("objects_cloud", "objects_cloud");
-		
-	this->get_parameter("input_cloud", input_cloud);
+	if (config_file_path.find("real") != std::string::npos)
+		real_robot = true;
+	else if (config_file_path.find("sim") != std::string::npos)
+		real_robot = false;
+	else
+	{
+		RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Configuration file path must start with either 'real' or 'sim'. ");
+		return;
+	}
+
+	this->declare_parameter<std::string>("objects_cloud", "objects_cloud");		
 	this->get_parameter("objects_cloud", objects_cloud);
-	
-	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Starting up %s with input topic %s and output topic %s", 
-		node_name.c_str(), input_cloud.c_str(), objects_cloud.c_str());
-	
-	pcl_subscription = this->create_subscription<sensor_msgs::msg::PointCloud2>(input_cloud, 
-		rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_sensor_data)), 
-		std::bind(&ObjectSegmentationNode::pointCloudCallback, this, std::placeholders::_1));
+		
+	if (real_robot)
+	{
+		this->declare_parameter<std::string>("input_cloud", "pointcloud_combined");
+		this->get_parameter("input_cloud", input_cloud);
+		pcl_subscription = this->create_subscription<sensor_msgs::msg::PointCloud2>(input_cloud, 
+			rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_sensor_data)), 
+			std::bind(&ObjectSegmentationNode::realPointCloudCallback, this, std::placeholders::_1));
+		RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Using real robot. Starting up %s with input topic %s and output topic %s", 
+			node_name.c_str(), input_cloud.c_str(), objects_cloud.c_str());
+	}
+	else
+	{
+        timer = this->create_wall_timer(std::chrono::milliseconds(Obstacles::getPeriod()), 
+			std::bind(&ObjectSegmentationNode::simPointCloudCallback, this));
+		RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Using simulated robot. Starting up %s without input topic and output topic %s", 
+			node_name.c_str(), objects_cloud.c_str());
+	}
+
 	object_pcl_publisher = this->create_publisher<sensor_msgs::msg::PointCloud2>(objects_cloud, 10);
     
     Robot::joints_state_subscription = this->create_subscription<control_msgs::msg::JointTrajectoryControllerState>
@@ -34,8 +54,9 @@ perception_etflab::ObjectSegmentationNode::ObjectSegmentationNode(const std::str
     
 }
 
-void perception_etflab::ObjectSegmentationNode::pointCloudCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
+void perception_etflab::ObjectSegmentationNode::realPointCloudCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
 {
+	auto time_start = std::chrono::steady_clock::now();
 	pcl::PCLPointCloud2::Ptr input_pcl_cloud(new pcl::PCLPointCloud2());
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_xyzrgb(new pcl::PointCloud<pcl::PointXYZRGB>);
 	pcl::PCLPointCloud2::Ptr output_cloud(new pcl::PCLPointCloud2());
@@ -48,14 +69,14 @@ void perception_etflab::ObjectSegmentationNode::pointCloudCallback(const sensor_
   	donwnsampler.setInputCloud(input_pcl_cloud);
   	donwnsampler.setLeafSize(0.01f, 0.01f, 0.01f);
   	donwnsampler.filter(*output_cloud);
-  	// RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Downsampled the dataset using a leaf size of 1 [cm].");
+  	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Downsampled the dataset using a leaf size of 1 [cm].");
   	
   	pcl::PointCloud<pcl::PointXYZRGB>::Ptr output_cloud_xyzrgb1(new pcl::PointCloud<pcl::PointXYZRGB>), 
 										   output_cloud_xyzrgb2(new pcl::PointCloud<pcl::PointXYZRGB>),
   										   output_cloud_xyzrgb3(new pcl::PointCloud<pcl::PointXYZRGB>);
   										   
   	pcl::fromPCLPointCloud2(*output_cloud, *output_cloud_xyzrgb1);
-  	// RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "After downsampling, point cloud size is %d.", output_cloud_xyzrgb1->size());
+  	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "After downsampling, point cloud size is %d.", output_cloud_xyzrgb1->size());
   	
 	// Green color filtering
   	pcl::ConditionalRemoval<pcl::PointXYZRGB> color_filter;
@@ -74,7 +95,7 @@ void perception_etflab::ObjectSegmentationNode::pointCloudCallback(const sensor_
     passThroughZAxis.setFilterLimits(-0.05, 1.5);
   	passThroughZAxis.setInputCloud(output_cloud_xyzrgb1);
   	passThroughZAxis.filter(*output_cloud_xyzrgb2);
-  	// RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "After green filtering, point cloud size is %d.", output_cloud_xyzrgb2->size());
+  	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "After green filtering, point cloud size is %d.", output_cloud_xyzrgb2->size());
   	
   	pcl::ModelCoefficients::Ptr coefficients(new pcl::ModelCoefficients());
   	pcl::PointIndices::Ptr inliers(new pcl::PointIndices());
@@ -96,23 +117,43 @@ void perception_etflab::ObjectSegmentationNode::pointCloudCallback(const sensor_
    	extract.setNegative(true);
    	extract.filter(*output_cloud_xyzrgb3);
 
-    removeOutliers(*output_cloud_xyzrgb3);
-  	// RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "After removing outliers, point cloud size is %d.", output_cloud_xyzrgb3->size());
-
     std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> pcl_clusters;
-    Cluster::computeClusters(output_cloud_xyzrgb3, pcl_clusters);
+    std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> pcl_subclusters;
 
-	// Robot::removeFromScene_v2(pcl_clusters);  // If using, uncomment "xarm_client_node" and "xarm_client" in the 'Robot' constructor
-    Robot::removeFromScene(pcl_clusters);
-	// Robot::visualizeCapsules();
-    // Robot::visualizeSkeleton();
+    removeOutliers(output_cloud_xyzrgb3);
+	// Robot::removeFromScene2(output_cloud_xyzrgb3);
+    Clusters::computeClusters(output_cloud_xyzrgb3, pcl_clusters);
+
+	Robot::removeFromScene(pcl_clusters);	// Better for real robot!
+	// Robot::removeFromScene3(pcl_clusters);  // If using, uncomment "xarm_client_node" and "xarm_client" in the 'Robot' constructor
 
   	publishObjectsPointCloud(pcl_clusters);
 
-    std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> pcl_subclusters;
-    Cluster::computeSubclusters(pcl_clusters, pcl_subclusters);
+    Clusters::computeSubclusters(pcl_clusters, pcl_subclusters);
 
     AABB::make(pcl_subclusters);
+    AABB::publish();
+    AABB::visualize();
+ 
+   	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Time elapsed: %d [ms] ", 
+		std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - time_start).count());
+   	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "---------------------------------------------------------------------");
+}
+
+void perception_etflab::ObjectSegmentationNode::simPointCloudCallback()
+{
+	auto time_start = std::chrono::steady_clock::now();
+    std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> pcl_clusters;
+    std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> pcl_subclusters;
+
+	// Robot::visualizeCapsules();
+    Robot::visualizeSkeleton();
+
+	Obstacles::move(pcl_clusters);
+
+  	publishObjectsPointCloud(pcl_clusters);
+
+    AABB::make(pcl_clusters);
     AABB::publish();
     AABB::visualize();
 
@@ -120,7 +161,9 @@ void perception_etflab::ObjectSegmentationNode::pointCloudCallback(const sensor_
     // ConvexHulls::publish();
     // ConvexHulls::visualize();
  
-   	// RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "---------------------------------------------------------------------");
+   	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Time elapsed: %d [ms] ", 
+		std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - time_start).count());
+   	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "---------------------------------------------------------------------");
 }
 
 void perception_etflab::ObjectSegmentationNode::publishObjectsPointCloud(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters)
@@ -140,18 +183,21 @@ void perception_etflab::ObjectSegmentationNode::publishObjectsPointCloud(std::ve
     output_cloud_ros.header.frame_id = "world";
 	output_cloud_ros.header.stamp = now();
 	object_pcl_publisher->publish(output_cloud_ros);
-    // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Publishing output point cloud of size %d...", pcl->size());
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Publishing output point cloud of size %d...", pcl->size());
 }
 
-void perception_etflab::ObjectSegmentationNode::removeOutliers(pcl::PointCloud<pcl::PointXYZRGB> &pcl)
+void perception_etflab::ObjectSegmentationNode::removeOutliers(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl)
 {
-    if (pcl.empty())
+    if (pcl->empty())
         return;
 
-    for (pcl::PointCloud<pcl::PointXYZRGB>::iterator pcl_point = pcl.end()-1; pcl_point >= pcl.begin(); pcl_point--)
+    for (pcl::PointCloud<pcl::PointXYZRGB>::iterator pcl_point = pcl->end()-1; pcl_point >= pcl->begin(); pcl_point--)
 	{
         Eigen::Vector3f P(pcl_point->x, pcl_point->y, pcl_point->z);
-        if (P.head(2).norm() > Robot::getTableRadius())   // All points outside the table
-            pcl.erase(pcl_point);
+        if (P.z() < 0 || P.head(2).norm() > Robot::getTableRadius() ||				// All points under or outside the table
+			P.x() > -0.2 && P.x() < 0 && std::abs(P.y()) < 0.05 && P.z() < 0.07) 	// The robot cable from base through the table
+            	pcl->erase(pcl_point);
 	}
+
+  	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "After removing outliers, point cloud size is %d.", pcl->size());
 }
