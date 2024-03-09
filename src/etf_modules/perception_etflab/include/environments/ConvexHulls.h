@@ -22,10 +22,10 @@ namespace perception_etflab
     public:
         ConvexHulls() {}
 
-        inline const pcl::PointCloud<pcl::PointXYZRGB>::Ptr getPoints() { return points; }
-        inline const pcl::PointCloud<pcl::PointXYZ>::Ptr getPolygonsIndices() { return polygons_indices; }
+        inline pcl::PointCloud<pcl::PointXYZRGB>::Ptr getPoints() const { return points; }
+        inline pcl::PointCloud<pcl::PointXYZ>::Ptr getPolygonsIndices() const { return polygons_indices; }
 
-		void make(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters);
+		void make(const std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters);
         void publish();
 		void visualize();
 

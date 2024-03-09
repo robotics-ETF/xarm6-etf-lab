@@ -1,6 +1,6 @@
-#include "environment/Cluster.h"
+#include "environments/Clusters.h"
 
-perception_etflab::Cluster::Cluster(const std::string config_file_path)
+perception_etflab::Clusters::Clusters(const std::string &config_file_path)
 {
     std::string project_abs_path(__FILE__);
 	for (int i = 0; i < 4; i++)
@@ -14,8 +14,8 @@ perception_etflab::Cluster::Cluster(const std::string config_file_path)
     concatenation_tolerance = perception_node["concatenation_tolerance"].as<float>();
 }
 
-void perception_etflab::Cluster::computeClusters(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl, 
-                                                 std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters)
+void perception_etflab::Clusters::computeClusters(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl, 
+                                                  std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters)
 {
     // Set up KD-Tree for searching and perform Euclidean clustering
     pcl::search::KdTree<pcl::PointXYZRGB>::Ptr kdtree(new pcl::search::KdTree<pcl::PointXYZRGB>);
@@ -47,7 +47,7 @@ void perception_etflab::Cluster::computeClusters(pcl::PointCloud<pcl::PointXYZRG
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Point cloud is segmented into %d clusters.", clusters.size());
 }
 
-void perception_etflab::Cluster::computeSubclusters(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters,
+void perception_etflab::Clusters::computeSubclusters(const std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters,
     std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &subclusters)
 {
     Eigen::Vector4f min_point, max_point;
@@ -79,9 +79,9 @@ void perception_etflab::Cluster::computeSubclusters(std::vector<pcl::PointCloud<
         subclusters.size(), max_dim_subcluster.x(), max_dim_subcluster.y(), max_dim_subcluster.z());
 }
 
-void perception_etflab::Cluster::divideCluster(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cluster, 
-                                               std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &subclusters, 
-                                               float min_point, float max_point, float max_dim, std::string &axis)
+void perception_etflab::Clusters::divideCluster(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr cluster, 
+                                                std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &subclusters, 
+                                                float min_point, float max_point, float max_dim, const std::string &axis)
 {
     int num_pieces = std::ceil((max_point - min_point) / max_dim);
     // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Trying to divide cluster into %d pieces according to %s axis.", num_pieces, axis.c_str());

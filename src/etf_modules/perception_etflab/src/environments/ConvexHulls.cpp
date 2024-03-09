@@ -1,7 +1,7 @@
-#include "environment/ConvexHulls.h"
+#include "environments/ConvexHulls.h"
 
 // Make convex hull for each cluster from 'clusters'
-void perception_etflab::ConvexHulls::make(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters)
+void perception_etflab::ConvexHulls::make(const std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters)
 {
     // Create convex-hull for each cluster
     pcl::ConvexHull<pcl::PointXYZRGB> convex_hull;

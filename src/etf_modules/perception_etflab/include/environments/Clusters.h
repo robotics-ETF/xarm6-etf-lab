@@ -24,21 +24,23 @@
 
 namespace perception_etflab
 {
-    class Cluster
+    class Clusters
     {
     public:
-        Cluster(const std::string config_file_path);
+        Clusters(const std::string &config_file_path);
 
         inline void setMaxDimSubcluster(const Eigen::Vector3f &max_dim_subcluster_) { max_dim_subcluster = max_dim_subcluster_; }
         inline void setConcatenationTolerance(float concatenation_tolerance_) { concatenation_tolerance = concatenation_tolerance_; }
 
-        void computeClusters(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl, std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters);
-		void computeSubclusters(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters,
+        void computeClusters(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl, 
+                             std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters);
+		void computeSubclusters(const std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters,
 			                    std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &subclusters);
 		    
     private:
-        void divideCluster(pcl::PointCloud<pcl::PointXYZRGB>::Ptr cluster, std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &subclusters, 
-			float min_point, float max_point, float max_dim, std::string &axis);
+        void divideCluster(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr cluster, 
+                           std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &subclusters, 
+			               float min_point, float max_point, float max_dim, const std::string &axis);
 
         Eigen::Vector3f max_dim_subcluster;
         float concatenation_tolerance;

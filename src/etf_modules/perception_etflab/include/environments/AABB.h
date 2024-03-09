@@ -17,9 +17,9 @@ namespace perception_etflab
     public:
         AABB() {}
 
-        inline const pcl::PointCloud<pcl::PointXYZ>::Ptr getBoxes() { return boxes; }
+        inline pcl::PointCloud<pcl::PointXYZ>::Ptr getBoxes() const { return boxes; }
 
-		void make(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters);
+		void make(const std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters);
         void publish();
 		void visualize();
 
