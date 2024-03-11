@@ -1,4 +1,5 @@
-#include "task_planning/TaskPlanningNode.h"
+#include "demos/TaskPlanningNode.h"
+#include <glog/logging.h>
 
 int main(int argc, char *argv[])
 {

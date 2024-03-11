@@ -1,4 +1,4 @@
-#include "environment/ConvexHulls.h"
+#include "environments/ConvexHulls.h"
 
 sim_bringup::ConvexHulls::ConvexHulls(const std::string config_file_path)
 {

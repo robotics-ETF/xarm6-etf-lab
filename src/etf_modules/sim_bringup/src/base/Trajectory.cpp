@@ -1,129 +1,113 @@
 #include "base/Trajectory.h"
 
-sim_bringup::Trajectory::Trajectory(float max_ang_vel)
+sim_bringup::Trajectory::Trajectory(const std::string &config_file_path)
 {
-    Trajectory::max_ang_vel = max_ang_vel;
-    msg.joint_names = {"joint1", "joint2", "joint3", "joint4", "joint5", "joint6"};
-}
+    std::string project_abs_path = std::string(__FILE__);
+    for (int i = 0; i < 4; i++)
+        project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
 
-void sim_bringup::Trajectory::addPoint(std::shared_ptr<base::State> point, float time_instance)
-{
-    points.emplace_back(point->getCoord());
-    time_instances.emplace_back(time_instance);
-}
+    YAML::Node node = YAML::LoadFile(project_abs_path + config_file_path);
 
-void sim_bringup::Trajectory::addPoint(const Eigen::VectorXf &point, float time_instance)
-{
-    points.emplace_back(point);
-    time_instances.emplace_back(time_instance);
-}
-
-// Add and parametrize 'path' in order to satisfy the maximal angular velocity 'max_ang_vel'
-// 'omit_first_conf': If true, the first configuration from 'path' is omitted
-// 'time_offset' in [s]: If passed, each time instance from 'time_instances' is shifted for the value of 'time_offset'
-// 'delta_time': If not passed, configurations from 'path' remain the same, while their time instances are computed
-// 'delta_time': If passed, configurations are interpolated rendering their adjacent time instances equidistant with 'delta_time'
-void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::State>> &path, 
-                         bool omit_first_conf, float time_offset, float delta_time)
-{
-    Eigen::VectorXf q = path[0]->getCoord();
-    Eigen::VectorXf q_next;
-    float time = time_offset;
-    clear();
-
-    if (!omit_first_conf)
-    {
-        points.emplace_back(q);
-        time_instances.emplace_back(time);
-    }
-
-    if (delta_time == 0)
-    {
-        for (int i = 1; i < path.size(); i++)
-        {
-            q_next = path[i]->getCoord();
-            time += (q_next - q).norm() / max_ang_vel;
-            points.emplace_back(q_next);
-            time_instances.emplace_back(time);
-            q = q_next;
-        }
-    }
+    if (node["robot"]["num_DOFs"].as<int>() == 6)
+        msg.joint_names = {"joint1", "joint2", "joint3", "joint4", "joint5", "joint6"};
     else
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Such number of robot DOFs is not supported!");
+}
+
+void sim_bringup::Trajectory::addPoint(float time_instance, const Eigen::VectorXf &position)
+{
+    trajectory_msgs::msg::JointTrajectoryPoint point;
+    for (int i = 0; i < position.size(); i++)
     {
-        float max_delta_angle = max_ang_vel * delta_time;
-        for (int i = 1; i < path.size(); i++)
-        {
-            q_next = path[i]->getCoord();
-            float d = (q_next - q).norm();
-            bool status = false;
-            while (!status)
-            {
-                if (d > max_delta_angle)
-                {
-                    q += ((q_next - q) / d) * max_delta_angle;
-                    d -= max_delta_angle;
-                }
-                else
-                {
-                    q = q_next;
-                    status = true;
-                }
-                points.emplace_back(q);
-                time += delta_time;
-                time_instances.emplace_back(time);
-            }
-        }
+        point.positions.emplace_back(position(i));
+        point.velocities.emplace_back(0);
+        point.accelerations.emplace_back(0);
     }
+
+    point.time_from_start.sec = int32_t(time_instance);
+    point.time_from_start.nanosec = (time_instance - point.time_from_start.sec) * 1e9;
+    msg.points.emplace_back(point);
 }
 
-void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::State>> &path, const std::vector<float> &time_instances_)
+void sim_bringup::Trajectory::addPoint(float time_instance, const Eigen::VectorXf &position, const Eigen::VectorXf &velocity)
 {
-    clear();    
+    trajectory_msgs::msg::JointTrajectoryPoint point;
+    for (int i = 0; i < position.size(); i++)
+    {
+        point.positions.emplace_back(position(i));
+        point.velocities.emplace_back(velocity(i));
+        point.accelerations.emplace_back(0);
+    }
+
+    point.time_from_start.sec = int32_t(time_instance);
+    point.time_from_start.nanosec = (time_instance - point.time_from_start.sec) * 1e9;
+    msg.points.emplace_back(point);
+}
+
+void sim_bringup::Trajectory::addPoint(float time_instance, const Eigen::VectorXf &position, const Eigen::VectorXf &velocity, 
+                                       const Eigen::VectorXf &acceleration)
+{
+    trajectory_msgs::msg::JointTrajectoryPoint point;
+    for (int i = 0; i < position.size(); i++)
+    {
+        point.positions.emplace_back(position(i));
+        point.velocities.emplace_back(velocity(i));
+        point.accelerations.emplace_back(acceleration(i));
+    }
+
+    point.time_from_start.sec = int32_t(time_instance);
+    point.time_from_start.nanosec = (time_instance - point.time_from_start.sec) * 1e9;
+    msg.points.emplace_back(point);
+}
+
+void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::State>> &path, const std::vector<float> &time_instances)
+{
     for (int i = 0; i < path.size(); i++)
-        points.emplace_back(path[i]->getCoord());
-    
-    time_instances = time_instances_;
+        addPoint(time_instances[i], path[i]->getCoord());
 }
 
-void sim_bringup::Trajectory::addPath(const std::vector<Eigen::VectorXf> &path, const std::vector<float> &time_instances_)
+void sim_bringup::Trajectory::addPath(const std::vector<Eigen::VectorXf> &path, const std::vector<float> &time_instances)
 {
-    clear();    
-    points = path;
-    time_instances = time_instances_;
+    for (int i = 0; i < path.size(); i++)
+        addPoint(time_instances[i], path[i]);
+}
+
+void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::State>> &path)
+{
+    // TODO: Implementirati preko splinea
 }
 
 void sim_bringup::Trajectory::publish()
 {
-    if (points.empty())
+    if (msg.points.empty())
     {
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "There is no trajectory to publish!\n");
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "There is no trajectory to publish!");
         return;
     }
-    
-    msg.points.clear();
 
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Trajectory: ");
-    for (int i = 0; i < points.size(); i++)
+    for (int i = 0; i < msg.points.size(); i++)
     {
-        Eigen::VectorXf q = points[i];
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Num. %d. Time: %f [s]. Point: (%f, %f, %f, %f, %f, %f)", 
-            i, time_instances[i], q(0), q(1), q(2), q(3), q(4), q(5));
-
-        trajectory_msgs::msg::JointTrajectoryPoint point;
-        for (int j = 0; j < q.size(); j++)
-            point.positions.emplace_back(q(j));
-
-        point.time_from_start.sec = int32_t(time_instances[i]);
-        point.time_from_start.nanosec = (time_instances[i] - point.time_from_start.sec) * 1e9;
-        msg.points.emplace_back(point);
+        if (msg.points[i].positions.size() == 6)
+        {
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Num. %d.\t Time: %f [s].\t Point: (%f, %f, %f, %f, %f, %f)", 
+                        i, msg.points[i].time_from_start.sec + msg.points[i].time_from_start.nanosec * 1e-9, 
+                        msg.points[i].positions[0], 
+                        msg.points[i].positions[1],
+                        msg.points[i].positions[2],
+                        msg.points[i].positions[3],
+                        msg.points[i].positions[4],
+                        msg.points[i].positions[5]);
+        }
     }
 
+    msg.header.stamp.sec = 0;
+    msg.header.stamp.nanosec = 0;
     publisher->publish(msg);
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Publishing trajectory ...\n");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Publishing trajectory ...");
 }
 
 void sim_bringup::Trajectory::clear()
 {
-    points.clear();
-    time_instances.clear();
+    msg.points.clear();
 }

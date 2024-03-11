@@ -1,18 +1,22 @@
-#include "planning/PlanningNode.h"
+//
+// Created by nermin on 28.08.23.
+//
+
+#include "demos/PlanningNode.h"
 
 namespace sim_bringup
 {
     class TaskPlanningNode : public sim_bringup::PlanningNode
     {
     public:
-        TaskPlanningNode(const std::string node_name, const std::string config_file_path);
+        TaskPlanningNode(const std::string &node_name, const std::string &config_file_path);
 
     protected:
         void planningCallback() override { taskPlanningCallback(); }
         void taskPlanningCallback();
         bool computeObjectApproachAndPickStates();
-        const int chooseObject() override;
-        bool whetherToRemove(Eigen::Vector3f &object_pos, Eigen::Vector3f &object_dim) override;
+        int chooseObject() override;
+        bool whetherToRemove(const Eigen::Vector3f &object_pos, const Eigen::Vector3f &object_dim) override;
 
         enum Task 
         {

@@ -1,9 +1,9 @@
 period: 5000   # Period of basic callback function in [ms]
 
 robot:
-  home: [0, 0, 0, 3.1415, 1.5708, 0]
-  max_lin_vel: 500      # in [mm/s]
-  max_lin_acc: 500      # in [mm/s²]
-  max_ang_vel: 0.9      # in [rad/s]
-  max_ang_acc: 0.9      # in [rad/s²]
+  type: "xarm6"
+  urdf: "/RPMPLv2/data/xarm6/xarm6.urdf"
+  space: "RealVectorSpace"
+  num_DOFs: 6
+  q_home: [0, 0, 0, 3.1415, 1.5708, 0]
   

@@ -1,3 +1,10 @@
+//
+// Created by nermin on 28.08.23.
+//
+
+#ifndef SIM_BRINGUP_OCTOMAP_H
+#define SIM_BRINGUP_OCTOMAP_H
+
 #include <rclcpp/rclcpp.hpp>
 #include <fcl/fcl.h>
 #include <octomap/octomap.h>
@@ -5,7 +12,6 @@
 #include <octomap_msgs/msg/octomap.hpp>
 #include <octomap_msgs/conversions.h>
 #include <visualization_msgs/msg/marker_array.hpp>
-
 #include <yaml-cpp/yaml.h>
 
 namespace sim_bringup
@@ -15,7 +21,7 @@ namespace sim_bringup
     public:
         Octomap(const std::string config_file_path);
 
-        inline const std::shared_ptr<fcl::OcTreef> &getOctree() { return octree; }
+        inline std::shared_ptr<fcl::OcTreef> getOctree() const { return octree; }
 
         void read();
         void visualize();
@@ -29,3 +35,5 @@ namespace sim_bringup
         std::shared_ptr<fcl::OcTreef> octree;
     };
 }
+
+#endif // SIM_BRINGUP_OCTOMAP_H

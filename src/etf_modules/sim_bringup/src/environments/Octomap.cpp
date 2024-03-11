@@ -1,4 +1,4 @@
-#include "environment/Octomap.h"
+#include "environments/Octomap.h"
 
 sim_bringup::Octomap::Octomap(const std::string config_file_path)
 {

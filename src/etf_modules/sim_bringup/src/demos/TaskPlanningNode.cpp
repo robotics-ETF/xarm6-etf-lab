@@ -1,6 +1,6 @@
-#include "task_planning/TaskPlanningNode.h"
+#include "demos/TaskPlanningNode.h"
 
-sim_bringup::TaskPlanningNode::TaskPlanningNode(const std::string node_name, const std::string config_file_path) : 
+sim_bringup::TaskPlanningNode::TaskPlanningNode(const std::string &node_name, const std::string &config_file_path) : 
     PlanningNode(node_name, config_file_path)
 {
     IK_computed = -1;
@@ -34,7 +34,7 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
         if (IK_computed == 1)
         {
             AABB::resetMeasurements();
-            scenario->setStart(Robot::getJointsState());
+            scenario->setStart(Robot::getJointsPositionPtr());
             scenario->setGoal(q_object_approach1);
             task = planning;
             task_next = going_towards_object;
@@ -47,6 +47,7 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
 
     case going_towards_object:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going towards the object...");
+        Trajectory::clear();
         Trajectory::addPath({q_object_approach1, q_object_approach2, q_object_pick});
         Trajectory::publish();
         task = picking_object;
@@ -64,6 +65,7 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
 
     case raising_object:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Raising the object...");
+        Trajectory::clear();
         Trajectory::addPath({q_object_pick, q_object_approach1});
         Trajectory::publish();
         task = moving_object_to_destination;
@@ -93,8 +95,9 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
                 AABB::updateEnvironment();
 
                 RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Planning the path..."); 
-                if (Planner::planPath())
+                if (Planner::solve())
                 {
+                    Trajectory::clear();
                     Trajectory::addPath(Planner::getPath());
                     state = State::publishing_trajectory;
                 }
@@ -166,7 +169,7 @@ bool sim_bringup::TaskPlanningNode::computeObjectApproachAndPickStates()
                                      pos.y(), 
                                      p_pick_z);
     int num = 0;
-    std::shared_ptr<base::State> q_init = Robot::getJointsState();
+    std::shared_ptr<base::State> q_init = Robot::getJointsPositionPtr();
     while (num++ <= 100)
     {
         q_object_approach1 = xarm6->computeInverseKinematics(R, p_approach1, q_init);
@@ -219,7 +222,7 @@ bool sim_bringup::TaskPlanningNode::computeObjectApproachAndPickStates()
     return true;
 }
 
-const int sim_bringup::TaskPlanningNode::chooseObject()
+int sim_bringup::TaskPlanningNode::chooseObject()
 {
     float z_max = -INFINITY;
     int obj_idx = -1;
@@ -242,7 +245,7 @@ const int sim_bringup::TaskPlanningNode::chooseObject()
     return obj_idx;
 }
 
-bool sim_bringup::TaskPlanningNode::whetherToRemove(Eigen::Vector3f &object_pos, Eigen::Vector3f &object_dim)
+bool sim_bringup::TaskPlanningNode::whetherToRemove(const Eigen::Vector3f &object_pos, const Eigen::Vector3f &object_dim)
 {
     // Remove the destination box from the scene
     if (object_pos.x() < -0.4 && std::abs(object_pos.y()) < 0.2 && object_pos.z() < 0.25)

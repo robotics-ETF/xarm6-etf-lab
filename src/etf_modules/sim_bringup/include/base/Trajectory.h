@@ -1,30 +1,39 @@
+//
+// Created by nermin on 28.08.23.
+//
+
+#ifndef SIM_BRINGUP_TRAJECTORY_H
+#define SIM_BRINGUP_TRAJECTORY_H
+
 #include <chrono>
 #include <functional>
 #include <memory>
 #include <string>
 #include <Eigen/Eigen>
-
 #include <rclcpp/rclcpp.hpp>
 #include <trajectory_msgs/msg/joint_trajectory.hpp>
 #include <trajectory_msgs/msg/joint_trajectory_point.hpp>
+#include <yaml-cpp/yaml.h>
 
-#include <RealVectorSpaceState.h>
+#include <State.h>
 
 namespace sim_bringup
 {
     class Trajectory
     {
     public:
-        Trajectory(float max_ang_vel);
-
-        inline void setMaxAngVel(float max_ang_vel_) { max_ang_vel = max_ang_vel_; }
+        Trajectory(const std::string &config_file_path);
+        ~Trajectory() {}
         
-        void addPoint(std::shared_ptr<base::State> point, float time_instance);
-        void addPoint(const Eigen::VectorXf &point, float time_instance);
-        void addPath(const std::vector<std::shared_ptr<base::State>> &path, 
-                    bool omit_first_conf = false, float time_offset = 0, float delta_time = 0);
-        void addPath(const std::vector<std::shared_ptr<base::State>> &path, const std::vector<float> &time_instances_);
-        void addPath(const std::vector<Eigen::VectorXf> &path, const std::vector<float> &time_instances_);
+        void addPoint(float time_instance, const Eigen::VectorXf &position);
+        void addPoint(float time_instance, const Eigen::VectorXf &position, const Eigen::VectorXf &velocity);
+        void addPoint(float time_instance, const Eigen::VectorXf &position, const Eigen::VectorXf &velocity, 
+                      const Eigen::VectorXf &acceleration);
+        
+        void addPath(const std::vector<std::shared_ptr<base::State>> &path, const std::vector<float> &time_instances);
+        void addPath(const std::vector<Eigen::VectorXf> &path, const std::vector<float> &time_instances);
+        void addPath(const std::vector<std::shared_ptr<base::State>> &path);
+
         void publish();
         void clear();
         
@@ -32,8 +41,7 @@ namespace sim_bringup
 
     private:
         trajectory_msgs::msg::JointTrajectory msg;
-        std::vector<Eigen::VectorXf> points;
-        std::vector<float> time_instances;
-        float max_ang_vel;
     };
 }
+
+#endif // SIM_BRINGUP_TRAJECTORY_H

@@ -5,7 +5,7 @@ namespace sim_bringup
     class MoveXArm6Node : public sim_bringup::BaseNode
     {
     public:
-        MoveXArm6Node(const std::string node_name, const std::string config_file_path);
+        MoveXArm6Node(const std::string &node_name, const std::string &config_file_path);
 
     protected:
         void baseCallback() override { moveXArm6Callback(); }

@@ -1,4 +1,5 @@
-#include "planning/PlanningNode.h"
+#include "demos/PlanningNode.h"
+#include <glog/logging.h>
 
 int main(int argc, char *argv[])
 {

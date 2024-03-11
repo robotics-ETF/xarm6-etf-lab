@@ -1,4 +1,4 @@
-#include "environment/AABB.h"
+#include "environments/AABB.h"
 
 sim_bringup::AABB::AABB(const std::string &config_file_path)
 {
@@ -68,7 +68,7 @@ void sim_bringup::AABB::withFilteringCallback(const sensor_msgs::msg::PointCloud
     }   
 }
 
-bool sim_bringup::AABB::whetherToRemove(Eigen::Vector3f &object_pos, Eigen::Vector3f &object_dim)
+bool sim_bringup::AABB::whetherToRemove(const Eigen::Vector3f &object_pos, const Eigen::Vector3f &object_dim)
 {    
     return false;
 }

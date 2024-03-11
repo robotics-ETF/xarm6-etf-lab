@@ -1,6 +1,6 @@
-#include "base/MoveXArm6Node.h"
+#include "demos/MoveXArm6Node.h"
 
-sim_bringup::MoveXArm6Node::MoveXArm6Node(const std::string node_name, const std::string config_file_path) : 
+sim_bringup::MoveXArm6Node::MoveXArm6Node(const std::string &node_name, const std::string &config_file_path) : 
     BaseNode(node_name, config_file_path) 
 {
     state = going_home;
@@ -11,7 +11,6 @@ void sim_bringup::MoveXArm6Node::moveXArm6Callback()
     switch (state)
     {
     case going_home:
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Max lin vel: %f", Robot::getMaxLinVel()); 
         goHome();
         state = moving_in_joint_space;
         break;
@@ -28,7 +27,7 @@ void sim_bringup::MoveXArm6Node::goHome()
 {
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going home...");
     Trajectory::clear();
-    Trajectory::addPoint(Robot::getHomeJointsState(), 0.9 * period / 1000);
+    Trajectory::addPoint(0.9 * period / 1000, Robot::getHomeJointsPosition());
     Trajectory::publish();
 }
 
@@ -47,6 +46,7 @@ void sim_bringup::MoveXArm6Node::moveInJointSpace()
     path.emplace_back(q);
     time_instances.emplace_back(4);
 
+    Trajectory::clear();
     Trajectory::addPath(path, time_instances);
     Trajectory::publish();
 }

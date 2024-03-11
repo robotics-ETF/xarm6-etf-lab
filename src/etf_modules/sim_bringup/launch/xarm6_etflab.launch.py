@@ -17,14 +17,14 @@ from launch.event_handlers import OnProcessExit, OnProcessStart
 from ament_index_python import get_package_share_directory
 
 def generate_launch_description():
-    report_type = LaunchConfiguration('report_type', default='rich')     # normal, rich, dev (see: https://github.com/xArm-Developer/xarm_ros#report_type-argument)
+    report_type = LaunchConfiguration('report_type', default='normal')     # normal, rich, dev (see: https://github.com/xArm-Developer/xarm_ros#report_type-argument)
     dof = LaunchConfiguration('dof', default='6')
     prefix = LaunchConfiguration('prefix', default='')
     hw_ns = LaunchConfiguration('hw_ns', default='xarm')
     limited = LaunchConfiguration('limited', default=False)
     effort_control = LaunchConfiguration('effort_control', default=False)
     velocity_control = LaunchConfiguration('velocity_control', default=False)
-    add_gripper = LaunchConfiguration('add_gripper', default=False)
+    add_gripper = LaunchConfiguration('add_gripper', default=True)
     add_vacuum_gripper = LaunchConfiguration('add_vacuum_gripper', default=False)
 
     add_other_geometry = LaunchConfiguration('add_other_geometry', default=False)
@@ -147,12 +147,12 @@ def generate_launch_description():
         
     return LaunchDescription([    
     	TimerAction(
-            period=5.0,
+            period=2.0,
             actions=[
                      rviz_node, 
                      pointcloud_combiner_node, 
                      object_segmentation_node
-                     ]
+                    ]
         ),
 		robot_gazebo_launch,
         # TimerAction(

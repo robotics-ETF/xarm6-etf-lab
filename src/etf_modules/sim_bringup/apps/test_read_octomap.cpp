@@ -1,4 +1,4 @@
-#include "environment/Octomap.h"
+#include "environments/Octomap.h"
 
 int main(int argc, char *argv[])
 {
