@@ -17,7 +17,7 @@ jobs:
       run: docker build . -t etf_container -f .docker/Dockerfile
     
     - name: (Debug) List containers
-      run: docker container ls
+      run: docker images ls
 
     - name: Run Docker container
       run: docker run -d --name etf_container etf_container
