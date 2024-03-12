@@ -1,26 +1,39 @@
-name: Build XARM6 ETF LAB
-
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
   pull_request:
-    branches: [ main ]
-    
-jobs:
-  build_ros2:
-    runs-on: ubuntu-22.04
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-      
-    - name: Build Docker image
-      run: docker build -t etf_container_image -f .docker/Dockerfile .
-    
-    - name: (Debug) List containers
-      run: docker images ls
+    branches:
+      - main
 
-    - name: Run Docker container
-      run: docker run -d --name etf_container etf_container_image
-      
-    - name: Build xarm6-etf-lab workspace
-      run: docker exec etf_container /bin/bash -c "cd /home/roboticsETF && ls -la && make full_build_container"
+env:
+  IMAGE_NAME: etfsa-container
+  DOCKERFILE_PATH: ./.docker/Dockerfile
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  CR_PAT: ${{ secrets.CR_PAT }}
+
+jobs:
+  build-and-publish:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Build the Docker image
+      run: |
+        docker buildx build \
+          --file $DOCKERFILE_PATH \
+          --tag ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:latest \
+          --push .
+
+    - name: Build code inside the container
+      run: |
+        docker run --rm \
+          -v $(pwd):/ros2_ws \
+          -w /ros2_ws \
+          ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:latest \
+          sh -c "make full_build_container"
