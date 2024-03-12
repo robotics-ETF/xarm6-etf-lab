@@ -29,7 +29,8 @@ jobs:
           rosdep update
           sudo apt-get install --reinstall ros-humble-ros-workspace \
                                            ament-cmake libangles-dev \
-                                           ros-humble-angles ros-dev-tools
+                                           ros-humble-angles ros-dev-tools \
+                                           ament-lint ros-humble-ament-lint-auto
           source /opt/ros/humble/setup.sh
 
       - name: Building
