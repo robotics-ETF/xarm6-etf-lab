@@ -37,4 +37,7 @@ jobs:
         run:  |
           cd workspace
           ls -la 
-          make full_build_container
+          make submodules
+          make dependencies
+          source /opt/ros/humble/setup.sh
+          make build
