@@ -30,5 +30,6 @@ jobs:
 
       - name: Building
         run:  |
+          cd workspace
           ls -la 
           make full_build_container
