@@ -14,13 +14,13 @@ jobs:
       uses: actions/checkout@v2
       
     - name: Build Docker image
-      run: docker build . -f .docker/Dockerfile
+      run: docker build -t etf_container_image -f .docker/Dockerfile .
     
     - name: (Debug) List containers
       run: docker images ls
 
     - name: Run Docker container
-      run: docker run -d --name etf_container etf_container
+      run: docker run -d --name etf_container etf_container_image
       
     - name: Build xarm6-etf-lab workspace
       run: docker exec etf_container /bin/bash -c "make submodules && make dependencies && make build"
