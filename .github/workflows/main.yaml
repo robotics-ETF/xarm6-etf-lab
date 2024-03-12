@@ -1,0 +1,26 @@
+name: Build XARM6 ETF LAB
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+    
+jobs:
+  build_ros2:
+    runs-on: ubuntu-22.04
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+      
+    - name: Build Docker image
+      run: docker build -t etf_container_image -f .docker/Dockerfile .
+    
+    - name: (Debug) List containers
+      run: docker images ls
+
+    - name: Run Docker container
+      run: docker run -d --name etf_container etf_container_image
+      
+    - name: Build xarm6-etf-lab workspace
+      run: docker exec etf_container /bin/bash -c "cd /tmp/roboticsETF && make submodules && make dependencies && make build"
