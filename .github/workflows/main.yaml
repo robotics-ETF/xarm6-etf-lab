@@ -13,7 +13,7 @@ jobs:
         with:
           path: workspace
       - name: Setting up ROS2
-        uses: ichiro-its/ros2-ci@v1.0.0
+        uses: ichiro-its/ros2-ws-action/setup@v1.0.0
         with:
           ros2-distro: humble
       - name: Building
