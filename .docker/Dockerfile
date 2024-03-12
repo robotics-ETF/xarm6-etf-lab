@@ -20,7 +20,7 @@ RUN apt-get update \
     python3-rosdep \
     && rm -rf /var/lib/apt/lists/*
 
-ARG TEMP_SRC_PATH="/tmp/roboticsETF"
+ARG TEMP_SRC_PATH="~/roboticsETF"
 COPY . ${TEMP_SRC_PATH}
 
 FROM ros2-base AS ros2-dev-container
