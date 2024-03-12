@@ -3,7 +3,7 @@
 dependencies:
 	rosdep update
 	sudo apt update
-	rosdep install --from-paths src --ignore-src -r -y
+	rosdep install --from-paths src --ignore-src -r -y --rosdistro humble
 
 clean:
 	rm -r ./build/ ./install/ ./log/
