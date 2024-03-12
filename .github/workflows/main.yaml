@@ -29,4 +29,6 @@ jobs:
           rosdep update
 
       - name: Building
-        run: make full_build_container
+        run:  |
+          ls -la 
+          make full_build_container
