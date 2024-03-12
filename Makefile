@@ -31,3 +31,9 @@ submodules:
 		vcs pull -w 1 $(folder) < $(folder)/repositories.yaml && \
 		(cd $(folder) && git submodule update --init --recursive) \
 	;)
+
+make full_build_container:
+	make submodules
+	make dependencies
+	make build
+	
