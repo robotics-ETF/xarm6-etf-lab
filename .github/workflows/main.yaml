@@ -1,39 +1,20 @@
+name: Build and Test
 on:
-  push:
-    branches:
-      - main
   pull_request:
-    branches:
-      - main
-  workflow_dispatch: # Trigger from GitHub web UI
-env:
-  IMAGE_NAME: etfsa-container
-  DOCKERFILE_PATH: ./.docker/Dockerfile
-  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  CR_PAT: ${{ secrets.CR_PAT }}
-
+    branches: [ main ]
+  push:
+    branches: [ main ]
 jobs:
-  build-etf-lab:
+  build-and-test:
     runs-on: ubuntu-22.04
-
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v2
-
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-
-    - name: Build the Docker image
-      run: |
-        docker buildx build \
-          --file $DOCKERFILE_PATH \
-          --tag ghcr.io/robotics-etf/$IMAGE_NAME:latest \
-          --push .
-
-    - name: Build code inside the container
-      run: |
-        docker run --rm \
-          -v $(pwd):/ros2_ws \
-          -w /ros2_ws \
-          ghcr.io/${{ github.repository_owner }}/$IMAGE_NAME:latest \
-          sh -c "make full_build_container"
+      - name: Checkout
+        uses: actions/checkout@v4.0.0
+        with:
+          path: workspace
+      - name: Setting up ROS2
+        uses: ichiro-its/ros2-ci@v1.0.0
+        with:
+          ros2-distro: humble
+      - name: Building
+        run: make full_build_container
