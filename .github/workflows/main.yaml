@@ -23,4 +23,4 @@ jobs:
       run: docker run -d --name etf_container etf_container_image
       
     - name: Build xarm6-etf-lab workspace
-      run: docker exec etf_container /bin/bash -c "ls ~/ && ls /"
+      run: docker exec etf_container /bin/bash -c "ls ~/ && ls /tmp && ls /tmp/roboticsETF"
