@@ -28,8 +28,8 @@ jobs:
           sudo rosdep init
           rosdep update
           sudo apt-get install --reinstall ros-humble-ros-workspace \
-                                           ament-cmake \
-                                           ros-humble-angles
+                                           ament-cmake libangles-dev \
+                                           ros-humble-angles ros-dev-tools
           source /opt/ros/humble/setup.sh
 
       - name: Building
