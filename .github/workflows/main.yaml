@@ -5,7 +5,7 @@ on:
   pull_request:
     branches:
       - main
-
+  workflow_dispatch: # Trigger from GitHub web UI
 env:
   IMAGE_NAME: etfsa-container
   DOCKERFILE_PATH: ./.docker/Dockerfile
