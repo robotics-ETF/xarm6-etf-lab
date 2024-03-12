@@ -27,7 +27,7 @@ jobs:
         run: |
           sudo rosdep init
           rosdep update
-          sudo apt-get install --reinstall ros-humble-ros-workspace
+          sudo apt-get install --reinstall ros-humble-ros-workspace ament-cmake
           source /opt/ros/humble/setup.sh
 
       - name: Building
