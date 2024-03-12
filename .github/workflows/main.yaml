@@ -27,7 +27,7 @@ jobs:
         run: |
           sudo rosdep init
           rosdep update
-          source /opt/ros/humble/setup.bash
+          source /opt/ros/humble/setup.sh
 
       - name: Building
         run:  |
