@@ -14,7 +14,7 @@ jobs:
       uses: actions/checkout@v2
       
     - name: Build Docker image
-      run: docker build . -t etf_container -f .docker/Dockerfile
+      run: docker build . -f .docker/Dockerfile
     
     - name: (Debug) List containers
       run: docker images ls
