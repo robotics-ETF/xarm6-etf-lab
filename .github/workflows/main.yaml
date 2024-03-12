@@ -15,9 +15,12 @@ jobs:
       
     - name: Build Docker image
       run: docker build . -t etf_container -f .docker/Dockerfile
+    
+    - name: (Debug) List containers
+      run: docker container ls
 
     - name: Run Docker container
-      run: docker run -d --name etf_container etf_co
+      run: docker run -d --name etf_container etf_container
       
     - name: Build xarm6-etf-lab workspace
       run: docker exec etf_container /bin/bash -c "make submodules && make dependencies && make build"
