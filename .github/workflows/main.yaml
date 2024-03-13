@@ -29,7 +29,7 @@ jobs:
           rosdep update
           sudo apt-get update && sudo apt-get upgrade
           sudo apt-get install --yes --reinstall ros-humble-ros-workspace \
-                                           ament-cmake libangles-dev \
+                                           ament-cmake libangles-dev tree \
                                            ros-humble-angles ros-dev-tools \
                                            ament-lint ros-humble-ament-lint-auto
           source /opt/ros/humble/setup.sh
@@ -37,9 +37,8 @@ jobs:
       - name: Building
         run: |
           cd workspace
-          ls -la src
           make submodules
-          ls -la
+          tree src -d -L 4
           cd src/etf_modules/RPMPLv2 && git checkout origin/main && cd ../../
           cd src/external_modules/gazebo_ros2_control && git checkout origin/humble && cd ../../
           cd src/external_modules/xarm_ros2 && git checkout origin/humble && cd ../../
