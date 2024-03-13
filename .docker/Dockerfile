@@ -21,7 +21,7 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 ARG TEMP_SRC_PATH="/tmp/roboticsetf"
-COPY . ${TEMP_SRC_PATH}/src
+COPY . ${TEMP_SRC_PATH}
 
 FROM ros2-base AS ros2-dev-container
 
