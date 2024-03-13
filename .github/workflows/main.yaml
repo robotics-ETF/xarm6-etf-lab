@@ -33,5 +33,5 @@ jobs:
           context: .
           push: true
           file: ./.docker/Dockerfile
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: latest-main
+          labels: etf-lab
