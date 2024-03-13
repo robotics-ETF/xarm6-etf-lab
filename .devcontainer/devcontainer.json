@@ -1,6 +1,6 @@
 {
     "name": "ROS2-humble",
-    "remoteUser": "roboticsETF",
+    "remoteUser": "roboticsetf",
     "containerEnv": {
         "SHELL": "/bin/bash"
     },
@@ -14,7 +14,7 @@
         "ghcr.io/devcontainers-contrib/features/bash-command:1": {},
         "ghcr.io/devcontainers/features/common-utils:2": {
             "upgradePackages": false,
-            "username": "roboticsETF"
+            "username": "roboticsetf"
         },
         "ghcr.io/stuartleeks/dev-container-features/shell-history:0": {
             "version": "latest"
@@ -66,7 +66,7 @@
         // For HW accelerated graphics
         "--device",
         "/dev/dri:/dev/dri",
-        "--gpus",
-        "all"
+        //"--gpus",
+        //"all"
     ],
 }
