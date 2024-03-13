@@ -30,10 +30,7 @@ jobs:
         uses: docker/metadata-action@v3
         with:
           images: |
-            ghcr.io/${{ github.repository_owner }}/etflab
-          tags: |
-            type=ref,event=branch
-            type=sha
+            ghcr.io/${{ github.repository_owner }}/etflab:latest
 
       - name: Build and push
         uses: docker/build-push-action@v3
@@ -41,5 +38,5 @@ jobs:
           context: .
           file: ./.docker/Dockerfile
           push: true
-          tags: etflab
-          labels: etflab
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
