@@ -45,4 +45,4 @@ jobs:
 
       - name: Run the container with interactive bash session
         run: |
-          docker run --name etf_lab_container --rm ${{ steps.meta.outputs.tags }} /bin/bash -c "/home/robotics-etf/ros2_ws/ && ls -la && make full_build_container"
+          docker run --name etf_lab_container --rm ${{ steps.meta.outputs.tags }} /bin/bash -c "cd /home/robotics-etf/ros2_ws/ && ls -la && make full_build_container"
