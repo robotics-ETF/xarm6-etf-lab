@@ -45,4 +45,4 @@ jobs:
 
       - name: Run the container with interactive bash session
         run: |
-          docker run --name etf_lab_container -it --rm ${{ steps.meta.outputs.tags }} /bin/bash -c "echo 'Running command inside the container'"
+          docker run --name etf_lab_container --rm ${{ steps.meta.outputs.tags }} /bin/bash -c "echo 'Running command inside the container'"
