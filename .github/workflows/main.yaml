@@ -33,5 +33,5 @@ jobs:
           context: .
           push: true
           file: ./.docker/Dockerfile
-          tags: latest-main
-          labels: etf-lab
+          tags: ghcr.io/${{ github.actor }}/etf-lab:latest
+          labels: etf-lab:latest
