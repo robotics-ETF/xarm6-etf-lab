@@ -39,6 +39,7 @@ jobs:
           cd workspace
           ls -la src
           make submodules
+          ls -la
           cd src/etf_modules/RPMPLv2 && git checkout origin/main && cd ../../
           cd src/external_modules/gazebo_ros2_control && git checkout origin/humble && cd ../../
           cd src/external_modules/xarm_ros2 && git checkout origin/humble && cd ../../
