@@ -25,7 +25,7 @@ ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
 ARG TEMP_SRC_PATH="/tmp/roboticsetf"
-COPY --chown=$USERNAME . ${TEMP_SRC_PATH}
+COPY --chown=${USERNAME}:${USERNAME} . ${TEMP_SRC_PATH}
 
 FROM ros2-base AS ros2-dev-container
 
