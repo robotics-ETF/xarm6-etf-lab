@@ -29,7 +29,7 @@ jobs:
         uses: docker/metadata-action@v3
         with:
           images: |
-            ghcr.io/${{ github.actor }}/etflab
+            ghcr.io/${{ github.repository_owner }}/etflab
 
       - name: Build and push
         uses: docker/build-push-action@v3
@@ -45,4 +45,4 @@ jobs:
 
       - name: Run the container with interactive bash session
         run: |
-          docker run --name etf_lab_container --rm ${{ steps.meta.outputs.tags }} /bin/bash -c "cd /home/roboticsetf/ros2_ws/ && ls -la && make full_build_container"
+          docker run --name etf_lab_container --rm ${{ steps.meta.outputs.tags }} /bin/bash -c "/home/roboticsetf/ros2_ws/ && ls -la && make full_build_container"
