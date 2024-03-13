@@ -37,7 +37,7 @@ jobs:
       - name: Building
         run: |
           cd workspace
-          ls -la 
+          ls -la src
           make submodules
           cd src/etf_modules/RPMPLv2 && git checkout origin/main && cd ../../
           cd src/external_modules/gazebo_ros2_control && git checkout origin/humble && cd ../../
