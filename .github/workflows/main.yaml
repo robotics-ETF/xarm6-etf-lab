@@ -38,11 +38,11 @@ jobs:
         run: |
           cd workspace
           make submodules
-          cd src/etf_modules/RPMPLv2 && git checkout origin/main && cd ../../..
+          cd src/etf_modules/RPMPLv2 && git checkout origin/main && git status && cd ../../..
           pwd
-          cd src/external_modules/gazebo_ros2_control && git checkout origin/humble && cd ../../..
-          cd src/external_modules/xarm_ros2 && git checkout origin/humble && cd ../../
-          cd src/external_modules/xarm_ros2/xarm_sdk/cxx && git checkout origin/master && cd ../../../../..
+          cd src/external_modules/gazebo_ros2_control && git checkout origin/humble && git status && cd ../../..
+          cd src/external_modules/xarm_ros2 && git checkout origin/humble && git status && cd ../../..
+          cd src/external_modules/xarm_ros2/xarm_sdk/cxx && git checkout origin/master && git status && cd ../../../../..
           make dependencies
           source /opt/ros/humble/setup.sh
           make build
