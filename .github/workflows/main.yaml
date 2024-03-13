@@ -28,11 +28,11 @@ jobs:
           sudo rosdep init
           rosdep update
           sudo apt-get update && sudo apt-get upgrade
-          sudo apt-get install --yes --reinstall ros-humble-ros-workspace \
+          sudo apt-get install --yes --reinstall --no-install-recommends ros-humble-ros-workspace \
                                            ament-cmake libangles-dev tree \
                                            ros-humble-angles ros-dev-tools \
                                            ament-lint ros-humble-ament-lint-auto
-          apt-get install -y --no-install-recommends \
+          sudo apt-get install --yes --no-install-recommends \
                               ros-${ROS_DISTRO}-plotjuggler-ros \
                               ros-${ROS_DISTRO}-kdl-parser \
                               libeigen3-dev libkdl-parser-dev libgflags-dev libgoogle-glog-dev liborocos-kdl-dev \
