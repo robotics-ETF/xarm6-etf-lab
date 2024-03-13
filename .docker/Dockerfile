@@ -20,8 +20,12 @@ RUN apt-get update \
     python3-rosdep \
     && rm -rf /var/lib/apt/lists/*
 
+ARG USERNAME=roboticsetf
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
 ARG TEMP_SRC_PATH="/tmp/roboticsetf"
-COPY . ${TEMP_SRC_PATH}
+COPY --chown=$USERNAME . ${TEMP_SRC_PATH}
 
 FROM ros2-base AS ros2-dev-container
 
@@ -56,10 +60,6 @@ RUN ln -s /usr/bin/clangd-${CLANG_VERSION} /usr/bin/clangd
 
 RUN echo "\n# Source ROS_DISTRO setup.bash \nsource /opt/ros/${ROS_DISTRO}/setup.bash\n" >> /etc/skel/.profile
 RUN echo "\n# Add ccache to PATH\nexport PATH=/usr/lib/ccache:\$PATH\n" >> /etc/skel/.profile
-
-ARG USERNAME=roboticsetf
-ARG USER_UID=1000
-ARG USER_GID=$USER_UID
 
 RUN groupadd --gid $USER_GID $USERNAME \
     && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
