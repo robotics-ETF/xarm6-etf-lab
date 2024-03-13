@@ -41,8 +41,8 @@ jobs:
 
       - name: Pull the image
         run: |
-          docker pull ghcr.io/${{ github.repository_owner }}/etflab:${{ steps.meta.outputs.tags }}
+          docker pull ${{ steps.meta.outputs.tags }}
 
       - name: Run the container with interactive bash session
         run: |
-          docker run --name etf_lab_container -it --rm ghcr.io/${{ github.repository_owner }}/etflab:${{ steps.meta.outputs.tags }} /bin/bash -c "echo 'Running command inside the container'"
+          docker run --name etf_lab_container -it --rm ${{ steps.meta.outputs.tags }} /bin/bash -c "echo 'Running command inside the container'"
