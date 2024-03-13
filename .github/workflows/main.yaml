@@ -33,8 +33,8 @@ jobs:
                                            ros-humble-angles ros-dev-tools \
                                            ament-lint ros-humble-ament-lint-auto
           sudo apt-get install --yes --no-install-recommends \
-                              ros-${ROS_DISTRO}-plotjuggler-ros \
-                              ros-${ROS_DISTRO}-kdl-parser \
+                              ros-humble-plotjuggler-ros \
+                              ros-humble-kdl-parser \
                               libeigen3-dev libkdl-parser-dev libgflags-dev libgoogle-glog-dev liborocos-kdl-dev \
                               libyaml-cpp-dev liburdf-dev python3-pip libfcl-dev libnanoflann-dev                                           
           source /opt/ros/humble/setup.sh
