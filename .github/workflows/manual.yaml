@@ -1,13 +1,10 @@
-name: Build Docker Container
+name: Manual Build Docker Container
 
 on:
-  pull_request:
-    branches: [main]
-  push:
-    branches: [main]
+  workflow_dispatch:
 
 jobs:
-  build:
+  run-on-dispatch:
     runs-on: ubuntu-22.04
     permissions:
       packages: write
@@ -38,11 +35,4 @@ jobs:
           file: ./.docker/Dockerfile
           push: true
           tags: "${{ steps.meta.outputs.tags }}"
-
-      - name: Pull the image
-        run: |
-          docker pull ${{ steps.meta.outputs.tags }}
-
-      - name: Run the container with interactive bash session
-        run: |
-          docker run --name etf_lab_container --rm ${{ steps.meta.outputs.tags }} /bin/bash -c "echo $USER && cd /home/roboticsetf && ls -la && make full_build_container"
+          #labels: ${{ steps.meta.outputs.labels }}

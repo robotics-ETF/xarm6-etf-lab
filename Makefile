@@ -3,7 +3,7 @@
 dependencies:
 	rosdep update
 	sudo apt update
-	rosdep install --from-paths src --ignore-src -r -y
+	rosdep install --from-paths src --ignore-src -r -y --rosdistro humble
 
 clean:
 	rm -r ./build/ ./install/ ./log/
@@ -31,3 +31,13 @@ submodules:
 		vcs pull -w 1 $(folder) < $(folder)/repositories.yaml && \
 		(cd $(folder) && git submodule update --init --recursive) \
 	;)
+
+make full_build_container:
+	make submodules
+	cd src/etf_modules/RPMPLv2 && git checkout main && cd ../../..
+	cd src/external_modules/gazebo_ros2_control && git checkout humble && cd ../../..
+	cd src/external_modules/xarm_ros2 && git checkout humble && cd ../../..
+	cd src/external_modules/xarm_ros2/xarm_sdk/cxx && git checkout master && cd ../../../../..
+	make dependencies
+	make build
+	
