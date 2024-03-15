@@ -116,7 +116,7 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
     // Planner info and terminating condition
     DP::planner_info->setNumIterations(DP::planner_info->getNumIterations() + 1);
     DP::planner_info->addIterationTime(DP::getElapsedTime(DP::time_start, std::chrono::steady_clock::now()));
-    if (DP::checkTerminatingCondition())
+    if (DP::checkTerminatingCondition(DP::status))
         rclcpp::shutdown();
 
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "----------------------------------------------------------------------------\n");
