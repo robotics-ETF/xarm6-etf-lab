@@ -1,4 +1,4 @@
-period: 5000   # Period of basic callback function in [ms]
+period: 5.0                                             # Period of basic callback function in [s]
 
 robot:
   type: "xarm6"

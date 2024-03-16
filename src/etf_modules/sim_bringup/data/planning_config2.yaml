@@ -1,8 +1,4 @@
-period: 0.1                                                   # Maximal runtime of a single iteration in [s]
-
-real_time:
-  scheduling: "FPS"                                           # "FPS" - Fixed Priority Scheduling
-  max_time_task1: 0.050                                       # Maximal time in [s] which Task 1 can take from the processor
+period: 1.0                                                   # In [s]
 
 robot:
   type: "xarm6"
@@ -10,15 +6,12 @@ robot:
   space: "RealVectorSpace"
   num_DOFs: 6
   q_home:  [0, 0, 0, 3.1415, 1.5708, 0]
-  q_start: [0, 1.0472, -2.618, 0, 1.5708, 0]
-  q_goal:  [3.1415, 0.7854, -3.1415, -3.1415, 0, 3.1415]
+  q_start: [3.1415, 0.7854, -3.1415, -3.1415, 0, 3.1415]
+  q_goal:  [0, 0, 0, 3.1415, 1.5708, 0]
   capsules_radius: [0.047, 0.12, 0.11, 0.09, 0.05, 0.1]       # When the gripper is attached
   gripper_length: 0.17                                        # In [m]
   table_included: true                                        # Please check whether 'table' is added in 'environment'
-  WS_center: [0.0, 0.0, 0.267]                                # Workspace center point in [m]
-  WS_radius: 1.5                                              # Workspace radius in [m] assuming spherical workspace shape
   max_vel:  [3.1415, 3.1415, 3.1415, 3.1415, 3.1415, 3.1415]  # Maximal velocity of each robot's joint in [rad/s]
-  # max_vel:  [1, 1, 1, 1, 1, 1]  # Maximal velocity of each robot's joint in [rad/s]
   max_acc:  [6.3611, 6.3611, 6.3611, 6.3611, 6.3611, 6.3611]  # Maximal acceleration of each robot's joint in [rad/s²]
   max_jerk: [159.15, 159.15, 159.15, 159.15, 159.15, 159.15]  # Maximal jerk of each robot's joint in [rad/s³]
 
@@ -28,6 +21,8 @@ planner:
   # type: "RGBT-Connect"
   type: "RGBMT*"
   configurations: "/RPMPLv2"
+  max_planning_time: 0.8                                      # In [s]
+  max_edge_length: 0.5                                        # In [rad]
 
 environment:
   - box:
@@ -36,4 +31,4 @@ environment:
       pos: [0, 0, -0.05]
 
 cameras:
-  min_num_captures: 0                                         # Minimal number of captures/frames of a single obstacle to become valid
+  min_num_captures: 1                                         # Minimal number of captures/frames of a single STATIC obstacle to become valid

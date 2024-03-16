@@ -26,7 +26,7 @@ namespace sim_bringup
         virtual void baseCallback() = 0;
 
         rclcpp::TimerBase::SharedPtr timer;
-        int period;                             // Period of basic callback function in [ms]
+        float period;                             // Period of basic callback function in [s]
 
     protected:
         std::string project_abs_path;

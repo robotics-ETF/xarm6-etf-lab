@@ -10,7 +10,7 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
     YAML::Node node = YAML::LoadFile(project_abs_path + config_file_path);
 
     AABB::setEnvironment(scenario->getEnvironment());
-    if (AABB::getMinNumCaptures() == 0)
+    if (AABB::getMinNumCaptures() == 1)
         AABB::subscription = this->create_subscription<sensor_msgs::msg::PointCloud2>
             ("/bounding_boxes", 10, std::bind(&AABB::callback, this, std::placeholders::_1));
     else
@@ -21,12 +21,12 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
     DRGBTConfig::REAL_TIME_SCHEDULING = real_time_node["scheduling"].as<std::string>();
     DRGBTConfig::MAX_TIME_TASK1 = real_time_node["max_time_task1"].as<int>();
     DRGBTConfig::MAX_ITER_TIME = BaseNode::period;
-    DRGBTConfig::STATIC_PLANNER_NAME = Planner::getName();
-    if (DRGBTConfig::STATIC_PLANNER_NAME == "RGBMT*")
+    DRGBTConfig::STATIC_PLANNER_TYPE = Planner::getPlannerType();
+    if (DRGBTConfig::STATIC_PLANNER_TYPE == planning::PlannerType::RGBMTStar)
         RGBMTStarConfig::TERMINATE_WHEN_PATH_IS_FOUND = true;
     
     // ------------------------------------------------------------------------------- //
-    DP::time_start = std::chrono::steady_clock::now();      // Start the algorithm clock
+    DP::time_alg_start = std::chrono::steady_clock::now();      // Start the algorithm clock
 
     // Initial iteration: Obtaining the inital path using specified static planner
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\nIteration num. %d", DP::planner_info->getNumIterations());
@@ -35,7 +35,7 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
     replan(DRGBTConfig::MAX_ITER_TIME);
     
     DP::planner_info->setNumIterations(DP::planner_info->getNumIterations() + 1);
-    DP::planner_info->addIterationTime(DP::getElapsedTime(DP::time_start, std::chrono::steady_clock::now()));
+    DP::planner_info->addIterationTime(DP::getElapsedTime(DP::time_alg_start));
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "----------------------------------------------------------------------------\n");
 }
 
@@ -81,7 +81,7 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
     DP::generateGBur();
     DP::computeNextState();
     computeTrajectory();
-    std::cout << "Elapsed time: " << DP::getElapsedTime(DP::time_iter_start, std::chrono::steady_clock::now(), "us") << " [us] \n";
+    std::cout << "Elapsed time: " << DP::getElapsedTime(DP::time_iter_start, planning::TimeUnit::ms) << " [ms] \n";
     
     // ------------------------------------------------------------------------------- //
     // Replanning procedure assessment
@@ -90,10 +90,8 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TASK 2: Replanning... ");
         if (Planner::isReady()) 
         {
-            replan(DRGBTConfig::MAX_ITER_TIME 
-                   - DP::getElapsedTime(DP::time_iter_start, std::chrono::steady_clock::now())
-                   - 2);    // 2 [ms] is subtracted because of the following code lines
-            std::cout << "Elapsed time: " << DP::getElapsedTime(DP::time_iter_start, std::chrono::steady_clock::now(), "us") << " [us] \n";
+            replan(DRGBTConfig::MAX_ITER_TIME - DP::getElapsedTime(DP::time_iter_start) - 2e-3);    // 2 [ms] is subtracted because of the following code lines
+            std::cout << "Elapsed time: " << DP::getElapsedTime(DP::time_iter_start, planning::TimeUnit::us) << " [us] \n";
         }
         else
             std::cout << "PLANNER IS NOT READY! \n";
@@ -103,10 +101,10 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
 
     // ------------------------------------------------------------------------------- //
     // Checking the real-time execution
-    int time_iter_remain = DRGBTConfig::MAX_ITER_TIME * 1000 - DP::getElapsedTime(DP::time_iter_start, std::chrono::steady_clock::now(), "us");
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Remaining iteration time is %d [us].", time_iter_remain);
+    float time_iter_remain = DRGBTConfig::MAX_ITER_TIME * 1e3 - DP::getElapsedTime(DP::time_iter_start, planning::TimeUnit::ms);
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Remaining iteration time is %f [ms].", time_iter_remain);
     if (time_iter_remain < 0)
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "********** Real-time is broken. %d [us] exceeded!!! **********", -time_iter_remain);
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "********** Real-time is broken. %f [ms] exceeded!!! **********", -time_iter_remain);
 
     // ------------------------------------------------------------------------------- //
     // Current robot position at the end of iteration
@@ -115,7 +113,7 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
     // ------------------------------------------------------------------------------- //
     // Planner info and terminating condition
     DP::planner_info->setNumIterations(DP::planner_info->getNumIterations() + 1);
-    DP::planner_info->addIterationTime(DP::getElapsedTime(DP::time_start, std::chrono::steady_clock::now()));
+    DP::planner_info->addIterationTime(DP::getElapsedTime(DP::time_alg_start));
     if (DP::checkTerminatingCondition(DP::status))
         rclcpp::shutdown();
 
@@ -123,7 +121,7 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
 }
 
 // Try to replan the predefined path from the target to the goal configuration within the specified time
-void sim_bringup::RealTimePlanningNode::replan(int max_planning_time)
+void sim_bringup::RealTimePlanningNode::replan(float max_planning_time)
 {
     bool result = false;
     std::thread replanning_thread;
@@ -136,17 +134,17 @@ void sim_bringup::RealTimePlanningNode::replan(int max_planning_time)
         if (DRGBTConfig::REAL_TIME_SCHEDULING == "FPS")     // Fixed Priority Scheduling
         {
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Replanning with Fixed Priority Scheduling ");
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Trying to replan in %d [ms]...", max_planning_time);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Trying to replan in %f [s]...", max_planning_time);
             replanning_thread = std::thread([this, &result, &max_planning_time]() 
             {
                 result = Planner::solve(DP::q_target, DP::q_goal, max_planning_time);
             });
-            std::this_thread::sleep_for(std::chrono::milliseconds(max_planning_time));
+            std::this_thread::sleep_for(std::chrono::microseconds(int(max_planning_time * 1e6)));
         }
         else                                                // No real-time scheduling
         {
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Replanning without real-time scheduling ");
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Trying to replan in %d [ms]...", max_planning_time);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Trying to replan in %f [s]...", max_planning_time);
             result = Planner::solve(DP::q_target, DP::q_goal, max_planning_time);
         }
 
@@ -154,7 +152,7 @@ void sim_bringup::RealTimePlanningNode::replan(int max_planning_time)
         if (result)
         {
             // First, interpolation of the predefined path is done in order that the horizon contains more states from the path
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "The path has been replanned in %d [ms].", Planner::getPlanningTime());
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "The path has been replanned in %f [s].", Planner::getPlanningTime());
             DP::acquirePredefinedPath(Planner::getPath());
             DP::clearHorizon(base::State::Status::Reached, false);
             DP::q_next = std::make_shared<planning::drbt::HorizonState>(DP::q_target, 0);

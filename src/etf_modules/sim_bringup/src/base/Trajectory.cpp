@@ -192,7 +192,7 @@ void sim_bringup::Trajectory::publish(float time_delay)
     {
         if (msg.points[i].positions.size() == 6)
         {
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Num. %d.\t Time: %f [s].\t Point: (%f, %f, %f, %f, %f, %f)", 
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Num. %d.\t Time: %f [s].\t Position: (%f, %f, %f, %f, %f, %f)", 
                         i, (msg.points[i].time_from_start.sec + msg.points[i].time_from_start.nanosec * 1e-9) + time_delay, 
                         msg.points[i].positions[0],
                         msg.points[i].positions[1],

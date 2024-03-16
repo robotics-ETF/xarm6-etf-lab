@@ -19,8 +19,8 @@ sim_bringup::BaseNode::BaseNode(const std::string &node_name, const std::string 
         Robot::joints_state_subscription = this->create_subscription<control_msgs::msg::JointTrajectoryControllerState>
             ("/xarm6_traj_controller/state", 10, std::bind(&Robot::jointsStateCallback, this, std::placeholders::_1));
 
-        period = node["period"].as<int>();
-        timer = this->create_wall_timer(std::chrono::milliseconds(period), std::bind(&BaseNode::baseCallback, this));
+        period = node["period"].as<float>();
+        timer = this->create_wall_timer(std::chrono::microseconds(int(period * 1e6)), std::bind(&BaseNode::baseCallback, this));
 
         std::shared_ptr<env::Environment> env = nullptr;
         if (node["environment"].IsDefined())

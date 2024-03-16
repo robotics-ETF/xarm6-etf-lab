@@ -27,7 +27,7 @@ void sim_bringup::MoveXArm6Node::goHome()
 {
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going home...");
     Trajectory::clear();
-    Trajectory::addPoint(0.9 * period / 1000, Robot::getHomeJointsPosition());
+    Trajectory::addPoint(0.9 * period, Robot::getHomeJointsPosition());
     Trajectory::publish();
 }
 

@@ -18,10 +18,19 @@ sim_bringup::Planner::Planner(const std::string &config_file_path)
         
         ConfigurationReader::initConfiguration(project_abs_path + planner_node["configurations"].as<std::string>());
         planner = nullptr;
-        name = planner_node["name"].as<std::string>();
+
+        std::string type = planner_node["type"].as<std::string>();
+        if (type == "RGBMT*")
+            planner_type = planning::PlannerType::RGBMTStar;
+        else if (type == "RGBT-Connect")
+            planner_type = planning::PlannerType::RGBTConnect;
+        else if (type == "RBT-Connect")
+            planner_type = planning::PlannerType::RBTConnect;
+        else if (type == "RRT-Connect")
+            planner_type = planning::PlannerType::RRTConnect;
 
         YAML::Node max_planning_time_node = planner_node["max_planning_time"];
-        max_planning_time = (max_planning_time_node.IsDefined()) ? max_planning_time_node.as<int>() : INFINITY;
+        max_planning_time = (max_planning_time_node.IsDefined()) ? max_planning_time_node.as<float>() : INFINITY;
     }
     catch (std::exception &e)
     {
@@ -31,7 +40,7 @@ sim_bringup::Planner::Planner(const std::string &config_file_path)
     ready = true;
 }
 
-bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shared_ptr<base::State> q_goal, int max_planning_time_)
+bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shared_ptr<base::State> q_goal, float max_planning_time_)
 {
     ready = false;
     bool result = false;
@@ -55,36 +64,39 @@ bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shar
 
     try
     {
-        if (name == "RGBMT*")
+        switch (planner_type)
         {
+        case planning::PlannerType::RGBMTStar:
             RGBMTStarConfig::MAX_PLANNING_TIME = max_planning_time;
             planner = std::make_unique<planning::rbt_star::RGBMTStar>(scenario->getStateSpace(), q_start, q_goal);
-        }
-        else if (name == "RGBTConnect")
-        {
+            break;
+
+        case planning::PlannerType::RGBTConnect:
             RGBTConnectConfig::MAX_PLANNING_TIME = max_planning_time;
             planner = std::make_unique<planning::rbt::RGBTConnect>(scenario->getStateSpace(), q_start, q_goal);
-        }
-        else if (name == "RBTConnect")
-        {
+            break;
+        
+        case planning::PlannerType::RBTConnect:
             RBTConnectConfig::MAX_PLANNING_TIME = max_planning_time;
             planner = std::make_unique<planning::rbt::RBTConnect>(scenario->getStateSpace(), q_start, q_goal);
-        }
-        else if (name == "RRTConnect")
-        {
+            break;
+
+        case planning::PlannerType::RRTConnect:
             RRTConnectConfig::MAX_PLANNING_TIME = max_planning_time;
             planner = std::make_unique<planning::rrt::RRTConnect>(scenario->getStateSpace(), q_start, q_goal);
-        }
-        else
+            break;
+
+        default:
             throw std::domain_error("The requested static planner is not found! ");
+        }
 
         result = planner->solve();
 
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t %s planning finished with %s ", 
-            name.c_str(), (result ? std::string("SUCCESS!").c_str() : std::string("FAILURE!").c_str()));
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Planning finished with %s ", 
+            (result ? std::string("SUCCESS!").c_str() : std::string("FAILURE!").c_str()));
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Number of states in the path: %d", planner->getPath().size());
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Planning time: %d [ms]", planner->getPlannerInfo()->getPlanningTime());
-        if (name == "RGBMT*")
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Planning time: %f [s]", planner->getPlannerInfo()->getPlanningTime());
+        if (planner_type == planning::PlannerType::RGBMTStar)
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Path cost: %f", planner->getPlannerInfo()->getCostConvergence().back());
 
         // Just for debugging (Not recommended to waste time!)
