@@ -7,7 +7,7 @@ sim_bringup::PlanningNode::PlanningNode(const std::string &node_name, const std:
     ConvexHulls(config_file_path)
 {
     AABB::setEnvironment(scenario->getEnvironment());
-    if (AABB::getMinNumCaptures() == 0)
+    if (AABB::getMinNumCaptures() == 1)
         AABB::subscription = this->create_subscription<sensor_msgs::msg::PointCloud2>
             ("/bounding_boxes", 10, std::bind(&AABB::callback, this, std::placeholders::_1));
     else

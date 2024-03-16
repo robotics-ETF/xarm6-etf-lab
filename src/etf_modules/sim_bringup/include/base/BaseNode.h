@@ -5,7 +5,6 @@
 #ifndef SIM_BRINGUP_BASE_NODE_H
 #define SIM_BRINGUP_BASE_NODE_H
 
-#include "base/Robot.h"
 #include "base/Trajectory.h"
 #include "base/Planner.h"
 
@@ -18,7 +17,6 @@ namespace sim_bringup
 {
     class BaseNode : public rclcpp::Node,
                      public sim_bringup::Trajectory,
-                     public sim_bringup::Robot,
                      public sim_bringup::Planner
     {
     public:

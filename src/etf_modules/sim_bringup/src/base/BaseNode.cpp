@@ -3,7 +3,6 @@
 sim_bringup::BaseNode::BaseNode(const std::string &node_name, const std::string &config_file_path) : 
     Node(node_name),
     Trajectory(config_file_path),
-    Robot(config_file_path),
     Planner(config_file_path)
 {
     project_abs_path = std::string(__FILE__);
