@@ -18,7 +18,12 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
             ("/bounding_boxes", 10, std::bind(&AABB::withFilteringCallback, this, std::placeholders::_1));
 
     YAML::Node real_time_node = node["real_time"];
-    DRGBTConfig::REAL_TIME_SCHEDULING = real_time_node["scheduling"].as<std::string>();
+    std::string real_time_scheduling = real_time_node["scheduling"].as<std::string>();
+    if (real_time_scheduling == "FPS")
+        DRGBTConfig::REAL_TIME_SCHEDULING = planning::RealTimeScheduling::FPS;
+    else if (real_time_scheduling == "None")
+        DRGBTConfig::REAL_TIME_SCHEDULING = planning::RealTimeScheduling::None;
+
     DRGBTConfig::MAX_TIME_TASK1 = real_time_node["max_time_task1"].as<int>();
     DRGBTConfig::MAX_ITER_TIME = BaseNode::period;
     DRGBTConfig::STATIC_PLANNER_TYPE = Planner::getPlannerType();
@@ -131,8 +136,9 @@ void sim_bringup::RealTimePlanningNode::replan(float max_planning_time)
         if (max_planning_time < 0)
             throw std::runtime_error("Not enough time for replanning! ");
 
-        if (DRGBTConfig::REAL_TIME_SCHEDULING == "FPS")     // Fixed Priority Scheduling
+        switch (DRGBTConfig::REAL_TIME_SCHEDULING)
         {
+        case planning::RealTimeScheduling::FPS:
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Replanning with Fixed Priority Scheduling ");
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Trying to replan in %f [s]...", max_planning_time);
             replanning_thread = std::thread([this, &result, &max_planning_time]() 
@@ -140,12 +146,13 @@ void sim_bringup::RealTimePlanningNode::replan(float max_planning_time)
                 result = Planner::solve(DP::q_target, DP::q_goal, max_planning_time);
             });
             std::this_thread::sleep_for(std::chrono::microseconds(int(max_planning_time * 1e6)));
-        }
-        else                                                // No real-time scheduling
-        {
+            break;
+        
+        case planning::RealTimeScheduling::None:
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Replanning without real-time scheduling ");
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Trying to replan in %f [s]...", max_planning_time);
             result = Planner::solve(DP::q_target, DP::q_goal, max_planning_time);
+            break;
         }
 
         // New path is found within the specified time limit, thus update predefined path to the goal
