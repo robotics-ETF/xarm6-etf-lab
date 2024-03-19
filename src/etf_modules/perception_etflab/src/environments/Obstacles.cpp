@@ -17,7 +17,7 @@ perception_etflab::Obstacles::Obstacles(const std::string &config_file_path)
 	max_vel = obs_node["max_vel"].as<float>();
 	for (int i = 0; i < 3; i++)
 		dim(i) = obs_node["dim"][i].as<float>();
-    period = obs_node["period"].as<int>();
+    period = obs_node["period"].as<float>();
 
     YAML::Node robot_node = node["robot"];
     table_included = robot_node["table_included"].as<bool>();
@@ -66,13 +66,12 @@ void perception_etflab::Obstacles::move(std::vector<pcl::PointCloud<pcl::PointXY
     std::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cluster;
     Eigen::Vector3f pos, vel;
     float vel_intensity;
-    float delta_time = period / 1000.0;     // Conversion from [ms] to [s]
 
     for (int i = 0; i < num_obstacles; i++)
     {
         cluster = obstacles[i];
         pos = Eigen::Vector3f(cluster->points.front().x, cluster->points.front().y, cluster->points.front().z);
-        pos += velocities[i] * delta_time;
+        pos += velocities[i] * period;
         vel_intensity = velocities[i].norm();
 
         if (!isValid(pos, vel_intensity))
@@ -87,9 +86,9 @@ void perception_etflab::Obstacles::move(std::vector<pcl::PointCloud<pcl::PointXY
         {
             for (pcl::PointCloud<pcl::PointXYZRGB>::iterator point = cluster->begin(); point < cluster->end(); point++)
             {
-                point->x += velocities[i].x() * delta_time;
-                point->y += velocities[i].y() * delta_time;
-                point->z += velocities[i].z() * delta_time;
+                point->x += velocities[i].x() * period;
+                point->y += velocities[i].y() * period;
+                point->z += velocities[i].z() * period;
             }
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%d. Obstacle pos: (%f, %f, %f)", i, pos.x(), pos.y(), pos.z());
         }

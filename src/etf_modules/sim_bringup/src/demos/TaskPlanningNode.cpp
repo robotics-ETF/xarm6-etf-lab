@@ -231,7 +231,7 @@ int sim_bringup::TaskPlanningNode::chooseObject()
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Object %d. dim = (%f, %f, %f), pos = (%f, %f, %f). Num. captures %d.",
             i, dimensions[i].x(), dimensions[i].y(), dimensions[i].z(), 
                positions[i].x(), positions[i].y(), positions[i].z(), num_captures[i]);
-        if (num_captures[i] >= min_num_captures && positions[i].z() > z_max)
+        if (num_captures[i] >= min_num_captures && positions[i].z() > z_max && positions[i].z() < 0.1)  // Pick only "small" objects
         {
             z_max = positions[i].z();
             obj_idx = i;

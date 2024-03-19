@@ -33,7 +33,7 @@ perception_etflab::ObjectSegmentationNode::ObjectSegmentationNode(const std::str
 	}
 	else
 	{
-        timer = this->create_wall_timer(std::chrono::milliseconds(Obstacles::getPeriod()), 
+        timer = this->create_wall_timer(std::chrono::microseconds(size_t(Obstacles::getPeriod() * 1e6)), 
 			std::bind(&ObjectSegmentationNode::simPointCloudCallback, this));
 		RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Using simulated robot. Starting up %s without input topic and output topic %s", 
 			node_name.c_str(), objects_cloud.c_str());
