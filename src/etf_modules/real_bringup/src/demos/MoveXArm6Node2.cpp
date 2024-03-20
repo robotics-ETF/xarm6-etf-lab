@@ -1,7 +1,7 @@
-#include "base/MoveXArm6Node.h"
+#include "demos/MoveXArm6Node2.h"
 
-real_bringup::MoveXArm6Node::MoveXArm6Node(const std::string node_name, const std::string config_file_path) : 
-    BaseNode(node_name, config_file_path) 
+real_bringup::MoveXArm6Node2::MoveXArm6Node2(const std::string &node_name, const std::string &config_file_path) : 
+    sim_bringup::moveXArm6Node(node_name, config_file_path) 
 {
     // The defined service can only be activated at initialization if that service is configured to true. 
     // If you need to customize the parameters, please create a file xarm_api/config/xarm_user_params.yaml 
@@ -29,7 +29,7 @@ real_bringup::MoveXArm6Node::MoveXArm6Node(const std::string node_name, const st
     state = going_home;
 }
 
-void real_bringup::MoveXArm6Node::moveXArm6Callback()
+void real_bringup::MoveXArm6Node2::moveXArm6Callback2()
 {
     switch (state)
     {
@@ -70,34 +70,7 @@ void real_bringup::MoveXArm6Node::moveXArm6Callback()
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
 }
 
-void real_bringup::MoveXArm6Node::goHome()
-{
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going home...");
-    Trajectory::clear();
-    Trajectory::addPoint(Robot::getHomeJointsState(), 0.9 * period / 1000);
-    Trajectory::publish();
-}
-
-void real_bringup::MoveXArm6Node::moveInJointSpace()
-{
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Moving in joint space...");
-    std::vector<Eigen::VectorXf> path;
-    std::vector<float> time_instances;
-    Eigen::VectorXf q(6);
-
-    q << -M_PI_2, 0, 0, M_PI, M_PI_2, 0;
-    path.emplace_back(q);
-    time_instances.emplace_back(2);
-    
-    q << -M_PI_2, -M_PI_4, 0, M_PI, M_PI_2, 0;
-    path.emplace_back(q);
-    time_instances.emplace_back(4);
-
-    Trajectory::addPath(path, time_instances);
-    Trajectory::publish();
-}
-
-void real_bringup::MoveXArm6Node::setPosition(const std::vector<float> &pose, float speed, float acceleration)
+void real_bringup::MoveXArm6Node2::setPosition(const std::vector<float> &pose, float speed, float acceleration)
 {
     while (!set_position_client->wait_for_service(1s))
     {

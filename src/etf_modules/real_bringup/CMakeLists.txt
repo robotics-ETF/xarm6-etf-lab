@@ -26,12 +26,14 @@ find_package(fcl 0.7 REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(rpmpl_library REQUIRED)
 find_package(nanoflann REQUIRED)
+find_package(sim_bringup_library REQUIRED)
 
 include_directories(
   include
   ${EIGEN3_INCLUDE_DIR}
   ${OCTOMAP_INCLUDE_DIRS}
   ${RPMPL_LIBRARY_INCLUDE_DIRS}
+  ${SIM_BRINGUP_LIBRARY_INCLUDE_DIRS}
 )
 
 # The compiled library code is here
