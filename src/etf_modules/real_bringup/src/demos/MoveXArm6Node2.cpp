@@ -7,21 +7,21 @@ real_bringup::MoveXArm6Node2::MoveXArm6Node2(const std::string &node_name, const
     // If you need to customize the parameters, please create a file xarm_api/config/xarm_user_params.yaml 
     // To modify the format, refer to xarm_api/config/xarm_params.yaml
     // See 5.4 xarm_api at: https://github.com/xArm-Developer/xarm_ros2/tree/humble
-    Robot::xarm_client_node = std::make_shared<rclcpp::Node>("xarm_client_node");
-    Robot::xarm_client.init(Robot::xarm_client_node, "xarm");
-    Robot::xarm_client.clean_error();
-    Robot::xarm_client.clean_warn();
-    Robot::xarm_client.motion_enable(true);
+    xarm_client_node = std::make_shared<rclcpp::Node>("xarm_client_node");
+    xarm_client.init(xarm_client_node, "xarm");
+    xarm_client.clean_error();
+    xarm_client.clean_warn();
+    xarm_client.motion_enable(true);
 
     // See 6.1 Mode Explanation at: https://github.com/xArm-Developer/xarm_ros#report_type-argument
     // Mode 0: xArm controller (position) mode
     // Mode 1: External trajectory planner (position) mode
-    Robot::xarm_client.set_mode(0);
-    Robot::xarm_client.set_state(0);
+    xarm_client.set_mode(0);
+    xarm_client.set_state(0);
 
-    Robot::xarm_client.set_gripper_enable(true);
-    Robot::xarm_client.set_gripper_mode(0);
-    Robot::xarm_client.set_gripper_speed(3000);
+    xarm_client.set_gripper_enable(true);
+    xarm_client.set_gripper_mode(0);
+    xarm_client.set_gripper_speed(3000);
 
     set_position_node = std::make_shared<rclcpp::Node>("set_position_node");
     set_position_client = set_position_node->create_client<xarm_msgs::srv::MoveCartesian>("/xarm/set_position");
@@ -46,23 +46,23 @@ void real_bringup::MoveXArm6Node2::moveXArm6Callback2()
 
     case setting_position1:
         setPosition({500, 0, 133, 0, M_PI_2, 0}, 200, 1000);
-        // Robot::xarm_client.set_position({500, 0, 133, 0, M_PI_2, 0}, -1, 0.7*Robot::getMaxLinVel(), 0.7*Robot::getMaxLinAcc(), 0, false);
+        // xarm_client.set_position({500, 0, 133, 0, M_PI_2, 0}, -1, 0.7*Robot::getMaxLinVel(), 0.7*Robot::getMaxLinAcc(), 0, false);
         state = setting_position2;
         break;
 
     case setting_position2:
         setPosition({400, 0, 133, 0, M_PI_2, 0}, 200, 1000);
-        // Robot::xarm_client.set_position({400, 0, 133, 0, M_PI_2, 0}, -1, 0.7*Robot::getMaxLinVel(), 0.7*Robot::getMaxLinAcc(), 0, false);
+        // xarm_client.set_position({400, 0, 133, 0, M_PI_2, 0}, -1, 0.7*Robot::getMaxLinVel(), 0.7*Robot::getMaxLinAcc(), 0, false);
         state = closing_gripper;
 
     case closing_gripper:
-        Robot::xarm_client.set_gripper_position(0);
+        xarm_client.set_gripper_position(0);
         // moveGripper(0);
         state = opening_gripper;
         break;
 
     case opening_gripper:
-        Robot::xarm_client.set_gripper_position(850, true, 1);
+        xarm_client.set_gripper_position(850, true, 1);
         // moveGripper(1);
         state = going_home;
         break;
