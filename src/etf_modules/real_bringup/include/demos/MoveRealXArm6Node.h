@@ -7,16 +7,16 @@
 #include <xarm_msgs/srv/move_cartesian.hpp>
 namespace real_bringup
 {
-    class MoveXArm6Node2 : public sim_bringup::MoveXArm6Node
+    class MoveRealXArm6Node : public sim_bringup::MoveXArm6Node
     {
     public:
-        MoveXArm6Node2(const std::string &node_name, const std::string &config_file_path);
+        MoveRealXArm6Node(const std::string &node_name, const std::string &config_file_path);
 
         std::shared_ptr<rclcpp::Node> set_position_node;
         rclcpp::Client<xarm_msgs::srv::MoveCartesian>::SharedPtr set_position_client;
 
     protected:
-        void moveXArm6Callback2() override { moveXArm6Callback(); }
+        void moveXArm6Callback() override { moveXArm6Callback2(); }
         virtual void moveXArm6Callback2();
         void setPosition(const std::vector<float> &pose, float speed = 100, float acceleration = 1000);
 

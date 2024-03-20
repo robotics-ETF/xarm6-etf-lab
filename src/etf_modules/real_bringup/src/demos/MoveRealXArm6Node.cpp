@@ -1,7 +1,7 @@
-#include "demos/MoveXArm6Node2.h"
+#include "demos/MoveRealXArm6Node.h"
 
-real_bringup::MoveXArm6Node2::MoveXArm6Node2(const std::string &node_name, const std::string &config_file_path) : 
-    sim_bringup::moveXArm6Node(node_name, config_file_path) 
+real_bringup::MoveRealXArm6Node::MoveRealXArm6Node(const std::string &node_name, const std::string &config_file_path) : 
+    sim_bringup::MoveXArm6Node(node_name, config_file_path) 
 {
     // The defined service can only be activated at initialization if that service is configured to true. 
     // If you need to customize the parameters, please create a file xarm_api/config/xarm_user_params.yaml 
@@ -29,7 +29,7 @@ real_bringup::MoveXArm6Node2::MoveXArm6Node2(const std::string &node_name, const
     state = going_home;
 }
 
-void real_bringup::MoveXArm6Node2::moveXArm6Callback2()
+void real_bringup::MoveRealXArm6Node::moveXArm6Callback2()
 {
     switch (state)
     {
@@ -70,7 +70,7 @@ void real_bringup::MoveXArm6Node2::moveXArm6Callback2()
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
 }
 
-void real_bringup::MoveXArm6Node2::setPosition(const std::vector<float> &pose, float speed, float acceleration)
+void real_bringup::MoveRealXArm6Node::setPosition(const std::vector<float> &pose, float speed, float acceleration)
 {
     while (!set_position_client->wait_for_service(1s))
     {

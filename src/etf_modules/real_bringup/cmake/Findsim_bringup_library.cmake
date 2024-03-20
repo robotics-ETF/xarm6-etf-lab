@@ -26,8 +26,3 @@ if(SIM_BRINGUP_LIBRARY)
 else(SIM_BRINGUP_LIBRARY)
   message(STATUS "Not found sim_bringup_library")
 endif(SIM_BRINGUP_LIBRARY)
-
-find_package(rpmpl_library REQUIRED)
-
-# SIM_BRINGUP_LIBRARIES are libraries needed in order to use sim_bringup_library
-set(SIM_BRINGUP_LIBRARIES rpmpl_library)
