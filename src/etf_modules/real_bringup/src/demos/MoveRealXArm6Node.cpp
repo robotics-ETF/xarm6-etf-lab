@@ -9,32 +9,36 @@ real_bringup::MoveRealXArm6Node::MoveRealXArm6Node(const std::string &node_name,
     // See 5.4 xarm_api at: https://github.com/xArm-Developer/xarm_ros2/tree/humble
     xarm_client_node = std::make_shared<rclcpp::Node>("xarm_client_node");
     xarm_client.init(xarm_client_node, "xarm");
-    xarm_client.clean_error();
-    xarm_client.clean_warn();
-    xarm_client.motion_enable(true);
 
-    // See 6.1 Mode Explanation at: https://github.com/xArm-Developer/xarm_ros#report_type-argument
-    // Mode 0: xArm controller (position) mode
-    // Mode 1: External trajectory planner (position) mode
-    xarm_client.set_mode(0);
-    xarm_client.set_state(0);
+    // xarm_client.clean_error();
+    // xarm_client.clean_warn();
+    // xarm_client.motion_enable(true);
 
-    xarm_client.set_gripper_enable(true);
-    xarm_client.set_gripper_mode(0);
-    xarm_client.set_gripper_speed(3000);
+    // // See 6.1 Mode Explanation at: https://github.com/xArm-Developer/xarm_ros#report_type-argument
+    // // Mode 0: xArm controller (position) mode
+    // // Mode 1: External trajectory planner (position) mode
+    // xarm_client.set_mode(0);
+    // xarm_client.set_state(0);
 
-    set_position_node = std::make_shared<rclcpp::Node>("set_position_node");
-    set_position_client = set_position_node->create_client<xarm_msgs::srv::MoveCartesian>("/xarm/set_position");
+    // xarm_client.set_gripper_enable(true);
+    // xarm_client.set_gripper_mode(0);
+    // xarm_client.set_gripper_speed(3000);
+
+    // set_position_node = std::make_shared<rclcpp::Node>("set_position_node");
+    // set_position_client = set_position_node->create_client<xarm_msgs::srv::MoveCartesian>("/xarm/set_position");
     
+    for (float coord : Robot::getHomeJointsPosition())
+        home_angles.emplace_back(coord);
+        
     state = going_home;
 }
 
-void real_bringup::MoveRealXArm6Node::moveXArm6Callback2()
+void real_bringup::MoveRealXArm6Node::moveRealXArm6Callback()
 {
     switch (state)
     {
     case going_home:
-        goHome();
+        // goHome();
         // state = moving_in_joint_space;
         state = setting_position1;
         break;

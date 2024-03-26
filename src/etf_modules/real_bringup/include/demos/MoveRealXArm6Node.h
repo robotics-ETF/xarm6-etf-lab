@@ -12,18 +12,18 @@ namespace real_bringup
     public:
         MoveRealXArm6Node(const std::string &node_name, const std::string &config_file_path);
 
-        std::shared_ptr<rclcpp::Node> set_position_node;
-        rclcpp::Client<xarm_msgs::srv::MoveCartesian>::SharedPtr set_position_client;
-
     protected:
-        void moveXArm6Callback() override { moveXArm6Callback2(); }
-        virtual void moveXArm6Callback2();
+        // void moveXArm6Callback() override { moveRealXArm6Callback(); }
+        virtual void moveRealXArm6Callback();
         void setPosition(const std::vector<float> &pose, float speed = 100, float acceleration = 1000);
 
+        std::shared_ptr<rclcpp::Node> set_position_node;
+        rclcpp::Client<xarm_msgs::srv::MoveCartesian>::SharedPtr set_position_client;
         std::shared_ptr<rclcpp::Node> gripper_node;
         rclcpp_action::Client<control_msgs::action::GripperCommand>::SharedPtr gripper_client;
         std::shared_ptr<rclcpp::Node> xarm_client_node;
         xarm_api::XArmROSClient xarm_client;
+        std::vector<float> home_angles;
 
     private:
         enum State

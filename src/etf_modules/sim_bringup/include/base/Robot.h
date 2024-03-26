@@ -32,7 +32,7 @@ namespace sim_bringup
             { return std::make_shared<base::RealVectorSpaceState>(joints_velocity); }
         inline std::shared_ptr<base::State> getJointsAccelerationPtr() const 
             { return std::make_shared<base::RealVectorSpaceState>(joints_acceleration); }
-        inline std::shared_ptr<base::State> getHomeJointsStatePtr() const 
+        inline std::shared_ptr<base::State> getHomeJointsPositionPtr() const 
             { return std::make_shared<base::RealVectorSpaceState>(home_joints_position); }
         inline const Eigen::VectorXf &getJointsPosition() const { return joints_position; }
         inline const Eigen::VectorXf &getJointsVelocity() const { return joints_velocity; }

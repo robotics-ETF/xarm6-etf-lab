@@ -14,12 +14,21 @@ sim_bringup::Trajectory::Trajectory(const std::string &config_file_path) :
     
     YAML::Node node = YAML::LoadFile(project_abs_path + config_file_path);
     YAML::Node planner_node = node["planner"];
+
     if (planner_node["max_edge_length"])
         max_edge_length = planner_node["max_edge_length"].as<float>();
     else
     {
         max_edge_length = 0.1;
         RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Maximal edge length is not defined! Using default value of %f", max_edge_length);
+    }
+
+    if (planner_node["trajectory_max_time_step"])
+        trajectory_max_time_step = planner_node["trajectory_max_time_step"].as<float>();
+    else
+    {
+        trajectory_max_time_step = 0.1;
+        RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Maximal edge length is not defined! Using default value of %f", trajectory_max_time_step);
     }
 }
 
@@ -100,7 +109,7 @@ void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::St
         spline_current->compute(new_path[2]);
     
     float t_current = 0;
-    float t, t_min, t_max;
+    float t, t_min, t_max, t_temp;
     bool found;
     int num;
     const int max_num_iter = 5;
@@ -132,12 +141,36 @@ void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::St
                 t_min = t;
         }
 
+        t_temp = trajectory_max_time_step;
+        while (t_temp <= t)
+        {
+            q_current = spline_current->getPosition(t_temp);
+            q_current_dot = spline_current->getVelocity(t_temp);
+            q_current_ddot = spline_current->getAcceleration(t_temp);
+            addPoint(t_current + t_temp, q_current, q_current_dot, q_current_ddot);
+            t_temp += trajectory_max_time_step;
+        }
+        
+        // q_current = spline_current->getPosition(t);
+        // q_current_dot = spline_current->getVelocity(t);
+        // q_current_ddot = spline_current->getAcceleration(t);
+        // addPoint(t_current + t, q_current, q_current_dot, q_current_ddot);
+        
         t_current += t;
         spline_current = spline_next;
-        addPoint(t_current, q_current, q_current_dot, q_current_ddot);
         // std::cout << "Adding point at time: " << t_current << " [s] \n";
     }
 
+    t_temp = trajectory_max_time_step;
+    while (t_temp <= spline_current->getTimeFinal())
+    {
+        q_current = spline_current->getPosition(t_temp);
+        q_current_dot = spline_current->getVelocity(t_temp);
+        q_current_ddot = spline_current->getAcceleration(t_temp);
+        addPoint(t_current + t_temp, q_current, q_current_dot, q_current_ddot);
+        t_temp += trajectory_max_time_step;
+    }
+    
     addPoint(t_current + spline_current->getTimeFinal(), new_path.back());
 }
 
