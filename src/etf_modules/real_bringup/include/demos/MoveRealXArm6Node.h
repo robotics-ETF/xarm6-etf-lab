@@ -19,6 +19,7 @@ namespace real_bringup
         void moveXArm6Callback() override { moveRealXArm6Callback(); }
         virtual void moveRealXArm6Callback();
         void setPosition(const std::vector<float> &pose, float speed = 100, float acceleration = 1000);
+        void testOrientation();
 
         std::shared_ptr<rclcpp::Node> xarm_client_node;
         xarm_api::XArmROSClient xarm_client;

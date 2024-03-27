@@ -98,3 +98,43 @@ void real_bringup::MoveRealXArm6Node::setPosition(const std::vector<float> &pose
     else
         RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to set position!");
 }
+
+void real_bringup::MoveRealXArm6Node::testOrientation()
+{
+    std::vector<float> current_pose {};
+    xarm_client.get_position(current_pose);
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Robot end-effector pose: (%f, %f, %f)", current_pose[0], current_pose[1], current_pose[2]);     // XYZ in [m]
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Robot end-effector RPY:  (%f, %f, %f)", current_pose[3], current_pose[4], current_pose[5]);     // RPY angles in [rad]
+    
+    Eigen::Matrix3f R {};
+    Eigen::Vector3f RPY {}, YPR {};
+
+    // For approaching from above
+    // R.col(0) << 0, 0, -1;
+    // R.col(1) << -current_pose[1], current_pose[0], 0;
+    // R.col(1) = R.col(1) / R.col(1).norm();
+    // R.col(2) << current_pose[0], current_pose[1], 0;
+    // R.col(2) = R.col(2) / R.col(2).norm();
+
+    R = Eigen::AngleAxisf(current_pose[5], Eigen::Vector3f::UnitZ()) 
+      * Eigen::AngleAxisf(current_pose[4], Eigen::Vector3f::UnitY())
+      * Eigen::AngleAxisf(current_pose[3], Eigen::Vector3f::UnitX());
+    
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Rotation matrix: ");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Vector n: (%f, %f, %f)", R(0,0), R(1,0), R(2,0));
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Vector s: (%f, %f, %f)", R(0,1), R(1,1), R(2,1));
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Vector a: (%f, %f, %f)", R(0,2), R(1,2), R(2,2));
+
+    YPR = R.eulerAngles(2, 1, 0);   // R = Rz(yaw) * Ry(pich) * Rx(roll)
+    RPY << YPR(2), YPR(1), YPR(0);
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "RPY: (%f, %f, %f)", RPY(0), RPY(1), RPY(2));
+
+    R = Eigen::AngleAxisf(RPY(2), Eigen::Vector3f::UnitZ()) 
+      * Eigen::AngleAxisf(RPY(1), Eigen::Vector3f::UnitY())
+      * Eigen::AngleAxisf(RPY(0), Eigen::Vector3f::UnitX());
+    
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Rotation matrix: ");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Vector n: (%f, %f, %f)", R(0,0), R(1,0), R(2,0));
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Vector s: (%f, %f, %f)", R(0,1), R(1,1), R(2,1));
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Vector a: (%f, %f, %f)", R(0,2), R(1,2), R(2,2));
+}
