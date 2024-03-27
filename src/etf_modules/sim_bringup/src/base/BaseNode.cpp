@@ -6,7 +6,7 @@ sim_bringup::BaseNode::BaseNode(const std::string &node_name, const std::string 
     Planner(config_file_path)
 {
     project_abs_path = std::string(__FILE__);
-    for (int i = 0; i < 4; i++)
+    for (size_t i = 0; i < 4; i++)
         project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
     
     try
@@ -20,7 +20,7 @@ sim_bringup::BaseNode::BaseNode(const std::string &node_name, const std::string 
             ("/xarm6_traj_controller/state", 10, std::bind(&Robot::jointsStateCallback, this, std::placeholders::_1));
 
         period = node["period"].as<float>();
-        timer = this->create_wall_timer(std::chrono::microseconds(int(period * 1e6)), std::bind(&BaseNode::baseCallback, this));
+        timer = this->create_wall_timer(std::chrono::microseconds(size_t(period * 1e6)), std::bind(&BaseNode::baseCallback, this));
 
         std::shared_ptr<env::Environment> env { nullptr };
         if (node["environment"].IsDefined())
@@ -48,7 +48,7 @@ sim_bringup::BaseNode::BaseNode(const std::string &node_name, const std::string 
         
             Eigen::VectorXf q_start_vec(Robot::getNumDOFs());
             Eigen::VectorXf q_goal_vec(Robot::getNumDOFs());
-            for (int i = 0; i < Robot::getNumDOFs(); i++)
+            for (size_t i = 0; i < Robot::getNumDOFs(); i++)
             {
                 q_start_vec(i) = q_start_node[i].as<float>();
                 q_goal_vec(i) = q_goal_node[i].as<float>();

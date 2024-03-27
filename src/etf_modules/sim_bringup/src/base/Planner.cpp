@@ -3,7 +3,7 @@
 sim_bringup::Planner::Planner(const std::string &config_file_path)
 {
     std::string project_abs_path { std::string(__FILE__) };
-    for (int i = 0; i < 4; i++)
+    for (size_t i = 0; i < 4; i++)
         project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
 
     try
@@ -58,7 +58,7 @@ bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shar
     if (max_planning_time_ != -1)
         max_planning_time = max_planning_time_;
     
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Number of collision objects: %d", scenario->getEnvironment()->getNumObjects());
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Number of collision objects: %ld", scenario->getEnvironment()->getNumObjects());
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Start: "); std::cout << q_start << "\n";
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Goal: "); std::cout << q_goal << "\n";
 
@@ -94,14 +94,14 @@ bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shar
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Planning finished with %s ", 
             (result ? std::string("SUCCESS!").c_str() : std::string("FAILURE!").c_str()));
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Number of states in the path: %d", planner->getPath().size());
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Number of states in the path: %ld", planner->getPath().size());
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Planning time: %f [s]", planner->getPlannerInfo()->getPlanningTime());
         if (planner_type == planning::PlannerType::RGBMTStar)
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Path cost: %f", planner->getPlannerInfo()->getCostConvergence().back());
 
         // Just for debugging (Not recommended to waste time!)
         // std::string project_abs_path { std::string(__FILE__) };
-        // for (int i = 0; i < 4; i++)
+        // for (size_t i = 0; i < 4; i++)
         //     project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
         // planner->outputPlannerData(project_abs_path + "/sim_bringup/data/planner_data.log");
     }

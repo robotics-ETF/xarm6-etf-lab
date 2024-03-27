@@ -3,7 +3,7 @@
 sim_bringup::Octomap::Octomap(const std::string config_file_path)
 {
     std::string project_abs_path { std::string(__FILE__) };
-    for (int i = 0; i < 4; i++)
+    for (size_t i = 0; i < 4; i++)
         project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
 
     YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
@@ -48,9 +48,9 @@ void sim_bringup::Octomap::visualize()
     std::vector<std::array<float, 6>> boxes { octree->toBoxes() };
     visualization_msgs::msg::MarkerArray marker_array_msg {};
 
-    for (int i = 0; i < boxes.size(); i++) 
+    for (size_t i = 0; i < boxes.size(); i++) 
     {
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Box %d: (%f, %f, %f)", i, boxes[i][0], boxes[i][1], boxes[i][2]);
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Box %ld: (%f, %f, %f)", i, boxes[i][0], boxes[i][1], boxes[i][2]);
         visualization_msgs::msg::Marker marker {};
         marker.type = visualization_msgs::msg::Marker::CUBE;
         marker.action = visualization_msgs::msg::Marker::ADD;

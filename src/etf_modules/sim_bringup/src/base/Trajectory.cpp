@@ -9,7 +9,7 @@ sim_bringup::Trajectory::Trajectory(const std::string &config_file_path) :
         RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Such number of robot DOFs is not supported!");
 
     std::string project_abs_path { std::string(__FILE__) };
-    for (int i = 0; i < 4; i++)
+    for (size_t i = 0; i < 4; i++)
         project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
     
     YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
@@ -35,7 +35,7 @@ sim_bringup::Trajectory::Trajectory(const std::string &config_file_path) :
 void sim_bringup::Trajectory::addPoint(float time_instance, const Eigen::VectorXf &position)
 {
     trajectory_msgs::msg::JointTrajectoryPoint point {};
-    for (int i = 0; i < position.size(); i++)
+    for (long int i = 0; i < position.size(); i++)
     {
         point.positions.emplace_back(position(i));
         point.velocities.emplace_back(0);
@@ -50,7 +50,7 @@ void sim_bringup::Trajectory::addPoint(float time_instance, const Eigen::VectorX
 void sim_bringup::Trajectory::addPoint(float time_instance, const Eigen::VectorXf &position, const Eigen::VectorXf &velocity)
 {
     trajectory_msgs::msg::JointTrajectoryPoint point {};
-    for (int i = 0; i < position.size(); i++)
+    for (long int i = 0; i < position.size(); i++)
     {
         point.positions.emplace_back(position(i));
         point.velocities.emplace_back(velocity(i));
@@ -66,7 +66,7 @@ void sim_bringup::Trajectory::addPoint(float time_instance, const Eigen::VectorX
                                        const Eigen::VectorXf &acceleration)
 {
     trajectory_msgs::msg::JointTrajectoryPoint point {};
-    for (int i = 0; i < position.size(); i++)
+    for (long int i = 0; i < position.size(); i++)
     {
         point.positions.emplace_back(position(i));
         point.velocities.emplace_back(velocity(i));
@@ -80,13 +80,13 @@ void sim_bringup::Trajectory::addPoint(float time_instance, const Eigen::VectorX
 
 void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::State>> &path, const std::vector<float> &time_instances)
 {
-    for (int i = 0; i < path.size(); i++)
+    for (size_t i = 0; i < path.size(); i++)
         addPoint(time_instances[i], path[i]->getCoord());
 }
 
 void sim_bringup::Trajectory::addPath(const std::vector<Eigen::VectorXf> &path, const std::vector<float> &time_instances)
 {
-    for (int i = 0; i < path.size(); i++)
+    for (size_t i = 0; i < path.size(); i++)
         addPoint(time_instances[i], path[i]);
 }
 
@@ -111,10 +111,10 @@ void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::St
     float t_current {};
     float t {}, t_min {}, t_max {}, t_temp {};
     bool found { false };
-    int num {};
-    const int max_num_iter { 5 };
+    size_t num { 0 };
+    const size_t max_num_iter { 5 };
     
-    for (int i = 0; i < new_path.size()-3; i++)
+    for (int i = 0; i < int(new_path.size()) - 3; i++)
     {
         // std::cout << "i: " << i << " ---------------------------\n";
         found = false;
@@ -177,7 +177,7 @@ void sim_bringup::Trajectory::preprocessPath(const std::vector<std::shared_ptr<b
     Eigen::VectorXf q_new {};
     float dist {};
 
-    for (int i = 1; i < path.size(); i++)
+    for (size_t i = 1; i < path.size(); i++)
     {
         status = base::State::Status::Advanced;
         q_new = path[i-1]->getCoord();
@@ -200,7 +200,7 @@ void sim_bringup::Trajectory::preprocessPath(const std::vector<std::shared_ptr<b
     }
 
     // std::cout << "Preprocessed path is: \n";
-    // for (int i = 0; i < new_path.size(); i++)
+    // for (size_t i = 0; i < new_path.size(); i++)
     //     std::cout << new_path.at(i).transpose() << "\n";
     // std::cout << std::endl;
 }
@@ -216,11 +216,11 @@ void sim_bringup::Trajectory::publish(float time_delay)
     }
 
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Trajectory: ");
-    for (int i = 0; i < msg.points.size(); i++)
+    for (size_t i = 0; i < msg.points.size(); i++)
     {
         if (msg.points[i].positions.size() == 6)
         {
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Num. %d.\t Time: %f [s].\t Position: (%f, %f, %f, %f, %f, %f)", 
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Num. %ld.\t Time: %f [s].\t Position: (%f, %f, %f, %f, %f, %f)", 
                         i, (msg.points[i].time_from_start.sec + msg.points[i].time_from_start.nanosec * 1e-9) + time_delay, 
                         msg.points[i].positions[0],
                         msg.points[i].positions[1],

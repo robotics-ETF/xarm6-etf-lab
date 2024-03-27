@@ -43,10 +43,10 @@ namespace sim_bringup
         inline float getMaxLinAcc() const { return max_lin_acc; }
         inline float getMaxLinJerk() const { return max_lin_jerk; }
 
-        inline float getMaxVel(int num) const { return robot->getMaxVel(num); }
-        inline float getMaxAcc(int num) const { return robot->getMaxAcc(num); }
-        inline float getMaxJerk(int num) const { return robot->getMaxJerk(num); }
-        inline int getNumDOFs() const { return num_DOFs; }
+        inline float getMaxVel(size_t num) const { return robot->getMaxVel(num); }
+        inline float getMaxAcc(size_t num) const { return robot->getMaxAcc(num); }
+        inline float getMaxJerk(size_t num) const { return robot->getMaxJerk(num); }
+        inline size_t getNumDOFs() const { return num_DOFs; }
 
         void jointsStateCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg);
         bool isReady();
@@ -64,7 +64,7 @@ namespace sim_bringup
         float max_lin_acc;      // in [m/s²]
         float max_lin_jerk;     // in [m/s³]
         bool ready;
-        int num_DOFs;
+        size_t num_DOFs;
     };
 }
 

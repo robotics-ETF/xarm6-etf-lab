@@ -3,7 +3,7 @@
 sim_bringup::Robot::Robot(const std::string &config_file_path)
 {
     std::string project_abs_path { std::string(__FILE__) };
-    for (int i = 0; i < 4; i++)
+    for (size_t i = 0; i < 4; i++)
         project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
 
     try
@@ -11,14 +11,14 @@ sim_bringup::Robot::Robot(const std::string &config_file_path)
         YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
         YAML::Node robot_node { node["robot"] };
 
-        num_DOFs = robot_node["num_DOFs"].as<int>();
+        num_DOFs = robot_node["num_DOFs"].as<size_t>();
 
         YAML::Node q_home_node { robot_node["q_home"] };
         if (q_home_node.size() != num_DOFs)
             throw std::logic_error("Number of home joint coordinates is not correct!");
 
         home_joints_position = Eigen::VectorXf(num_DOFs);
-        for (int i = 0; i < num_DOFs; i++)
+        for (size_t i = 0; i < num_DOFs; i++)
             home_joints_position(i) = q_home_node[i].as<float>();
 
         YAML::Node gripper_length_node { robot_node["gripper_length"] };
@@ -50,7 +50,7 @@ sim_bringup::Robot::Robot(const std::string &config_file_path)
                 throw std::logic_error("Number of capsules is not correct!");
                 
             std::vector<float> capsules_radius {};
-            for (int i = 0; i < num_DOFs; i++)
+            for (size_t i = 0; i < num_DOFs; i++)
                 capsules_radius.emplace_back(capsules_radius_node[i].as<float>());
 
             robot->setCapsulesRadius(capsules_radius);
@@ -65,7 +65,7 @@ sim_bringup::Robot::Robot(const std::string &config_file_path)
                 throw std::logic_error("The size of 'max_vel' is not correct!");
 
             std::vector<float> max_vel {};
-            for (int i = 0; i < num_DOFs; i++)
+            for (size_t i = 0; i < num_DOFs; i++)
                 max_vel.emplace_back(max_vel_node[i].as<float>());
 
             robot->setMaxVel(max_vel);
@@ -80,7 +80,7 @@ sim_bringup::Robot::Robot(const std::string &config_file_path)
                 throw std::logic_error("The size of 'max_acc' is not correct!");
 
             std::vector<float> max_acc {};
-            for (int i = 0; i < num_DOFs; i++)
+            for (size_t i = 0; i < num_DOFs; i++)
                 max_acc.emplace_back(max_acc_node[i].as<float>());
 
             robot->setMaxAcc(max_acc);
@@ -95,7 +95,7 @@ sim_bringup::Robot::Robot(const std::string &config_file_path)
                 throw std::logic_error("The size of 'max_jerk' is not correct!");
 
             std::vector<float> max_jerk {};
-            for (int i = 0; i < num_DOFs; i++)
+            for (size_t i = 0; i < num_DOFs; i++)
                 max_jerk.emplace_back(max_jerk_node[i].as<float>());
                 
             robot->setMaxJerk(max_jerk);
@@ -134,7 +134,7 @@ sim_bringup::Robot::Robot(const std::string &config_file_path)
 
 void sim_bringup::Robot::jointsStateCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg)
 {
-    for (int i = 0; i < num_DOFs; i++)
+    for (size_t i = 0; i < num_DOFs; i++)
     {
         joints_position(i) = msg->actual.positions[i];
         // joints_velocity(i) = msg->actual.velocities[i];          // It does not work!

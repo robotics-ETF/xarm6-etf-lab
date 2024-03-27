@@ -14,7 +14,7 @@ sim_bringup::TaskPlanningNode::TaskPlanningNode(const std::string &node_name, co
 
     IK_computed = -1;
     task = waiting_for_object;
-    state = State::planning;
+    state = State::waiting;
 }
 
 void sim_bringup::TaskPlanningNode::taskPlanningCallback()
@@ -95,6 +95,7 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
         break;
 
     case planning:
+        state = State::planning;
         planningCase();
         break;
     }
@@ -105,6 +106,9 @@ void sim_bringup::TaskPlanningNode::planningCase()
 {
     switch (state)
     {
+    case State::waiting:
+        break;
+    
     case State::planning:
         if (Planner::isReady())
         {
@@ -172,16 +176,16 @@ bool sim_bringup::TaskPlanningNode::computeObjectApproachAndPickStates()
     if (dim.z() > 0.14)
         p_pick_z += dim.z() / 2 - 0.07;    // finger length is 7 [cm]
 
-    KDL::Vector p_approach1 = KDL::Vector(r * float(cos(fi)), 
-                                          r * float(sin(fi)), 
-                                          p_pick_z + 2 * max_object_height);
-    KDL::Vector p_approach2 = KDL::Vector(r * float(cos(fi)), 
-                                          r * float(sin(fi)), 
-                                          p_pick_z);
-    KDL::Vector p_pick = KDL::Vector(pos.x(), 
-                                     pos.y(), 
-                                     p_pick_z);
-    int num { 0 };
+    KDL::Vector p_approach1(r * float(cos(fi)), 
+                            r * float(sin(fi)), 
+                            p_pick_z + 2 * max_object_height);
+    KDL::Vector p_approach2(r * float(cos(fi)), 
+                            r * float(sin(fi)), 
+                            p_pick_z);
+    KDL::Vector p_pick(pos.x(), 
+                       pos.y(), 
+                       p_pick_z);
+    size_t num { 0 };
     std::shared_ptr<base::State> q_init { Robot::getJointsPositionPtr() };
     while (num++ <= 100)
     {
@@ -193,8 +197,8 @@ bool sim_bringup::TaskPlanningNode::computeObjectApproachAndPickStates()
         }
         
         // It is convenient for the purpose when picking objects from above
-        if (r > r_crit && std::abs(q_object_approach1->getCoord(3)) < 0.1 ||
-            r <= r_crit && std::abs(q_object_approach1->getCoord(3) - (-M_PI)) < 0.1)
+        if ((r > r_crit && std::abs(q_object_approach1->getCoord(3)) < 0.1) ||
+            (r <= r_crit && std::abs(q_object_approach1->getCoord(3) - (-M_PI)) < 0.1))
             break;
     }
     if (q_object_approach1 == nullptr)
@@ -236,27 +240,27 @@ bool sim_bringup::TaskPlanningNode::computeObjectApproachAndPickStates()
 int sim_bringup::TaskPlanningNode::chooseObject()
 {
     float z_max { -INFINITY };
-    int obj_idx { -1 };
-    for (int i = 0; i < positions.size(); i++)
+    int obj_idx_ { -1 };
+    for (size_t i = 0; i < positions.size(); i++)
     {
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Object %d. dim = (%f, %f, %f), pos = (%f, %f, %f). Num. captures %d.",
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Object %ld. dim = (%f, %f, %f), pos = (%f, %f, %f). Num. captures %ld.",
             i, dimensions[i].x(), dimensions[i].y(), dimensions[i].z(), 
                positions[i].x(), positions[i].y(), positions[i].z(), num_captures[i]);
         if (num_captures[i] >= min_num_captures && positions[i].z() > z_max && positions[i].z() < max_object_height)  // Pick only "small" objects
         {
             z_max = positions[i].z();
-            obj_idx = i;
+            obj_idx_ = i;
         }
     }
 
-    if (obj_idx != -1)
+    if (obj_idx_ != -1)
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Object %d is recognized at the position (%f, %f, %f).", 
-            obj_idx, positions[obj_idx].x(), positions[obj_idx].y(), positions[obj_idx].z());
+            obj_idx_, positions[obj_idx_].x(), positions[obj_idx_].y(), positions[obj_idx_].z());
     
-    return obj_idx;
+    return obj_idx_;
 }
 
-bool sim_bringup::TaskPlanningNode::whetherToRemove(const Eigen::Vector3f &object_pos, const Eigen::Vector3f &object_dim)
+bool sim_bringup::TaskPlanningNode::whetherToRemove(const Eigen::Vector3f &object_pos, [[maybe_unused]] const Eigen::Vector3f &object_dim)
 {
     // Remove the destination box from the scene
     if (object_pos.x() < -0.4 && std::abs(object_pos.y()) < 0.2 && object_pos.z() < 0.25)
