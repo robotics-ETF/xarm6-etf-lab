@@ -67,13 +67,8 @@ void sim_bringup::PlanningNode::planningCallback()
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Executing trajectory...");
         if (Robot::isReached(scenario->getGoal()))
         {
-            q_start = scenario->getStart();
-            q_goal = scenario->getGoal();
-
-            // Swap 'q_start' and 'q_goal' for next motion, and repeat the procedure
-            scenario->setStart(q_goal);
-            scenario->setGoal(q_start);
-            state = planning;
+            rclcpp::shutdown();
+            return;
         }
         break;
     }

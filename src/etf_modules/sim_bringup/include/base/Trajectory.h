@@ -40,6 +40,7 @@ namespace sim_bringup
 
         trajectory_msgs::msg::JointTrajectory msg;
         float max_edge_length;
+        float trajectory_max_time_step;
     };
 }
 
