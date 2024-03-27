@@ -2,7 +2,7 @@
 
 sim_bringup::AABB::AABB(const std::string &config_file_path)
 {
-    std::string project_abs_path { std::string(__FILE__) };
+    std::string project_abs_path(__FILE__);
     for (size_t i = 0; i < 4; i++)
         project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
 

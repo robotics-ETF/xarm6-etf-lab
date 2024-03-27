@@ -14,7 +14,7 @@ sim_bringup::TaskPlanningNode::TaskPlanningNode(const std::string &node_name, co
 
     IK_computed = -1;
     task = waiting_for_object;
-    state = State::waiting;
+    state = State::planning;
 }
 
 void sim_bringup::TaskPlanningNode::taskPlanningCallback()
@@ -95,7 +95,6 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
         break;
 
     case planning:
-        state = State::planning;
         planningCase();
         break;
     }

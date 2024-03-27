@@ -23,7 +23,7 @@ namespace perception_etflab
         inline float getPeriod() const { return period; }
 
     private:
-        int num_obstacles;
+        size_t num_obstacles;
         Eigen::Vector3f dim;
 		float robot_max_vel;                                            // Maximal velocity for each obstacle
         Eigen::Vector3f WS_center;								        // Workspace center point in [m]

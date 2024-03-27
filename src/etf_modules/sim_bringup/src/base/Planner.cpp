@@ -2,7 +2,7 @@
 
 sim_bringup::Planner::Planner(const std::string &config_file_path)
 {
-    std::string project_abs_path { std::string(__FILE__) };
+    std::string project_abs_path(__FILE__);
     for (size_t i = 0; i < 4; i++)
         project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
 
@@ -100,7 +100,7 @@ bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shar
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Path cost: %f", planner->getPlannerInfo()->getCostConvergence().back());
 
         // Just for debugging (Not recommended to waste time!)
-        // std::string project_abs_path { std::string(__FILE__) };
+        // std::string project_abs_path(__FILE__);
         // for (size_t i = 0; i < 4; i++)
         //     project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
         // planner->outputPlannerData(project_abs_path + "/sim_bringup/data/planner_data.log");

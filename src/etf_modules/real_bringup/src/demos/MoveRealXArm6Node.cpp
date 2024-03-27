@@ -14,9 +14,9 @@ real_bringup::MoveRealXArm6Node::MoveRealXArm6Node(const std::string &node_name,
     // xarm_client.clean_warn();
     // xarm_client.motion_enable(true);
 
-    // // See 6.1 Mode Explanation at: https://github.com/xArm-Developer/xarm_ros#report_type-argument
-    // // Mode 0: xArm controller (position) mode
-    // // Mode 1: External trajectory planner (position) mode
+    // See 6.1 Mode Explanation at: https://github.com/xArm-Developer/xarm_ros#report_type-argument
+    // Mode 0: xArm controller (position) mode
+    // Mode 1: External trajectory planner (position) mode
     // xarm_client.set_mode(0);
     // xarm_client.set_state(0);
 
