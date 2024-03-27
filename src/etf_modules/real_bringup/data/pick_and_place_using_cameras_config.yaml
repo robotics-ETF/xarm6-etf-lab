@@ -6,6 +6,9 @@ robot:
   space: "RealVectorSpace"
   num_DOFs: 6
   q_home: [0, 0, 0, 3.1415, 1.5708, 0]
-  max_lin_vel: 500                                      # in [mm/s]
+  max_lin_vel: 500                                      # In [mm/s]
   max_vel: [1, 1, 1, 1, 1, 1]                           # Maximal velocity of each robot's joint in [rad/s]
   
+scenario:
+  delta_z: 120                                          # In [mm]
+  offset_z: 10                                          # In [mm]

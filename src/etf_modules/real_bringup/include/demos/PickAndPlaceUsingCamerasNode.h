@@ -22,8 +22,8 @@ namespace real_bringup
         std::vector<float> object_approach_pose;
         std::vector<float> object_pick_pose;
         int obj_idx;
-        float delta_z { 120 };
-        float offset_z { 10 };
+        float delta_z;
+        float offset_z;
 
         enum Task
         {

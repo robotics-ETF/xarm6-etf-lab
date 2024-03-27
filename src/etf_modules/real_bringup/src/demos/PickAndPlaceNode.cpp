@@ -3,10 +3,23 @@
 real_bringup::PickAndPlaceNode::PickAndPlaceNode(const std::string &node_name, const std::string &config_file_path) : 
     MoveRealXArm6Node(node_name, config_file_path) 
 {
+    YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
+    YAML::Node scenario { node["scenario"] };
+
+    num_objects = scenario["num_objects"].as<size_t>();
+    object_height = scenario["object_height"].as<float>();
+    object_pick_z = scenario["object_pick_z"].as<float>();
+    delta_theta1 = scenario["delta_theta1"].as<float>() * deg2rad;
+
+    YAML::Node object_angles_approach_node { scenario["object_angles_approach"] };
+    for (size_t i = 0; i < object_angles_approach_node.size(); i++)
+        object_angles_approach.emplace_back(object_angles_approach_node[i].as<float>() * deg2rad);
+
     xarm_client.set_mode(0);
     xarm_client.set_state(0);
 
     task = approaching_to_object;
+    num = 0;
 }
 
 void real_bringup::PickAndPlaceNode::pickAndPlaceCallback()

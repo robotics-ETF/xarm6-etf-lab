@@ -12,12 +12,10 @@ namespace real_bringup
         void bottleAndGlassCallback();
 
     private:
-        int sign { 1 };
-        const float c { M_PI / 180 };
-        std::vector<float> glass_angles_approach {55*c, 35*c, -36*c, 180*c, 89*c, 0*c};
-        std::vector<float> glass_angles_pick {55*c, 41*c, -52*c, 180*c, 79*c, 0*c};
-        std::vector<float> bottle_pose_pick {640, 0, 90, 0, M_PI_2, 0};
-        std::vector<float> current_angles, current_pose;
+        int sign;
+        std::vector<float> glass_angles_approach;
+        std::vector<float> glass_angles_pick;
+        std::vector<float> bottle_pose_pick;
 
         enum State
         {

@@ -3,11 +3,27 @@
 real_bringup::BottleAndGlassNode::BottleAndGlassNode(const std::string &node_name, const std::string &config_file_path) : 
     MoveRealXArm6Node(node_name, config_file_path) 
 {
+    YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
+    YAML::Node scenario { node["scenario"] };
+
+    YAML::Node glass_angles_approach_node { scenario["glass_angles_approach"] };
+    for (size_t i = 0; i < glass_angles_approach_node.size(); i++)
+        glass_angles_approach.emplace_back(glass_angles_approach_node[i].as<float>() * deg2rad);
+
+    YAML::Node glass_angles_pick_node { scenario["glass_angles_pick"] };
+    for (size_t i = 0; i < glass_angles_pick_node.size(); i++)
+        glass_angles_pick.emplace_back(glass_angles_pick_node[i].as<float>() * deg2rad);
+
+    YAML::Node bottle_pose_pick_node { scenario["bottle_pose_pick"] };
+    for (size_t i = 0; i < bottle_pose_pick_node.size(); i++)
+        bottle_pose_pick.emplace_back(bottle_pose_pick_node[i].as<float>());
+
     xarm_client.set_mode(0);
     xarm_client.set_state(0);
 
     state = going_home;
     state_next = approaching_to_bottle;
+    sign = 1;
 }
 
 void real_bringup::BottleAndGlassNode::bottleAndGlassCallback()

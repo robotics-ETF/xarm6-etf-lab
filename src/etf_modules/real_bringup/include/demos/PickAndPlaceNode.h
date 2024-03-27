@@ -11,16 +11,13 @@ namespace real_bringup
         void moveRealXArm6Callback() override { pickAndPlaceCallback(); }
         virtual void pickAndPlaceCallback();
 
-        std::vector<float> current_angles, current_pose;
-
     private:
-        int num { 0 };
-        int num_objects { 3 };
-        float object_height { 27 };   // in [mm]
-        float object_pick_z { 50 };   // in [mm]
-        const float c { M_PI / 180 };
-        float delta_theta1 { 90*c };
-        std::vector<float> object_angles_approach {90*c, 33*c, -96*c, 0*c, 63*c, 0*c};
+        size_t num;
+        size_t num_objects;
+        float object_height;
+        float object_pick_z;
+        float delta_theta1;
+        std::vector<float> object_angles_approach;
 
         enum Task
         {

@@ -87,12 +87,12 @@ void real_bringup::MoveRealXArm6Node::setPosition(const std::vector<float> &pose
     }
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Service is ready!");
     
-    auto request = std::make_shared<xarm_msgs::srv::MoveCartesian::Request>();
+    auto request { std::make_shared<xarm_msgs::srv::MoveCartesian::Request>() };
     request->pose = pose;
     request->speed = speed;
     request->acc = acceleration;
 
-    auto result = set_position_client->async_send_request(request);
+    auto result { set_position_client->async_send_request(request) };
     if (rclcpp::spin_until_future_complete(set_position_node, result) == rclcpp::FutureReturnCode::SUCCESS)
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), ("Message: " + result.get()->message).c_str());
     else
