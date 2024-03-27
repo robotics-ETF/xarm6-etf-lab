@@ -2,14 +2,14 @@
 
 sim_bringup::Planner::Planner(const std::string &config_file_path)
 {
-    std::string project_abs_path = std::string(__FILE__);
+    std::string project_abs_path { std::string(__FILE__) };
     for (int i = 0; i < 4; i++)
         project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
 
     try
     {
-        YAML::Node node = YAML::LoadFile(project_abs_path + config_file_path);
-        YAML::Node planner_node = node["planner"];
+        YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
+        YAML::Node planner_node { node["planner"] };
         if (!planner_node.IsDefined())
         {
             RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Planner is not defined!");
@@ -19,7 +19,7 @@ sim_bringup::Planner::Planner(const std::string &config_file_path)
         ConfigurationReader::initConfiguration(project_abs_path + planner_node["configurations"].as<std::string>());
         planner = nullptr;
 
-        std::string type = planner_node["type"].as<std::string>();
+        std::string type { planner_node["type"].as<std::string>() };
         if (type == "RGBMT*")
             planner_type = planning::PlannerType::RGBMTStar;
         else if (type == "RGBT-Connect")
@@ -29,7 +29,7 @@ sim_bringup::Planner::Planner(const std::string &config_file_path)
         else if (type == "RRT-Connect")
             planner_type = planning::PlannerType::RRTConnect;
 
-        YAML::Node max_planning_time_node = planner_node["max_planning_time"];
+        YAML::Node max_planning_time_node { planner_node["max_planning_time"] };
         max_planning_time = (max_planning_time_node.IsDefined()) ? max_planning_time_node.as<float>() : INFINITY;
     }
     catch (std::exception &e)
@@ -43,7 +43,7 @@ sim_bringup::Planner::Planner(const std::string &config_file_path)
 bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shared_ptr<base::State> q_goal, float max_planning_time_)
 {
     ready = false;
-    bool result = false;
+    bool result { false };
 
     if (q_start == nullptr)
         q_start = scenario->getStart();
@@ -100,7 +100,7 @@ bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shar
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Path cost: %f", planner->getPlannerInfo()->getCostConvergence().back());
 
         // Just for debugging (Not recommended to waste time!)
-        // std::string project_abs_path = std::string(__FILE__);
+        // std::string project_abs_path { std::string(__FILE__) };
         // for (int i = 0; i < 4; i++)
         //     project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
         // planner->outputPlannerData(project_abs_path + "/sim_bringup/data/planner_data.log");

@@ -2,11 +2,11 @@
 
 sim_bringup::ConvexHulls::ConvexHulls(const std::string config_file_path)
 {
-    std::string project_abs_path = std::string(__FILE__);
+    std::string project_abs_path { std::string(__FILE__) };
     for (int i = 0; i < 4; i++)
         project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
 
-    YAML::Node node = YAML::LoadFile(project_abs_path + config_file_path);
+    YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
 }
 
 void sim_bringup::ConvexHulls::pointsCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
@@ -15,10 +15,10 @@ void sim_bringup::ConvexHulls::pointsCallback(const sensor_msgs::msg::PointCloud
 	pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl(new pcl::PointCloud<pcl::PointXYZRGB>);	
 	pcl::moveFromROSMsg(*msg, *pcl);
 
-    int j = 0;
+    int j { 0 };
     for (int i = 0; i < pcl->size(); i++)
     {
-        pcl::PointXYZRGB P = pcl->points[i];
+        pcl::PointXYZRGB P { pcl->points[i] };
         if (P.x == 0.0 && P.y == 0.0 && P.z == 0.0)     // This point is just delimiter to distinguish clusters
         {
             points.emplace_back(std::vector<fcl::Vector3f>());
@@ -38,10 +38,10 @@ void sim_bringup::ConvexHulls::polygonsCallback(const sensor_msgs::msg::PointClo
 	pcl::PointCloud<pcl::PointXYZ>::Ptr pcl(new pcl::PointCloud<pcl::PointXYZ>);	
 	pcl::moveFromROSMsg(*msg, *pcl);
 
-    int j = 0;
+    int j { 0 };
     for (int i = 0; i < pcl->size(); i++)
     {
-        pcl::PointXYZ P = pcl->points[i];
+        pcl::PointXYZ P { pcl->points[i] };
         if (P.x == -1)     // This point is just delimiter to distinguish clusters
         {
             polygons.emplace_back(std::vector<int>());

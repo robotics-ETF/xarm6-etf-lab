@@ -7,7 +7,7 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
     AABB(config_file_path),
     DP(scenario->getStateSpace(), scenario->getStart(), scenario->getGoal())
 {
-    YAML::Node node = YAML::LoadFile(project_abs_path + config_file_path);
+    YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
 
     AABB::setEnvironment(scenario->getEnvironment());
     if (AABB::getMinNumCaptures() == 1)
@@ -17,8 +17,8 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
         AABB::subscription = this->create_subscription<sensor_msgs::msg::PointCloud2>
             ("/bounding_boxes", 10, std::bind(&AABB::withFilteringCallback, this, std::placeholders::_1));
 
-    YAML::Node real_time_node = node["real_time"];
-    std::string real_time_scheduling = real_time_node["scheduling"].as<std::string>();
+    YAML::Node real_time_node { node["real_time"] };
+    std::string real_time_scheduling { real_time_node["scheduling"].as<std::string>() };
     if (real_time_scheduling == "FPS")
         DRGBTConfig::REAL_TIME_SCHEDULING = planning::RealTimeScheduling::FPS;
     else if (real_time_scheduling == "None")
@@ -57,7 +57,7 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
 
     // ------------------------------------------------------------------------------- //
     // Since the environment may change, a new distance is required!
-    float d_c = DP::ss->computeDistance(DP::q_target, true);
+    float d_c { DP::ss->computeDistance(DP::q_target, true) };
     if (d_c <= 0)   // The desired/target conf. is not safe, thus the robot is required to stop immediately, 
     {               // and compute the horizon again from 'q_current'
         // TODO: Urgently stopping needs to be implemented using quartic spline.
@@ -106,7 +106,7 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
 
     // ------------------------------------------------------------------------------- //
     // Checking the real-time execution
-    float time_iter_remain = DRGBTConfig::MAX_ITER_TIME * 1e3 - DP::getElapsedTime(DP::time_iter_start, planning::TimeUnit::ms);
+    float time_iter_remain { DRGBTConfig::MAX_ITER_TIME * 1e3 - DP::getElapsedTime(DP::time_iter_start, planning::TimeUnit::ms) };
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Remaining iteration time is %f [ms].", time_iter_remain);
     if (time_iter_remain < 0)
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "********** Real-time is broken. %f [ms] exceeded!!! **********", -time_iter_remain);
@@ -128,8 +128,8 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
 // Try to replan the predefined path from the target to the goal configuration within the specified time
 void sim_bringup::RealTimePlanningNode::replan(float max_planning_time)
 {
-    bool result = false;
-    std::thread replanning_thread;
+    bool result { false };
+    std::thread replanning_thread {};
 
     try
     {
@@ -180,8 +180,8 @@ void sim_bringup::RealTimePlanningNode::replan(float max_planning_time)
 /// @brief Compute trajectory points and publish them.
 void sim_bringup::RealTimePlanningNode::computeTrajectory()
 {
-    float time_offset = DP::updateCurrentState();
-    float time_current = DP::spline_next->getTimeCurrent();
+    float time_offset { DP::updateCurrentState() };
+    float time_current { DP::spline_next->getTimeCurrent() };
 
     Trajectory::clear();
     // Trajectory::addPoint(time_offset, DP::spline_next->getPosition(time_current),

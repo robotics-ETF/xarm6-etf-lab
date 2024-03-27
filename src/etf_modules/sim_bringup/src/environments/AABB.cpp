@@ -2,11 +2,11 @@
 
 sim_bringup::AABB::AABB(const std::string &config_file_path)
 {
-    std::string project_abs_path = std::string(__FILE__);
+    std::string project_abs_path { std::string(__FILE__) };
     for (int i = 0; i < 4; i++)
         project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
 
-    YAML::Node node = YAML::LoadFile(project_abs_path + config_file_path);
+    YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
     min_num_captures = node["cameras"]["min_num_captures"].as<int>();
 }
 
@@ -15,10 +15,11 @@ void sim_bringup::AABB::callback(const sensor_msgs::msg::PointCloud2::SharedPtr 
     resetMeasurements();
 	pcl::PointCloud<pcl::PointXYZ>::Ptr pcl(new pcl::PointCloud<pcl::PointXYZ>);	
 	pcl::moveFromROSMsg(*msg, *pcl);
+
     for (int i = 0; i < pcl->size(); i += 2)
     {
-        pcl::PointXYZ dim = pcl->points[i];
-        pcl::PointXYZ pos = pcl->points[i+1];
+        pcl::PointXYZ dim { pcl->points[i] };
+        pcl::PointXYZ pos { pcl->points[i+1] };
         dimensions.emplace_back(fcl::Vector3f(dim.x, dim.y, dim.z));
         positions.emplace_back(fcl::Vector3f(pos.x, pos.y, pos.z));
         num_captures.emplace_back(1);
@@ -31,9 +32,9 @@ void sim_bringup::AABB::withFilteringCallback(const sensor_msgs::msg::PointCloud
 {
     pcl::PointCloud<pcl::PointXYZ>::Ptr pcl(new pcl::PointCloud<pcl::PointXYZ>);	
     pcl::moveFromROSMsg(*msg, *pcl);
-    Eigen::Vector3f dim;
-    Eigen::Vector3f pos;
-    bool found = false;
+    Eigen::Vector3f dim {};
+    Eigen::Vector3f pos {};
+    bool found { false };
 
     for (int i = 0; i < pcl->size(); i += 2)
     {
