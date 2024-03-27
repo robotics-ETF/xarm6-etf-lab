@@ -10,9 +10,12 @@
 #include <memory>
 #include <string>
 #include <Eigen/Eigen>
+#include <yaml-cpp/yaml.h>
 #include <rclcpp/rclcpp.hpp>
 #include <control_msgs/msg/joint_trajectory_controller_state.hpp>
-#include <yaml-cpp/yaml.h>
+#include <control_msgs/action/gripper_command.hpp>
+#include <control_msgs/msg/gripper_command.hpp>
+#include <rclcpp_action/rclcpp_action.hpp>
 
 #include <RealVectorSpaceState.h>
 #include <xArm6.h>
@@ -51,8 +54,11 @@ namespace sim_bringup
         void jointsStateCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg);
         bool isReady();
         bool isReached(std::shared_ptr<base::State> q, float tol = 0.01);
+        void moveGripper(float position, float max_effort = 5.0);
         
         rclcpp::Subscription<control_msgs::msg::JointTrajectoryControllerState>::SharedPtr joints_state_subscription;
+        std::shared_ptr<rclcpp::Node> gripper_node;
+        rclcpp_action::Client<control_msgs::action::GripperCommand>::SharedPtr gripper_client;
 
     private:
         std::shared_ptr<robots::AbstractRobot> robot;

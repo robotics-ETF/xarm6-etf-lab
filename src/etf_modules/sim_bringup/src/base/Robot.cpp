@@ -162,3 +162,55 @@ bool sim_bringup::Robot::isReached(std::shared_ptr<base::State> q, float tol)
 
     return false;
 }
+
+// Close gripper: position = 0.0
+// Open gripper: position = 1.0
+void sim_bringup::Robot::moveGripper(float position, float max_effort)
+{
+    if (!gripper_client->wait_for_action_server()) 
+    {
+      RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Action server not available after waiting!");
+      rclcpp::shutdown();
+    }
+
+    auto goal { control_msgs::action::GripperCommand::Goal() };
+    goal.command.position = 1.0 - position;  // Inverse logic
+    goal.command.max_effort = max_effort;
+
+    // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Sending goal...");
+
+    auto send_goal_options { rclcpp_action::Client<control_msgs::action::GripperCommand>::SendGoalOptions() };
+    
+    send_goal_options.goal_response_callback = [this](auto goal_response) 
+    { 
+        auto goal_handle { goal_response.get() };
+        if (!goal_handle)
+            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Goal was rejected by server!");
+        else
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Goal accepted by server, waiting for result.");
+    };
+
+    send_goal_options.result_callback = [this](const auto &result) 
+    {  
+        switch (result.code) 
+        {
+        case rclcpp_action::ResultCode::SUCCEEDED:
+            break;
+        case rclcpp_action::ResultCode::ABORTED:
+            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Goal was aborted!");
+            return;
+        case rclcpp_action::ResultCode::CANCELED:
+            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Goal was canceled!");
+            return;
+        default:
+            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Unknown result code!");
+            return;
+        }
+
+        std::stringstream ss {};
+        ss << "Result received. Position: " << result.result->position << "\tMax. effort: " << result.result->effort;
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), ss.str().c_str());
+    };
+
+    gripper_client->async_send_goal(goal, send_goal_options);
+}

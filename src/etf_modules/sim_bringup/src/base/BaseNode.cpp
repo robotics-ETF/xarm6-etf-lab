@@ -18,6 +18,9 @@ sim_bringup::BaseNode::BaseNode(const std::string &node_name, const std::string 
         
         Robot::joints_state_subscription = this->create_subscription<control_msgs::msg::JointTrajectoryControllerState>
             ("/xarm6_traj_controller/state", 10, std::bind(&Robot::jointsStateCallback, this, std::placeholders::_1));
+        Robot::gripper_node = std::make_shared<rclcpp::Node>("gripper_node");
+        Robot::gripper_client = rclcpp_action::create_client<control_msgs::action::GripperCommand>
+            (gripper_node, "/xarm_gripper/gripper_action");
 
         period = node["period"].as<float>();
         timer = this->create_wall_timer(std::chrono::microseconds(size_t(period * 1e6)), std::bind(&BaseNode::baseCallback, this));

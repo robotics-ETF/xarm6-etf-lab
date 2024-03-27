@@ -1,8 +1,5 @@
 #include "demos/MoveXArm6Node.h"
 
-#include <rclcpp_action/rclcpp_action.hpp>
-#include <control_msgs/action/gripper_command.hpp>
-#include <control_msgs/msg/gripper_command.hpp>
 #include <xarm_api/xarm_ros_client.h>
 #include <xarm_msgs/srv/move_cartesian.hpp>
 
@@ -23,9 +20,6 @@ namespace real_bringup
 
         std::shared_ptr<rclcpp::Node> xarm_client_node;
         xarm_api::XArmROSClient xarm_client;
-
-        std::shared_ptr<rclcpp::Node> gripper_node;
-        rclcpp_action::Client<control_msgs::action::GripperCommand>::SharedPtr gripper_client;
 
         std::shared_ptr<rclcpp::Node> set_position_node;
         rclcpp::Client<xarm_msgs::srv::MoveCartesian>::SharedPtr set_position_client;
