@@ -71,6 +71,10 @@ source source_dirs.bash
 ```
 
 # 3. Run the simulation using RViz2, MoveIt2 and Gazebo
+In ```apps/object_segmentation.cpp``` file within ```perception_etflab``` library, you can set ```config_file_path``` to be:
+1. ```/perception_etflab/data/sim_perception_etflab_config.yaml``` - Obstacles are random and dynamic, and the law of their motion is defined within ```src/environments/Obstacles.cpp``` file. Point cloud representing obstacles is generated within the code, and then corresponding obstacles are published at a rate of ```1/period``` [Hz] to ```objects_cloud``` topic. All configuration settings (including ```period```) can be set in the used yaml file within ```random_obstacles``` node. 
+2. ```/perception_etflab/data/real_perception_etflab_config.yaml``` - Obstacles are static, and they are defined within ```world/etflab.world``` file in ```sim_bringup``` library. After combining point clouds from two cameras (left and right one), a combined point cloud is read from ```pointcloud_combined``` topic. Then, obstacles are published at a rate of cca. 5 [Hz] to ```objects_cloud``` topic after their segmentation is done.
+
 First, type:
 ```
 cd ~/xarm6-etf-lab
@@ -92,6 +96,8 @@ Third option (MoveIt2 + RViz2):
 ```
 ros2 launch xarm_moveit_config xarm6_moveit_realmove.launch.py robot_ip:=192.168.1.236 [add_gripper:=true]
 ```
+
+Note: For each test file from ```apps``` folder, there is a corresponding yaml file withing ```data``` folder, where all necessary configurations can be set.
 
 ## 3.1 Test demo 1 (xarm6 moving)
 ```
@@ -137,6 +143,10 @@ make cameras
 ```
 
 # 5. Run the real robot using RViz2
+In ```apps/object_segmentation.cpp``` file within ```perception_etflab``` library, ```config_file_path``` must be set to ```/perception_etflab/data/real_perception_etflab_config.yaml```. Two cameras scan the environment, and after combining point clouds from the cameras (left and right one), a combined point cloud is read from ```pointcloud_combined``` topic. Then, obstacles are published at a rate of cca. 25 [Hz] to ```objects_cloud``` topic after their segmentation is done.
+
+Note: For each test file from ```apps``` folder, there is a corresponding yaml file withing ```data``` folder, where all necessary configurations can be set.
+
 First, launch the robot:
 ```
 cd ~/xarm6-etf-lab
