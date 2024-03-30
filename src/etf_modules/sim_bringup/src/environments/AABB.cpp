@@ -15,16 +15,19 @@ void sim_bringup::AABB::callback(const sensor_msgs::msg::PointCloud2::SharedPtr 
     resetMeasurements();
 	pcl::PointCloud<pcl::PointXYZ>::Ptr pcl(new pcl::PointCloud<pcl::PointXYZ>);	
 	pcl::moveFromROSMsg(*msg, *pcl);
+    Eigen::Vector3f dim {};
+    Eigen::Vector3f pos {};
 
     for (size_t i = 0; i < pcl->size(); i += 2)
     {
-        pcl::PointXYZ dim { pcl->points[i] };
-        pcl::PointXYZ pos { pcl->points[i+1] };
-        dimensions.emplace_back(fcl::Vector3f(dim.x, dim.y, dim.z));
-        positions.emplace_back(fcl::Vector3f(pos.x, pos.y, pos.z));
+        dim << pcl->points[i].x, pcl->points[i].y, pcl->points[i].z;
+        pos << pcl->points[i+1].x, pcl->points[i+1].y, pcl->points[i+1].z;
+        dimensions.emplace_back(dim);
+        positions.emplace_back(pos);
         num_captures.emplace_back(1);
-        // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "AABB %ld: dim = (%f, %f, %f), pos = (%f, %f, %f)",
-        //     i/2, dim.x, dim.y, dim.z, pos.x, pos.y, pos.z);
+
+        // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "AABB %ld: dim = (%f, %f, %f), pos = (%f, %f, %f)",  // (x, y, z) in [m]
+        //     i/2, dim.x(), dim.y(), dim.z(), pos.x(), pos.y(), pos.z());
     }
 }
 
@@ -92,7 +95,7 @@ void sim_bringup::AABB::updateEnvironment()
         }
     }
 
-    if (min_num_captures > 0)
+    if (min_num_captures > 1)
         resetMeasurements();
     
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Environment is updated."); 

@@ -38,4 +38,4 @@ environment:
       pos: [0, 0, -0.05]
 
 cameras:
-  min_num_captures: 0                                         # Minimal number of captures/frames of a single obstacle to become valid
+  min_num_captures: 1                                         # Minimal number of captures/frames of a single obstacle to become valid
