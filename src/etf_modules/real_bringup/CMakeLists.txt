@@ -33,7 +33,7 @@ include_directories(
   ${EIGEN3_INCLUDE_DIR}
   ${OCTOMAP_INCLUDE_DIRS}
   ${RPMPL_LIBRARY_INCLUDE_DIRS}
-  ${SIM_BRINGUP_LIBRARY_INCLUDE_DIRS}
+  ${SIM_BRINGUP_INCLUDE_DIRS}
 )
 
 # The compiled library code is here
