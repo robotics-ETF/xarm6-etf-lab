@@ -20,9 +20,8 @@ namespace sim_bringup
     protected:
         void baseCallback() override { planningCallback(); }
         void planningCallback();
-        void replan(int max_planning_time) override;
+        void replan(float max_planning_time) override;
         void computeTrajectory();
-        
-        std::shared_ptr<scenario::Scenario> scenario;
+
     };
 }

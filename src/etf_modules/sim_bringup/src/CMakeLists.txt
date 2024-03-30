@@ -12,17 +12,20 @@ file(GLOB_RECURSE SRC_LIST CONFIGURE_DEPENDS "*.cpp")
 
 # message(${SRC_LIST})
 # Make an automatic library - will be static or dynamic based on user setting
-add_library(sim_bringup_library SHARED ${SRC_LIST} ${HEADER_LIST})
+add_library(sim_bringup SHARED ${SRC_LIST} ${HEADER_LIST})
 
 # We need this directory, and users of our library will need it too
-target_include_directories(sim_bringup_library PUBLIC ${INCLUDE_DIRS})
+target_include_directories(sim_bringup PUBLIC ${INCLUDE_DIRS})
 
 # All users of this library will need at least C++17
-target_compile_features(sim_bringup_library PUBLIC cxx_std_17)
+target_compile_features(sim_bringup PUBLIC cxx_std_17)
 
-target_link_libraries(sim_bringup_library PUBLIC ${RPMPL_LIBRARY} ${RPMPL_LIBRARIES})
+target_link_libraries(sim_bringup PUBLIC 
+  ${RPMPL_LIBRARY} 
+  ${RPMPL_LIBRARIES}
+)
 
-ament_target_dependencies(sim_bringup_library PUBLIC 
+ament_target_dependencies(sim_bringup PUBLIC 
   rclcpp
   rclcpp_action
   trajectory_msgs
