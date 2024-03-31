@@ -33,7 +33,7 @@ void sim_bringup::PlanningNode::planningCallback()
     {
     case waiting:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting...");
-        if (Robot::isReady())
+        if (Robot::isReady() && AABB::isReady())
         {
             scenario->setStart(Robot::getJointsPositionPtr());
             state = planning;

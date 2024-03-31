@@ -24,7 +24,7 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
     case waiting_for_object:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting for the object...");
         AABB::resetMeasurements();
-        if (Robot::isReady())
+        if (Robot::isReady() && AABB::isReady())
             task = choosing_object;
         break;
 
