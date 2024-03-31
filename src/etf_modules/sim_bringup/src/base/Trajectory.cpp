@@ -78,6 +78,36 @@ void sim_bringup::Trajectory::addPoint(float time_instance, const Eigen::VectorX
     msg.points.emplace_back(point);
 }
 
+/// @brief Add points from 'spline' to 'msg.points' using the time discretization step 'trajectory_max_time_step'.
+/// @param spline Spline which points are used.
+/// @param t_offset Time offset for which all points are time shifted.
+/// @param t_final Final time from the spline which limits a final point that will be added.
+void sim_bringup::Trajectory::addPoints(std::shared_ptr<planning::trajectory::Spline> spline, float t_offset, float t_final)
+{
+    Eigen::VectorXf q_current {};
+    Eigen::VectorXf q_current_dot {};
+    Eigen::VectorXf q_current_ddot {};
+    float t { 0 };
+
+    do
+    {
+        t += trajectory_max_time_step;
+        if (t > t_final)
+            t = t_final;
+
+        q_current = spline->getPosition(t);
+        q_current_dot = spline->getVelocity(t);
+        q_current_ddot = spline->getAcceleration(t);
+        addPoint(t_offset + t, q_current, q_current_dot, q_current_ddot);
+        
+        // std::cout << "Adding point at time: " << t_offset + t << " [s] \n";
+        // std::cout << "Position:     " << q_current.transpose() << "\n";
+        // std::cout << "Velocity:     " << q_current_dot.transpose() << "\n";
+        // std::cout << "Acceleration: " << q_current_ddot.transpose() << "\n\n";
+    } 
+    while (t < t_final);
+}
+
 void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::State>> &path, const std::vector<float> &time_instances)
 {
     for (size_t i = 0; i < path.size(); i++)
@@ -109,7 +139,7 @@ void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::St
         spline_current->compute(new_path[2]);
     
     float t_current {};
-    float t {}, t_min {}, t_max {}, t_temp {};
+    float t {}, t_min {}, t_max {};
     bool found { false };
     size_t num { 0 };
     const size_t max_num_iter { 5 };
@@ -141,32 +171,13 @@ void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::St
                 t_min = t;
         }
 
-        t_temp = trajectory_max_time_step;
-        while (t_temp <= t)
-        {
-            q_current = spline_current->getPosition(t_temp);
-            q_current_dot = spline_current->getVelocity(t_temp);
-            q_current_ddot = spline_current->getAcceleration(t_temp);
-            addPoint(t_current + t_temp, q_current, q_current_dot, q_current_ddot);
-            t_temp += trajectory_max_time_step;
-        }
-        
+        addPoints(spline_current, t_current, t);        
         t_current += t;
         spline_current = spline_next;
-        // std::cout << "Adding point at time: " << t_current << " [s] \n";
+        // std::cout << "t_current: " << t_current << " [s] \n";
     }
 
-    t_temp = trajectory_max_time_step;
-    while (t_temp <= spline_current->getTimeFinal())
-    {
-        q_current = spline_current->getPosition(t_temp);
-        q_current_dot = spline_current->getVelocity(t_temp);
-        q_current_ddot = spline_current->getAcceleration(t_temp);
-        addPoint(t_current + t_temp, q_current, q_current_dot, q_current_ddot);
-        t_temp += trajectory_max_time_step;
-    }
-    
-    addPoint(t_current + spline_current->getTimeFinal(), new_path.back());
+    addPoints(spline_current, t_current, spline_current->getTimeFinal());
 }
 
 void sim_bringup::Trajectory::preprocessPath(const std::vector<std::shared_ptr<base::State>> &path, std::vector<Eigen::VectorXf> &new_path)

@@ -33,10 +33,10 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
     // ------------------------------------------------------------------------------- //
     DP::time_alg_start = std::chrono::steady_clock::now();      // Start the algorithm clock
 
-    // Initial iteration: Obtaining the inital path using specified static planner
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\nIteration num. %ld", DP::planner_info->getNumIterations());
+    // Initial iteration: Obtaining an inital path using specified static planner
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Iteration num. %ld", DP::planner_info->getNumIterations());
     AABB::updateEnvironment();
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Obtaining the inital path...");
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Obtaining an inital path...");
     replan(DRGBTConfig::MAX_ITER_TIME);
     
     DP::planner_info->setNumIterations(DP::planner_info->getNumIterations() + 1);
@@ -46,7 +46,7 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
 
 void sim_bringup::RealTimePlanningNode::planningCallback()
 {
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\nIteration num. %ld", DP::planner_info->getNumIterations());
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Iteration num. %ld", DP::planner_info->getNumIterations());
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TASK 1: Computing next configuration... ");
     DP::time_iter_start = std::chrono::steady_clock::now();     // Start the iteration clock
 
@@ -86,7 +86,7 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
     DP::generateGBur();
     DP::computeNextState();
     computeTrajectory();
-    std::cout << "Elapsed time: " << DP::getElapsedTime(DP::time_iter_start, planning::TimeUnit::ms) << " [ms] \n";
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Elapsed time: %f [ms].", DP::getElapsedTime(DP::time_iter_start, planning::TimeUnit::ms));
     
     // ------------------------------------------------------------------------------- //
     // Replanning procedure assessment
@@ -95,11 +95,11 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TASK 2: Replanning... ");
         if (Planner::isReady()) 
         {
-            replan(DRGBTConfig::MAX_ITER_TIME - DP::getElapsedTime(DP::time_iter_start) - 2e-3);    // 2 [ms] is subtracted because of the following code lines
-            std::cout << "Elapsed time: " << DP::getElapsedTime(DP::time_iter_start, planning::TimeUnit::ms) << " [ms] \n";
+            replan(DRGBTConfig::MAX_ITER_TIME - DP::getElapsedTime(DP::time_iter_start) - 1e-3);    // 1 [ms] is subtracted because of the following code lines
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Elapsed time: %f [ms].", DP::getElapsedTime(DP::time_iter_start, planning::TimeUnit::ms));
         }
         else
-            std::cout << "PLANNER IS NOT READY! \n";
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Planner is not ready! ");
     }
     else
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Replanning is not required! ");
@@ -145,9 +145,7 @@ void sim_bringup::RealTimePlanningNode::replan(float max_planning_time)
             {
                 result = Planner::solve(DP::q_target, DP::q_goal, max_planning_time);
             });
-    std::cout << "Elapsed time 1: " << DP::getElapsedTime(DP::time_iter_start, planning::TimeUnit::ms) << " [ms] \n";
             std::this_thread::sleep_for(std::chrono::microseconds(size_t(max_planning_time * 1e6)));
-    std::cout << "Elapsed time 2: " << DP::getElapsedTime(DP::time_iter_start, planning::TimeUnit::ms) << " [ms] \n";
             break;
         
         case planning::RealTimeScheduling::None:
@@ -179,17 +177,26 @@ void sim_bringup::RealTimePlanningNode::replan(float max_planning_time)
     }
 }
 
-/// @brief Compute trajectory points and publish them.
+/// @brief Compute trajectory points from 'spline_next' and publish them.
 void sim_bringup::RealTimePlanningNode::computeTrajectory()
 {
-    float time_offset { DP::updateCurrentState() };
-    float time_current { DP::spline_next->getTimeCurrent() };
+    float t_delay { DP::updateCurrentState(true) };
 
+    if (DP::spline_next == DP::spline_current)  // Trajectory has been already computed!
+    {
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Not computing a new trajectory! ");
+        return;
+    }
+
+    std::chrono::steady_clock::time_point time_start_ { std::chrono::steady_clock::now() };
     Trajectory::clear();
-    Trajectory::addPoint(time_offset, DP::spline_next->getPosition(time_current),
-                                      DP::spline_next->getVelocity(time_current),
-                                      DP::spline_next->getAcceleration(time_current));
-    Trajectory::addPoint(time_offset + spline_next->getTimeFinal(), DP::spline_next->getPosition(INFINITY));
+    Trajectory::addPoints(DP::spline_next, t_delay, DP::spline_next->getTimeFinal());
     Trajectory::publish();
+    float t_publish { DP::getElapsedTime(time_start_) };
 
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Publish time: %f [ms]", t_publish * 1e3);
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Sleep time:   %f [ms]", (t_delay - t_publish) * 1e3);
+
+    std::this_thread::sleep_for(std::chrono::microseconds(size_t((t_delay - t_publish) * 1e6)));
+    DP::spline_next->setTimeStart();
 }

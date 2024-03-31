@@ -25,6 +25,7 @@ namespace sim_bringup
         void addPoint(float time_instance, const Eigen::VectorXf &position, const Eigen::VectorXf &velocity);
         void addPoint(float time_instance, const Eigen::VectorXf &position, const Eigen::VectorXf &velocity, 
                       const Eigen::VectorXf &acceleration);
+        void addPoints(std::shared_ptr<planning::trajectory::Spline> spline, float t_offset, float t_final);
         
         void addPath(const std::vector<std::shared_ptr<base::State>> &path, const std::vector<float> &time_instances);
         void addPath(const std::vector<Eigen::VectorXf> &path, const std::vector<float> &time_instances);
