@@ -30,55 +30,99 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
     if (DRGBTConfig::STATIC_PLANNER_TYPE == planning::PlannerType::RGBMTStar)
         RGBMTStarConfig::TERMINATE_WHEN_PATH_IS_FOUND = true;
     
-    // ------------------------------------------------------------------------------- //
-    DP::time_alg_start = std::chrono::steady_clock::now();      // Start the algorithm clock
-
-    // Initial iteration: Obtaining an inital path using specified static planner
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Iteration num. %ld", DP::planner_info->getNumIterations());
-    AABB::updateEnvironment();
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Obtaining an inital path...");
-    replan(DRGBTConfig::MAX_ITER_TIME);
-    
-    DP::planner_info->setNumIterations(DP::planner_info->getNumIterations() + 1);
-    DP::planner_info->addIterationTime(DP::getElapsedTime(DP::time_alg_start));
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "----------------------------------------------------------------------------\n");
 }
 
 void sim_bringup::RealTimePlanningNode::planningCallback()
 {
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Iteration num. %ld", DP::planner_info->getNumIterations());
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TASK 1: Computing next configuration... ");
     DP::time_iter_start = std::chrono::steady_clock::now();     // Start the iteration clock
 
-    // ------------------------------------------------------------------------------- //
-    // Update environment and check if the collision occurs
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Updating environment..."); 
-    AABB::updateEnvironment();
+    switch (DP::planner_info->getNumIterations())
+    {
+    case 0:
+        if (!Robot::isReady())
+        {
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting to set up the robot...");
+            return;
+        }
+        if (!AABB::isReady())
+        {
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting to set up the environment...");
+            return;
+        }
 
-    // ------------------------------------------------------------------------------- //
+        // ------------------------------------------------------------------------------- //
+        // Initial iteration: Obtaining an inital path using specified static planner
+        DP::time_alg_start = DP::time_iter_start;      // Start the algorithm clock
+        AABB::updateEnvironment();
+        
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Obtaining an inital path...");
+        replan(DRGBTConfig::MAX_ITER_TIME);
+        
+        DP::planner_info->setNumIterations(DP::planner_info->getNumIterations() + 1);
+        DP::planner_info->addIterationTime(DP::getElapsedTime(DP::time_alg_start));
+        break;
+    
+    default:
+        AABB::updateEnvironment();
+        
+        // ------------------------------------------------------------------------------- //
+        // Current robot position (measured vs computed)
+        DP::q_current = Robot::getJointsPositionPtr();
+        std::cout << "q_current (measured): " << DP::q_current << "\n";
+        DP::q_current = DP::ss->getNewState(DP::spline_next->getPosition(DP::spline_next->getTimeCurrent(true)));
+        std::cout << "q_current (computed): " << DP::q_current << "\n";
+
+        // ------------------------------------------------------------------------------- //
+        // Checking whether the collision occurs
+        if (!DP::ss->isValid(DP::q_current))
+        {
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "********** Robot is stopping. Collision has been occurred!!! **********");
+            // DP::planner_info->setSuccessState(false);
+            // DP::planner_info->setPlanningTime(DP::planner_info->getIterationTimes().back());
+            // rclcpp::shutdown();
+            return;     // The algorithm will still continue its execution.
+        }
+        
+        // ------------------------------------------------------------------------------- //
+        taskComputingNextConfiguration();
+        taskReplanning();
+
+        // ------------------------------------------------------------------------------- //
+        // Checking the real-time execution
+        float time_iter_remain = DRGBTConfig::MAX_ITER_TIME * 1e3 - DP::getElapsedTime(DP::time_iter_start, planning::TimeUnit::ms);
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Remaining iteration time is %f [ms].", time_iter_remain);
+        if (time_iter_remain < 0)
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "********** Real-time is broken. %f [ms] exceeded!!! **********", -time_iter_remain);
+
+        // ------------------------------------------------------------------------------- //
+        // Planner info and terminating condition
+        DP::planner_info->setNumIterations(DP::planner_info->getNumIterations() + 1);
+        DP::planner_info->addIterationTime(DP::getElapsedTime(DP::time_alg_start));
+        if (DP::checkTerminatingCondition(DP::status))
+            rclcpp::shutdown();
+        
+        break;
+    }
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "----------------------------------------------------------------------------\n");
+}
+
+void sim_bringup::RealTimePlanningNode::taskComputingNextConfiguration()
+{
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TASK 1: Computing next configuration... ");
+    
     // Since the environment may change, a new distance is required!
     float d_c { DP::ss->computeDistance(DP::q_target, true) };
     if (d_c <= 0)   // The desired/target conf. is not safe, thus the robot is required to stop immediately, 
     {               // and compute the horizon again from 'q_current'
-        // TODO: Urgently stopping needs to be implemented using quartic spline.
+        // TODO: Emergency stopping needs to be implemented using quartic spline.
         DP::q_target = DP::q_current;
         d_c = DP::ss->computeDistance(DP::q_target, true);
         DP::clearHorizon(base::State::Status::Trapped, true);
         DP::q_next = std::make_shared<planning::drbt::HorizonState>(DP::q_target, 0);
         // std::cout << "Not updating the robot current state since d_c < 0. \n";
     }
-
-    // ------------------------------------------------------------------------------- //
-    if (!DP::ss->isValid(DP::q_current) || d_c <= 0)
-    {
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "********** Robot is stopping. Collision has been occured!!! **********");
-        DP::planner_info->setSuccessState(false);
-        DP::planner_info->setPlanningTime(DP::planner_info->getIterationTimes().back());
-        rclcpp::shutdown();
-        return;
-    }
-
-    // ------------------------------------------------------------------------------- //
+    
     if (DP::status != base::State::Status::Advanced)
         DP::generateHorizon();
 
@@ -87,9 +131,10 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
     DP::computeNextState();
     computeTrajectory();
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Elapsed time: %f [ms].", DP::getElapsedTime(DP::time_iter_start, planning::TimeUnit::ms));
-    
-    // ------------------------------------------------------------------------------- //
-    // Replanning procedure assessment
+}
+
+void sim_bringup::RealTimePlanningNode::taskReplanning()
+{
     if (DP::whetherToReplan())
     {
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TASK 2: Replanning... ");
@@ -103,26 +148,6 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
     }
     else
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Replanning is not required! ");
-
-    // ------------------------------------------------------------------------------- //
-    // Checking the real-time execution
-    float time_iter_remain = DRGBTConfig::MAX_ITER_TIME * 1e3 - DP::getElapsedTime(DP::time_iter_start, planning::TimeUnit::ms);
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Remaining iteration time is %f [ms].", time_iter_remain);
-    if (time_iter_remain < 0)
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "********** Real-time is broken. %f [ms] exceeded!!! **********", -time_iter_remain);
-
-    // ------------------------------------------------------------------------------- //
-    // Current robot position at the end of iteration
-        DP::q_current = DP::ss->getNewState(DP::spline_next->getPosition(DP::spline_next->getTimeEnd()));
-
-    // ------------------------------------------------------------------------------- //
-    // Planner info and terminating condition
-    DP::planner_info->setNumIterations(DP::planner_info->getNumIterations() + 1);
-    DP::planner_info->addIterationTime(DP::getElapsedTime(DP::time_alg_start));
-    if (DP::checkTerminatingCondition(DP::status))
-        rclcpp::shutdown();
-
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "----------------------------------------------------------------------------\n");
 }
 
 // Try to replan the predefined path from the target to the goal configuration within the specified time

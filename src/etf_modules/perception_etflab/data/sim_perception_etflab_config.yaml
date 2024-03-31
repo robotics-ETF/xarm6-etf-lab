@@ -17,7 +17,7 @@ perception:
   concatenation_tolerance: 0.05                             # Abs. tolerance when concatenating two subclusters
 
 random_obstacles:
-  num: 1	                        # Number of random obstacles to be added
+  num: 3	                        # Number of random obstacles to be added
   max_vel: 0.6 			              # Maximal velocity of each obstacle in [m/s]
   dim: [0.2, 0.2, 0.2]         # Dimensions of each random obstacle in [m]
   period: 0.050                   # Period in [s]
