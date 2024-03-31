@@ -8,10 +8,13 @@ sim_bringup::AABB::AABB(const std::string &config_file_path)
 
     YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
     min_num_captures = node["cameras"]["min_num_captures"].as<size_t>();
+
+    ready = false;
 }
 
 void sim_bringup::AABB::callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
 {
+    ready = false;
     resetMeasurements();
 	pcl::PointCloud<pcl::PointXYZ>::Ptr pcl(new pcl::PointCloud<pcl::PointXYZ>);	
 	pcl::moveFromROSMsg(*msg, *pcl);
@@ -29,10 +32,12 @@ void sim_bringup::AABB::callback(const sensor_msgs::msg::PointCloud2::SharedPtr 
         // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "AABB %ld: dim = (%f, %f, %f), pos = (%f, %f, %f)",  // (x, y, z) in [m]
         //     i/2, dim.x(), dim.y(), dim.z(), pos.x(), pos.y(), pos.z());
     }
+    ready = true;
 }
 
 void sim_bringup::AABB::withFilteringCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg)
 {
+    ready = false;
     pcl::PointCloud<pcl::PointXYZ>::Ptr pcl(new pcl::PointCloud<pcl::PointXYZ>);	
     pcl::moveFromROSMsg(*msg, *pcl);
     Eigen::Vector3f dim {};
@@ -69,7 +74,8 @@ void sim_bringup::AABB::withFilteringCallback(const sensor_msgs::msg::PointCloud
             positions.emplace_back(pos);
             num_captures.emplace_back(1);
         }                
-    }   
+    }
+    ready = true;
 }
 
 bool sim_bringup::AABB::whetherToRemove([[maybe_unused]] const Eigen::Vector3f &object_pos, [[maybe_unused]] const Eigen::Vector3f &object_dim)
@@ -79,6 +85,7 @@ bool sim_bringup::AABB::whetherToRemove([[maybe_unused]] const Eigen::Vector3f &
 
 void sim_bringup::AABB::updateEnvironment()
 {
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Updating environment..."); 
     env->removeObjects("table", false);
     
     for (size_t i = 0; i < positions.size(); i++)

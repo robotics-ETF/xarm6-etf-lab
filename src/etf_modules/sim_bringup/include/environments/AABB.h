@@ -33,6 +33,7 @@ namespace sim_bringup
         void updateEnvironment();
         void resetMeasurements();
         virtual int chooseObject() { return -1; }
+        inline bool isReady() { return ready; }
         void callback(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
         void withFilteringCallback(const sensor_msgs::msg::PointCloud2::SharedPtr msg);
         
@@ -46,6 +47,7 @@ namespace sim_bringup
         std::vector<size_t> num_captures;
         size_t min_num_captures;
         std::shared_ptr<env::Environment> env;
+        bool ready;
     };
 }
 

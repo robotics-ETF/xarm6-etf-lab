@@ -134,6 +134,7 @@ sim_bringup::Robot::Robot(const std::string &config_file_path)
 
 void sim_bringup::Robot::jointsStateCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg)
 {
+    ready = false;
     for (size_t i = 0; i < num_DOFs; i++)
     {
         joints_position(i) = msg->actual.positions[i];
