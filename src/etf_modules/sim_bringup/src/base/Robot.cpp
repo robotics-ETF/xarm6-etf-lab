@@ -147,14 +147,6 @@ void sim_bringup::Robot::jointsStateCallback(const control_msgs::msg::JointTraje
     //         joints_position(0), joints_position(1), joints_position(2), joints_position(3), joints_position(4), joints_position(5));
 }
 
-bool sim_bringup::Robot::isReady()
-{
-    if (ready)
-        return true;
-
-    return false;
-}
-
 bool sim_bringup::Robot::isReached(std::shared_ptr<base::State> q, float tol)
 {
     if ((joints_position - q->getCoord()).norm() < tol)
