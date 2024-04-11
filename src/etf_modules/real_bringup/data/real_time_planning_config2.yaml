@@ -2,7 +2,7 @@ period: 0.1                                                   # Maximal runtime 
 
 real_time:
   scheduling: "FPS"                                           # "FPS" - Fixed Priority Scheduling
-  max_time_task1: 0.050                                       # Maximal time in [s] which Task 1 can take from the processor
+  max_time_task1: 0.1                                       # Maximal time in [s] which Task 1 can take from the processor
 
 robot:
   type: "xarm6"
@@ -10,25 +10,22 @@ robot:
   space: "RealVectorSpace"
   num_DOFs: 6
   q_home:  [0, 0, 0, 3.1415, 1.5708, 0]
-  q_start: [0, 1.0472, -2.618, 0, 1.5708, 0]
-  q_goal:  [3.1415, 0.7854, -3.1415, -3.1415, 0, 3.1415]
+  q_start: [-3.1415, 0.7854, -3.1415, -3.1415, 0, 3.1415]
+  q_goal:  [0, 0, 0, 3.1415, 1.5708, 0]
   capsules_radius: [0.047, 0.12, 0.11, 0.09, 0.05, 0.1]       # When the gripper is attached
   gripper_length: 0.17                                        # In [m]
   table_included: true                                        # Please check whether 'table' is added in 'environment'
   WS_center: [0.0, 0.0, 0.267]                                # Workspace center point in [m]
   WS_radius: 1.5                                              # Workspace radius in [m] assuming spherical workspace shape
-  # max_vel:  [3.1415, 3.1415, 3.1415, 3.1415, 3.1415, 3.1415]  # Maximal velocity of each robot's joint in [rad/s]
-  # max_acc:  [6.3611, 6.3611, 6.3611, 6.3611, 6.3611, 6.3611]  # Maximal acceleration of each robot's joint in [rad/s²]
-  # max_jerk: [159.15, 159.15, 159.15, 159.15, 159.15, 159.15]  # Maximal jerk of each robot's joint in [rad/s³]
-  max_vel:  [1, 1, 1, 1, 1, 1]        # Maximal velocity of each robot's joint in [rad/s]
-  max_acc:  [4, 4, 4, 4, 4, 4]        # Maximal acceleration of each robot's joint in [rad/s²]
-  max_jerk: [60, 60, 60, 60, 60, 60]  # Maximal jerk of each robot's joint in [rad/s³]
+  max_vel:  [1.5, 1.5, 1.5, 1.5, 1.5, 1.5]        # Maximal velocity of each robot's joint in [rad/s]
+  max_acc:  [3, 3, 3, 3, 3, 3]        # Maximal acceleration of each robot's joint in [rad/s²]
+  max_jerk: [10, 10, 10, 10, 10, 10]  # Maximal jerk of each robot's joint in [rad/s³]
 
 planner:
   # type: "RRT-Connect"
   # type: "RBT-Connect"
-  # type: "RGBT-Connect"
-  type: "RGBMT*"
+  type: "RGBT-Connect"
+  # type: "RGBMT*"
   configurations: "/RPMPLv2"
   trajectory_max_time_step: 0.1                               # In [s]
 

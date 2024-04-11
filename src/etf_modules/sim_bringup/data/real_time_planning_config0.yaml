@@ -30,7 +30,6 @@ planner:
   # type: "RGBT-Connect"
   type: "RGBMT*"
   configurations: "/RPMPLv2"
-  max_edge_length: 0.5                                        # In [rad]
   trajectory_max_time_step: 0.1                               # In [s]
 
 environment:
