@@ -24,6 +24,7 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
     else if (real_time_scheduling == "None")
         DRGBTConfig::REAL_TIME_SCHEDULING = planning::RealTimeScheduling::None;
 
+    DRGBTConfig::MAX_PLANNING_TIME = INFINITY;
     DRGBTConfig::MAX_TIME_TASK1 = real_time_node["max_time_task1"].as<float>();
     DRGBTConfig::MAX_ITER_TIME = BaseNode::period;
     DRGBTConfig::STATIC_PLANNER_TYPE = Planner::getPlannerType();

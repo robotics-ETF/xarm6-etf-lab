@@ -20,7 +20,7 @@ from launch.actions import OpaqueFunction
 
     
 def launch_setup(context, *args, **kwargs):
-    report_type = LaunchConfiguration('report_type', default='rich')     # normal, rich, dev (see: https://github.com/xArm-Developer/xarm_ros#report_type-argument)
+    report_type = LaunchConfiguration('report_type', default='normal')     # normal, rich, dev (see: https://github.com/xArm-Developer/xarm_ros#report_type-argument)
     dof = LaunchConfiguration('dof', default=6)
     prefix = LaunchConfiguration('prefix', default='')
     hw_ns = LaunchConfiguration('hw_ns', default='xarm')
