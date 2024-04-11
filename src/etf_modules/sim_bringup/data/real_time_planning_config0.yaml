@@ -17,12 +17,9 @@ robot:
   table_included: true                                        # Please check whether 'table' is added in 'environment'
   WS_center: [0.0, 0.0, 0.267]                                # Workspace center point in [m]
   WS_radius: 1.5                                              # Workspace radius in [m] assuming spherical workspace shape
-  # max_vel:  [3.1415, 3.1415, 3.1415, 3.1415, 3.1415, 3.1415]  # Maximal velocity of each robot's joint in [rad/s]
-  # max_acc:  [6.3611, 6.3611, 6.3611, 6.3611, 6.3611, 6.3611]  # Maximal acceleration of each robot's joint in [rad/s²]
-  # max_jerk: [159.15, 159.15, 159.15, 159.15, 159.15, 159.15]  # Maximal jerk of each robot's joint in [rad/s³]
-  max_vel:  [1, 1, 1, 1, 1, 1]        # Maximal velocity of each robot's joint in [rad/s]
-  max_acc:  [4, 4, 4, 4, 4, 4]        # Maximal acceleration of each robot's joint in [rad/s²]
-  max_jerk: [60, 60, 60, 60, 60, 60]  # Maximal jerk of each robot's joint in [rad/s³]
+  max_vel:  [3.1415, 3.1415, 3.1415, 3.1415, 3.1415, 3.1415]  # Maximal velocity of each robot's joint in [rad/s]
+  max_acc:  [6.3611, 6.3611, 6.3611, 6.3611, 6.3611, 6.3611]  # Maximal acceleration of each robot's joint in [rad/s²]
+  max_jerk: [159.15, 159.15, 159.15, 159.15, 159.15, 159.15]  # Maximal jerk of each robot's joint in [rad/s³]
 
 planner:
   # type: "RRT-Connect"
