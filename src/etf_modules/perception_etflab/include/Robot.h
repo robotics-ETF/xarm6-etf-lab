@@ -42,7 +42,7 @@ namespace perception_etflab
 		std::shared_ptr<base::State> joints_state;
 		std::shared_ptr<rclcpp::Node> xarm_client_node;
 		xarm_api::XArmROSClient xarm_client;
-        std::vector<float> tolerance_factors;
+        std::vector<float> tolerance_radius;
 		float table_radius;
         size_t num_DOFs;
     };

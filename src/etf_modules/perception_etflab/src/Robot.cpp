@@ -28,7 +28,7 @@ perception_etflab::Robot::Robot(const std::string &config_file_path)
 
     table_radius = robot_node["table_radius"].as<float>();
     for (size_t i = 0; i < num_DOFs; i++)
-        tolerance_factors.emplace_back(robot_node["tolerance_factors"][i].as<float>());
+        tolerance_radius.emplace_back(robot_node["tolerance_radius"][i].as<float>());
 
     // Uncomment if you are using 'removeFromScene3' function
     // xarm_client_node = std::make_shared<rclcpp::Node>("xarm_client_node");
@@ -64,7 +64,7 @@ void perception_etflab::Robot::removeFromScene(std::vector<pcl::PointCloud<pcl::
 	}
     
     bool remove_cluster { false };
-    size_t cnt { clusters.size() };
+    // size_t cnt { clusters.size() };
     for (std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr>::iterator cluster = clusters.end()-1; cluster >= clusters.begin(); cluster--)
     {
         // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Considering cluster %ld", --cnt);
@@ -74,7 +74,7 @@ void perception_etflab::Robot::removeFromScene(std::vector<pcl::PointCloud<pcl::
             for (int k = robot->getNumLinks()-1; k >= 0; k--)
             {
                 float d_c = std::get<0>(base::RealVectorSpace::distanceLineSegToPoint(skeleton->col(k), skeleton->col(k+1), point));
-                if (d_c < robot->getCapsuleRadius(k) * tolerance_factors[k])
+                if (d_c < robot->getCapsuleRadius(k) + tolerance_radius[k])
                 {
                     // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Skeleton points for k = %d: (%f, %f, %f) to (%f, %f, %f) ", k,
                     //     skeleton->col(k).x(), skeleton->col(k).y(), skeleton->col(k).z(), 
@@ -119,7 +119,7 @@ void perception_etflab::Robot::removeFromScene2(const pcl::PointCloud<pcl::Point
         for (int k = robot->getNumLinks()-1; k >= 0; k--)
         {
             float d_c = std::get<0>(base::RealVectorSpace::distanceLineSegToPoint(skeleton->col(k), skeleton->col(k+1), point));
-            if (d_c < robot->getCapsuleRadius(k) * tolerance_factors[k])
+            if (d_c < robot->getCapsuleRadius(k) + tolerance_radius[k])
             {
                 // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Skeleton points for k = %d: (%f, %f, %f) to (%f, %f, %f) ", k,
                 //     skeleton->col(k).x(), skeleton->col(k).y(), skeleton->col(k).z(), 
@@ -160,7 +160,7 @@ void perception_etflab::Robot::removeFromScene3(std::vector<pcl::PointCloud<pcl:
     Eigen::Vector3f A { TCP - R.col(2) * 0.07 };
     Eigen::Vector3f B { A - R.col(2) * 0.13 };
     float r { 0.1 };
-    size_t cnt { clusters.size() };
+    // size_t cnt { clusters.size() };
 
     for (std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr>::iterator cluster = clusters.end()-1; cluster >= clusters.begin(); cluster--)
     {
@@ -169,7 +169,7 @@ void perception_etflab::Robot::removeFromScene3(std::vector<pcl::PointCloud<pcl:
 	    {
             // Filter points occupying the last link
             Eigen::Vector3f point(pcl_point->x, pcl_point->y, pcl_point->z);
-            if (std::get<0>(base::RealVectorSpace::distanceLineSegToPoint(A, B, point)) < r * tolerance_factors.back())
+            if (std::get<0>(base::RealVectorSpace::distanceLineSegToPoint(A, B, point)) < r + tolerance_radius.back())
             {
 		        // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Point: (%f, %f, %f). Removing cluster! ", point.x(), point.y(), point.z());
                 clusters.erase(cluster);
