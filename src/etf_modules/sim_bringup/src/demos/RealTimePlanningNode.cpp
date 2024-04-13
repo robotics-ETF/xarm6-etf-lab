@@ -141,7 +141,7 @@ void sim_bringup::RealTimePlanningNode::taskReplanning()
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TASK 2: Replanning... ");
         if (Planner::isReady()) 
         {
-            replan(DRGBTConfig::MAX_ITER_TIME - DP::getElapsedTime(DP::time_iter_start) - 1e-3);    // 1 [ms] is subtracted because of the following code lines
+            replan(DRGBTConfig::MAX_ITER_TIME - DP::getElapsedTime(DP::time_iter_start) - 2e-3);    // 2 [ms] is subtracted because of the following code lines
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Elapsed time: %f [ms].", DP::getElapsedTime(DP::time_iter_start, planning::TimeUnit::ms));
         }
         else
@@ -186,7 +186,7 @@ void sim_bringup::RealTimePlanningNode::replan(float max_planning_time)
         {
             // First, interpolation of the predefined path is done in order that the horizon contains more states from the path
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "The path has been replanned in %f [ms].", Planner::getPlanningTime() * 1e3);
-            DP::acquirePredefinedPath(Planner::getPath());
+            DP::ss->preprocessPath(Planner::getPath(), DP::predefined_path, DP::max_edge_length);
             DP::clearHorizon(base::State::Status::Reached, false);
             DP::q_next = std::make_shared<planning::drbt::HorizonState>(DP::q_target, 0);
         }
