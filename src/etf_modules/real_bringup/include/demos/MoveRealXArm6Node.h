@@ -15,7 +15,13 @@ namespace real_bringup
     protected:
         void moveXArm6Callback() override { moveRealXArm6Callback(); }
         virtual void moveRealXArm6Callback();
+        void move1();
+        void move2();
+        void move3();
+        void move4();
         void setPosition(const std::vector<float> &pose, float speed = 100, float acceleration = 1000);
+        void goHome() override;
+        void moveInJointSpace() override;
         void testOrientation();
 
         std::shared_ptr<rclcpp::Node> xarm_client_node;

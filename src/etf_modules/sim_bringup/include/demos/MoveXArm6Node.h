@@ -10,8 +10,8 @@ namespace sim_bringup
     protected:
         void baseCallback() override { moveXArm6Callback(); }
         virtual void moveXArm6Callback();
-        void goHome();
-        void moveInJointSpace();
+        virtual void goHome();
+        virtual void moveInJointSpace();
 
     private:
         enum State
