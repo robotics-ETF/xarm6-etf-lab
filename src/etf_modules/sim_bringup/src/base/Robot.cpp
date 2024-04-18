@@ -64,9 +64,9 @@ sim_bringup::Robot::Robot(const std::string &config_file_path)
             if (max_vel_node.size() != num_DOFs)
                 throw std::logic_error("The size of 'max_vel' is not correct!");
 
-            std::vector<float> max_vel {};
+            Eigen::VectorXf max_vel(num_DOFs);
             for (size_t i = 0; i < num_DOFs; i++)
-                max_vel.emplace_back(max_vel_node[i].as<float>());
+                max_vel(i) = max_vel_node[i].as<float>();
 
             robot->setMaxVel(max_vel);
         }
@@ -79,9 +79,9 @@ sim_bringup::Robot::Robot(const std::string &config_file_path)
             if (max_acc_node.size() != num_DOFs)
                 throw std::logic_error("The size of 'max_acc' is not correct!");
 
-            std::vector<float> max_acc {};
+            Eigen::VectorXf max_acc(num_DOFs);
             for (size_t i = 0; i < num_DOFs; i++)
-                max_acc.emplace_back(max_acc_node[i].as<float>());
+                max_acc(i) = max_acc_node[i].as<float>();
 
             robot->setMaxAcc(max_acc);
         }
@@ -94,9 +94,9 @@ sim_bringup::Robot::Robot(const std::string &config_file_path)
             if (max_jerk_node.size() != num_DOFs)
                 throw std::logic_error("The size of 'max_jerk' is not correct!");
 
-            std::vector<float> max_jerk {};
+            Eigen::VectorXf max_jerk(num_DOFs);
             for (size_t i = 0; i < num_DOFs; i++)
-                max_jerk.emplace_back(max_jerk_node[i].as<float>());
+                max_jerk(i) = max_jerk_node[i].as<float>();
                 
             robot->setMaxJerk(max_jerk);
         }
