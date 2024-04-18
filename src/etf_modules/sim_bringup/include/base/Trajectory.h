@@ -31,7 +31,7 @@ namespace sim_bringup
         void addPath(const std::vector<Eigen::VectorXf> &path, const std::vector<float> &time_instances);
         void addPath(const std::vector<std::shared_ptr<base::State>> &path);
 
-        void publish(float time_delay = 0);
+        void publish(float time_delay = 0, bool print = false);
         void clear();
         
         rclcpp::Publisher<trajectory_msgs::msg::JointTrajectory>::SharedPtr publisher;

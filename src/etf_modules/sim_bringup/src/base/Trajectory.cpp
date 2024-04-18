@@ -217,34 +217,59 @@ void sim_bringup::Trajectory::preprocessPath(const std::vector<std::shared_ptr<b
 }
 
 /// @brief Publish a trajectory stored in 'msg.points'.
-/// @param time_delay Time delay in [s] after which the trajectory will be pubslihed. Default: 0
-void sim_bringup::Trajectory::publish(float time_delay)
+/// @param time_delay Time delay in [s] after which the trajectory will be pubslihed. Default: 0.
+/// @param print Whether to print a published trajectory. Default: false.
+void sim_bringup::Trajectory::publish(float time_delay, bool print)
 {
     if (msg.points.empty())
     {
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "There is no trajectory to publish!");
+        RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "There are no trajectory points to be published!");
         return;
     }
 
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Trajectory: ");
-    for (size_t i = 0; i < msg.points.size(); i++)
+    msg.header.stamp.sec = int32_t(time_delay);
+    msg.header.stamp.nanosec = (time_delay - msg.header.stamp.sec) * 1e9;
+    publisher->publish(msg);
+
+    if (!print)
+        return;
+
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Trajectory points: ");
+    switch (msg.points.front().positions.size())
     {
-        if (msg.points[i].positions.size() == 6)
+    case 6:
+        for (size_t i = 0; i < msg.points.size(); i++)
         {
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Num. %ld.\t Time: %f [s].\t Position: (%f, %f, %f, %f, %f, %f)", 
-                        i, (msg.points[i].time_from_start.sec + msg.points[i].time_from_start.nanosec * 1e-9) + time_delay, 
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Num. %ld.\t Time: %f [s]", 
+                        i, (msg.points[i].time_from_start.sec + msg.points[i].time_from_start.nanosec * 1e-9) + time_delay);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Position:     (%f, %f, %f, %f, %f, %f)", 
                         msg.points[i].positions[0],
                         msg.points[i].positions[1],
                         msg.points[i].positions[2],
                         msg.points[i].positions[3],
                         msg.points[i].positions[4],
                         msg.points[i].positions[5]);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Velocity:     (%f, %f, %f, %f, %f, %f)", 
+                        msg.points[i].velocities[0],
+                        msg.points[i].velocities[1],
+                        msg.points[i].velocities[2],
+                        msg.points[i].velocities[3],
+                        msg.points[i].velocities[4],
+                        msg.points[i].velocities[5]);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Acceleration: (%f, %f, %f, %f, %f, %f)", 
+                        msg.points[i].accelerations[0],
+                        msg.points[i].accelerations[1],
+                        msg.points[i].accelerations[2],
+                        msg.points[i].accelerations[3],
+                        msg.points[i].accelerations[4],
+                        msg.points[i].accelerations[5]);
         }
+        break;
+    
+    default:
+        RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Cannot print trajectory!");
+        break;
     }
-
-    msg.header.stamp.sec = int32_t(time_delay);
-    msg.header.stamp.nanosec = (time_delay - msg.header.stamp.sec) * 1e9;
-    publisher->publish(msg);
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Publishing trajectory ...");
 }
 
