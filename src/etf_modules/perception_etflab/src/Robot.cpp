@@ -27,8 +27,12 @@ perception_etflab::Robot::Robot(const std::string &config_file_path)
     skeleton = robot->computeSkeleton(joints_state);
 
     table_radius = robot_node["table_radius"].as<float>();
-    for (size_t i = 0; i < num_DOFs; i++)
-        tolerance_radius.emplace_back(robot_node["tolerance_radius"][i].as<float>());
+    YAML::Node tolerance_radius_node { robot_node["tolerance_radius"] };
+    if (tolerance_radius_node.IsDefined())
+    {
+        for (size_t i = 0; i < num_DOFs; i++)
+            tolerance_radius.emplace_back(tolerance_radius_node[i].as<float>());
+    }
 
     // Uncomment if you are using 'removeFromScene3' function
     // xarm_client_node = std::make_shared<rclcpp::Node>("xarm_client_node");
