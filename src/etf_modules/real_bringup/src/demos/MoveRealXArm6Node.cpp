@@ -17,7 +17,14 @@ real_bringup::MoveRealXArm6Node::MoveRealXArm6Node(const std::string &node_name,
     // See 6.1 Mode Explanation at: https://github.com/xArm-Developer/xarm_ros#report_type-argument
     // Mode 0: xArm controller (position) mode
     // Mode 1: External trajectory planner (position) mode
-    xarm_client.set_mode(0);
+    // Mode 2: Free-Drive (zero gravity) mode.
+    // Mode 3: Reserved.
+    // Mode 4: Joint velocity control mode.
+    // Mode 5: Cartesian velocity control mode.
+    // Mode 6: Joint space online planning mode. (Firmware >= v1.10.0)
+    // Mode 7: Cartesian space online planning mode. (Firmware >= v1.11.0)
+
+    xarm_client.set_mode(4);
     xarm_client.set_state(0);
 
     xarm_client.set_gripper_enable(true);
@@ -38,7 +45,8 @@ void real_bringup::MoveRealXArm6Node::moveRealXArm6Callback()
     // move1();
     // move2();
     // move3();
-    move4();
+    // move4();
+    move5();
 }
 
 void real_bringup::MoveRealXArm6Node::move1()
@@ -57,6 +65,9 @@ void real_bringup::MoveRealXArm6Node::move1()
         xarm_client.set_state(0);
         moveInJointSpace();
         state = going_home;
+        break;
+
+    default:
         break;
     }
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
@@ -93,6 +104,9 @@ void real_bringup::MoveRealXArm6Node::move2()
         moveGripper(1);
         state = going_home;
         break;
+
+    default:
+        break;
     }
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
 }
@@ -128,6 +142,9 @@ void real_bringup::MoveRealXArm6Node::move3()
         xarm_client.set_gripper_position(850, true, 1);
         state = going_home;
         break;
+
+    default:
+        break;
     }
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
 }
@@ -140,6 +157,20 @@ void real_bringup::MoveRealXArm6Node::move4()
     xarm_client.set_servo_angle({-M_PI_2, 0, 0, M_PI, M_PI_2, 0}, 1.0, 0.0, 0, false, -1, 1);
     xarm_client.set_servo_angle({-M_PI_2, -M_PI_4, 0, M_PI, M_PI_2, 0}, 1.0, 0.0, 0, false, -1, 1);
     xarm_client.set_servo_angle(home_angles, 1.0, 0.0, 0, false, -1, 1);
+
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
+}
+
+void real_bringup::MoveRealXArm6Node::move5()
+{
+    // xarm_client.set_mode(4);
+    // xarm_client.set_state(0);
+
+    // xarm_client.set_joint_maxacc(10);   // maximum: 20.0 rad/s^2
+    xarm_client.vc_set_joint_velocity({-0.1, 0, 0, 0, 0, 0});
+    // xarm_client.vc_set_joint_velocity({0.1, 0, 0, 0, 0, 0}, true, 1.0);
+
+    // xarm_client.set_servo_angle(home_angles, 1.0, 0.0, 0, false, -1, 1);
 
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
 }

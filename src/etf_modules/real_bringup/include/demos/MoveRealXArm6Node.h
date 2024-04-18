@@ -19,6 +19,7 @@ namespace real_bringup
         void move2();
         void move3();
         void move4();
+        void move5();
         void setPosition(const std::vector<float> &pose, float speed = 100, float acceleration = 1000);
         void goHome() override;
         void moveInJointSpace() override;

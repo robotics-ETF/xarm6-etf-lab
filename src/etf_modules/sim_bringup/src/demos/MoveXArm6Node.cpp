@@ -19,6 +19,9 @@ void sim_bringup::MoveXArm6Node::moveXArm6Callback()
         moveInJointSpace();
         state = going_home;
         break;
+
+    default:
+        break;
     }
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
 }
