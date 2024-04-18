@@ -37,10 +37,7 @@ namespace sim_bringup
         rclcpp::Publisher<trajectory_msgs::msg::JointTrajectory>::SharedPtr publisher;
 
     private:
-        void preprocessPath(const std::vector<std::shared_ptr<base::State>> &path, std::vector<Eigen::VectorXf> &new_path);
-
         trajectory_msgs::msg::JointTrajectory msg;
-        float max_edge_length;
         float trajectory_max_time_step;
     };
 }

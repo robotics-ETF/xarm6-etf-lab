@@ -25,6 +25,7 @@ sim_bringup::PlanningNode::PlanningNode(const std::string &node_name, const std:
     state = waiting;
     q_start = scenario->getStart();
     q_goal = scenario->getGoal();
+    path = {};
 }
 
 void sim_bringup::PlanningNode::planningCallback()
@@ -49,8 +50,9 @@ void sim_bringup::PlanningNode::planningCallback()
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Planning the path..."); 
             if (Planner::solve())
             {
+                Planner::preprocessPath(Planner::getPath(), path);
                 Trajectory::clear();
-                Trajectory::addPath(Planner::getPath());
+                Trajectory::addPath(path);
                 state = publishing_trajectory;
             }
         }

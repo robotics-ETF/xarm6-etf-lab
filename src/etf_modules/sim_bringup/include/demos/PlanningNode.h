@@ -32,5 +32,6 @@ namespace sim_bringup
 
         std::shared_ptr<base::State> q_start;
         std::shared_ptr<base::State> q_goal;
+        std::vector<std::shared_ptr<base::State>> path;
     };
 }

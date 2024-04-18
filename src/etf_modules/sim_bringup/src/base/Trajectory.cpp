@@ -14,16 +14,7 @@ sim_bringup::Trajectory::Trajectory(const std::string &config_file_path) :
     
     YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
     YAML::Node planner_node { node["planner"] };
-
-    if (planner_node["max_edge_length"])
-        max_edge_length = planner_node["max_edge_length"].as<float>();
-    else
-    {
-        max_edge_length = 0.1;
-        RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Maximal edge length is not defined! Using default value of %f", max_edge_length);
-    }
-
-    if (planner_node["trajectory_max_time_step"])
+    if (planner_node["trajectory_max_time_step"].IsDefined())
         trajectory_max_time_step = planner_node["trajectory_max_time_step"].as<float>();
     else
     {
@@ -120,23 +111,28 @@ void sim_bringup::Trajectory::addPath(const std::vector<Eigen::VectorXf> &path, 
         addPoint(time_instances[i], path[i]);
 }
 
+/// @brief Add a path 'path' containing all points that robot must visit. 
+/// Converting this path to trajectory (i.e., assigning time instances to these points) will be automatically done by this function.
+/// This is done by creating a sequence of quintic splines in a way that all constraints on robot's maximal velocity, 
+/// acceleration and jerk are surely always satisfied.
+/// @param path Path containing all points that robot must visit.
+/// @note Be careful since the distance between each two adjacent points from 'path' should not be too long! 
+/// The robot motion between them is generally not a straight line in C-space. 
+/// Consider using 'preprocessPath' function from 'Planner' class before using this function.
 void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::State>> &path)
 {
-    std::vector<Eigen::VectorXf> new_path {};
-    preprocessPath(path, new_path);
-
     std::shared_ptr<planning::trajectory::Spline> spline_current { nullptr };
     std::shared_ptr<planning::trajectory::Spline> spline_next { nullptr };
-    Eigen::VectorXf q_current { new_path.front() };
+    Eigen::VectorXf q_current { path.front()->getCoord() };
     Eigen::VectorXf q_current_dot { Eigen::VectorXf::Zero(Robot::getNumDOFs()) };
     Eigen::VectorXf q_current_ddot { Eigen::VectorXf::Zero(Robot::getNumDOFs()) };
 
     addPoint(0, q_current);
     spline_current = std::make_shared<planning::trajectory::Spline5>(Robot::getRobot(), q_current, q_current_dot, q_current_ddot);
-    if (new_path.size() == 2)
-        spline_current->compute(new_path[1]);
+    if (path.size() == 2)
+        spline_current->compute(path[1]->getCoord());
     else
-        spline_current->compute(new_path[2]);
+        spline_current->compute(path[2]->getCoord());
     
     float t_current {};
     float t {}, t_min {}, t_max {};
@@ -144,7 +140,7 @@ void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::St
     size_t num { 0 };
     const size_t max_num_iter { 5 };
     
-    for (int i = 0; i < int(new_path.size()) - 3; i++)
+    for (int i = 0; i < int(path.size()) - 3; i++)
     {
         // std::cout << "i: " << i << " ---------------------------\n";
         found = false;
@@ -161,7 +157,7 @@ void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::St
             q_current_ddot = spline_current->getAcceleration(t);
 
             spline_next = std::make_shared<planning::trajectory::Spline5>(Robot::getRobot(), q_current, q_current_dot, q_current_ddot);
-            found = spline_next->compute(new_path[i+3]);
+            found = spline_next->compute(path[i+3]->getCoord());
 
             if (found)
                 break;
@@ -180,45 +176,9 @@ void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::St
     addPoints(spline_current, t_current, spline_current->getTimeFinal());
 }
 
-void sim_bringup::Trajectory::preprocessPath(const std::vector<std::shared_ptr<base::State>> &path, std::vector<Eigen::VectorXf> &new_path)
-{
-    new_path.clear();
-    new_path.emplace_back(path.front()->getCoord());
-    base::State::Status status { base::State::Status::None };
-    Eigen::VectorXf q_new {};
-    float dist {};
-
-    for (size_t i = 1; i < path.size(); i++)
-    {
-        status = base::State::Status::Advanced;
-        q_new = path[i-1]->getCoord();
-        while (status == base::State::Status::Advanced)
-        {
-            dist = (q_new - path[i]->getCoord()).norm();
-            if (max_edge_length < dist)
-            {
-                q_new += (path[i]->getCoord() - q_new) * (max_edge_length / dist);
-                status = base::State::Status::Advanced;
-            }
-            else
-            {
-                q_new = path[i]->getCoord();
-                status = base::State::Status::Reached;
-            }
-
-            new_path.emplace_back(q_new);
-        }
-    }
-
-    // std::cout << "Preprocessed path is: \n";
-    // for (size_t i = 0; i < new_path.size(); i++)
-    //     std::cout << new_path.at(i).transpose() << "\n";
-    // std::cout << std::endl;
-}
-
 /// @brief Publish a trajectory stored in 'msg.points'.
 /// @param time_delay Time delay in [s] after which the trajectory will be pubslihed. Default: 0.
-/// @param print Whether to print a published trajectory. Default: false.
+/// @param print Whether to print a published trajectory points. Default: false.
 void sim_bringup::Trajectory::publish(float time_delay, bool print)
 {
     if (msg.points.empty())

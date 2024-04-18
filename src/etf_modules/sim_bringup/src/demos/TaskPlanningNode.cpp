@@ -56,8 +56,9 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
 
     case going_towards_object:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going towards the object...");
+        Planner::preprocessPath({q_object_approach1, q_object_approach2, q_object_pick}, path);
         Trajectory::clear();
-        Trajectory::addPath({q_object_approach1, q_object_approach2, q_object_pick});
+        Trajectory::addPath(path);
         Trajectory::publish();
         task = picking_object;
         break;
@@ -74,8 +75,9 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
 
     case raising_object:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Raising the object...");
+        Planner::preprocessPath({q_object_pick, q_object_approach1}, path);
         Trajectory::clear();
-        Trajectory::addPath({q_object_pick, q_object_approach1});
+        Trajectory::addPath(path);
         Trajectory::publish();
         task = moving_object_to_destination;
         break;
@@ -117,8 +119,9 @@ void sim_bringup::TaskPlanningNode::planningCase()
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Planning the path..."); 
             if (Planner::solve())
             {
+                Planner::preprocessPath(Planner::getPath(), path);
                 Trajectory::clear();
-                Trajectory::addPath(Planner::getPath());
+                Trajectory::addPath(path);
                 state = State::publishing_trajectory;
             }
         }

@@ -29,13 +29,16 @@ namespace sim_bringup
 
         bool solve(std::shared_ptr<base::State> q_start = nullptr, std::shared_ptr<base::State> q_goal = nullptr, 
                    float max_planning_time_ = -1);
+        void preprocessPath(const std::vector<std::shared_ptr<base::State>> &original_path, 
+            std::vector<std::shared_ptr<base::State>> &new_path, float max_edge_length_ = -1);
 
         std::shared_ptr<scenario::Scenario> scenario;
 
     private:
         std::unique_ptr<planning::AbstractPlanner> planner;
         planning::PlannerType planner_type;
-        float max_planning_time;                                  // In [s]
+        float max_planning_time;                                        // In [s]
+        float max_edge_length;                                          // In [rad]
         bool ready;
     };
 }
