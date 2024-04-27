@@ -34,6 +34,7 @@ environment:
       label: "table"
       dim: [1.5, 1.5, 0.1]
       pos: [0, 0, -0.05]
+      min_dist_tol: 0.05                                      # Minimal distance tolerance for a static obstacle to not be included into a dynamic scene
 
 cameras:
   min_num_captures: 1                                         # Minimal number of captures/frames of a single obstacle to become valid

@@ -17,15 +17,15 @@ robot:
   table_included: true                                        # Please check whether 'table' is added in 'environment'
   WS_center: [0.0, 0.0, 0.267]                                # Workspace center point in [m]
   WS_radius: 1.5                                              # Workspace radius in [m] assuming spherical workspace shape
-  max_vel:  [3.1415, 3.1415, 3.1415, 3.1415, 3.1415, 3.1415]  # Maximal velocity of each robot's joint in [rad/s]
-  max_acc:  [6.3611, 6.3611, 6.3611, 6.3611, 6.3611, 6.3611]  # Maximal acceleration of each robot's joint in [rad/s²]
-  max_jerk: [159.15, 159.15, 159.15, 159.15, 159.15, 159.15]  # Maximal jerk of each robot's joint in [rad/s³]
+  max_vel:  [1.5, 1.5, 1.5, 1.5, 1.5, 1.5]                    # Maximal velocity of each robot's joint in [rad/s]
+  max_acc:  [4, 4, 4, 4, 4, 4]                                # Maximal acceleration of each robot's joint in [rad/s²]
+  max_jerk: [60, 60, 60, 60, 60, 60]                          # Maximal jerk of each robot's joint in [rad/s³]
 
 planner:
   # type: "RRT-Connect"
   # type: "RBT-Connect"
-  type: "RGBT-Connect"
-  # type: "RGBMT*"
+  # type: "RGBT-Connect"
+  type: "RGBMT*"
   configurations: "/RPMPLv2"
   trajectory_max_time_step: 0.1                               # In [s]
 
@@ -34,6 +34,7 @@ environment:
       label: "table"
       dim: [1.5, 1.5, 0.1]
       pos: [0, 0, -0.05]
+      min_dist_tol: 0.05                                      # Minimal distance tolerance for a static obstacle to not be included into a dynamic scene
 
 cameras:
   min_num_captures: 1                                         # Minimal number of captures/frames of a single obstacle to become valid

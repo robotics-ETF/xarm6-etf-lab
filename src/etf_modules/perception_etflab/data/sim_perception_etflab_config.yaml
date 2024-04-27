@@ -4,7 +4,6 @@ robot:
   q_start: [0, 0, 0, 3.1415, 1.5708, 0]
   num_DOFs: 6
   capsules_radius: [0.047, 0.12, 0.11, 0.09, 0.05, 0.1]     # When the gripper is attached
-  tolerance_radius: [0, 0.1, 0.1, 0.1, 0.1, 0.1]            # i-th capsule is enlarged for i-th tolerance radius in [m] when removing robot from the scene
   gripper_length: 0.17                                      # In [m]
   table_included: true                                      
   table_radius: 0.67                                        # In [m]
@@ -17,7 +16,7 @@ perception:
   concatenation_tolerance: 0.05                             # Abs. tolerance when concatenating two subclusters
 
 random_obstacles:
-  num: 3	                        # Number of random obstacles to be added
+  num: 0	                        # Number of random obstacles to be added
   max_vel: 0.6 			              # Maximal velocity of each obstacle in [m/s]
   dim: [0.2, 0.2, 0.2]         # Dimensions of each random obstacle in [m]
   period: 0.050                   # Period in [s]
