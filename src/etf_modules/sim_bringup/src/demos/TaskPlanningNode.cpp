@@ -4,13 +4,13 @@ sim_bringup::TaskPlanningNode::TaskPlanningNode(const std::string &node_name, co
     PlanningNode(node_name, config_file_path)
 {
     YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
-    YAML::Node scenario { node["scenario"] };
+    YAML::Node scenario_node { node["scenario"] };
 
-    max_object_height = scenario["max_object_height"].as<float>();
-    picking_object_wait_max = scenario["picking_object_wait_max"].as<size_t>();
+    max_object_height = scenario_node["max_object_height"].as<float>();
+    picking_object_wait_max = scenario_node["picking_object_wait_max"].as<size_t>();
     picking_object_wait = picking_object_wait_max;
     for (size_t i = 0; i < 3; i++)
-        destination(i) = scenario["destination"][i].as<float>();
+        destination(i) = scenario_node["destination"][i].as<float>();
 
     IK_computed = -1;
     task = waiting_for_object;
@@ -26,6 +26,8 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
         AABB::resetMeasurements();
         if (Robot::isReady() && AABB::isReady())
             task = choosing_object;
+        else
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Robot or environment is not ready...");
         break;
 
     case choosing_object:
@@ -56,6 +58,7 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
 
     case going_towards_object:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going towards the object...");
+        Robot::moveGripper(1);
         Planner::preprocessPath({q_object_approach1, q_object_approach2, q_object_pick}, path);
         Trajectory::clear();
         Trajectory::addPath(path);
@@ -66,7 +69,9 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
     case picking_object:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Picking the object...");
         picking_object_wait--;
-        if (picking_object_wait == 0)
+        if (picking_object_wait == 2)
+            Robot::moveGripper(0);
+        else if (picking_object_wait == 0)
         {
             picking_object_wait = picking_object_wait_max;
             task = raising_object;
@@ -93,6 +98,7 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
     
     case releasing_object:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Releasing the object...");
+        Robot::moveGripper(1);
         task = waiting_for_object;
         break;
 
@@ -121,7 +127,7 @@ void sim_bringup::TaskPlanningNode::planningCase()
             {
                 Planner::preprocessPath(Planner::getPath(), path);
                 Trajectory::clear();
-                Trajectory::addPath(path);
+                Trajectory::addPath(path, false);
                 state = State::publishing_trajectory;
             }
         }

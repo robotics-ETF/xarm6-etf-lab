@@ -55,19 +55,19 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
 
         // ------------------------------------------------------------------------------- //
         // Initial iteration: Obtaining an inital path using specified static planner
-        DP::time_alg_start = DP::time_iter_start;      // Start the algorithm clock
+        DP::time_alg_start = DP::time_iter_start;       // Start the algorithm clock
         
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Obtaining an inital path...");
-        replan(DRGBTConfig::MAX_ITER_TIME);
+        replan(DRGBTConfig::MAX_ITER_TIME - 1e-3);      // 1 [ms] is reserved for other lines
         
         break;
     
-    default:        
+    default:
         // ------------------------------------------------------------------------------- //
         // Current robot position and velocity (measured vs computed)
         DP::q_current = DP::ss->getNewState(DP::spline_next->getPosition(DP::spline_next->getTimeCurrent(true)));
         // std::cout << "q_current (measured): " << Robot::getJointsPositionPtr() << "\n";
-        // std::cout << "q_current (computed): " << DP::q_current << "\n";
+        std::cout << "q_current (computed): " << DP::q_current << "\n";
         // std::cout << "q_current_dot (measured): " << Robot::getJointsVelocityPtr() << "\n";
         // std::cout << "q_current_dot (computed): " << DP::ss->getNewState(DP::spline_next->getVelocity(DP::spline_next->getTimeCurrent(true))) << "\n";
         
@@ -78,7 +78,7 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
             RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "********** Robot is stopping. Collision has been occurred!!! **********");
             DP::q_target = DP::q_current;
             DP::clearHorizon(base::State::Status::Trapped, true);
-            DP::q_next = std::make_shared<planning::drbt::HorizonState>(DP::q_target, 0);
+            DP::q_next = std::make_shared<planning::drbt::HorizonState>(DP::q_target, -1);
             DP::q_next->setStateReached(DP::q_target);
 
             // If you want to terminate the algorithm, uncomment the following:
@@ -125,7 +125,7 @@ void sim_bringup::RealTimePlanningNode::taskComputingNextConfiguration()
         DP::q_target = DP::q_current;
         d_c = DP::ss->computeDistance(DP::q_target, true);
         DP::clearHorizon(base::State::Status::Trapped, true);
-        DP::q_next = std::make_shared<planning::drbt::HorizonState>(DP::q_target, 0);
+        DP::q_next = std::make_shared<planning::drbt::HorizonState>(DP::q_target, -1);
         DP::q_next->setStateReached(DP::q_target);
         // std::cout << "Not updating the robot current state since d_c < 0. \n";
     }
@@ -223,12 +223,12 @@ void sim_bringup::RealTimePlanningNode::computeTrajectory()
     Trajectory::clear();
     Trajectory::addPoints(DP::spline_next, t_delay, DP::spline_next->getTimeFinal());
     Trajectory::publish();
-    float t_publish { DP::getElapsedTime(time_start_) };
+
+    float t_publish { DP::getElapsedTime(time_start_) };    
+    std::this_thread::sleep_for(std::chrono::nanoseconds(size_t((t_delay - t_publish) * 1e9)));
+    DP::spline_next->setTimeStart();
 
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Delay time:   %f [ms]", t_delay * 1e3);
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Publish time: %f [ms]", t_publish * 1e3);
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Publish time: %f [ms] for %ld points", t_publish * 1e3, Trajectory::getNumPoints());
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Sleep time:   %f [ms]", (t_delay - t_publish) * 1e3);
-
-    std::this_thread::sleep_for(std::chrono::microseconds(size_t((t_delay - t_publish) * 1e6)));
-    DP::spline_next->setTimeStart();
 }

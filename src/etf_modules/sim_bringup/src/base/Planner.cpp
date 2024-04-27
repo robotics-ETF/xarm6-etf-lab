@@ -109,10 +109,13 @@ bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shar
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Planning finished with %s ", 
             (result ? std::string("SUCCESS!").c_str() : std::string("FAILURE!").c_str()));
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Number of states in the path: %ld", planner->getPath().size());
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Planning time: %f [s]", planner->getPlannerInfo()->getPlanningTime());
-        if (planner_type == planning::PlannerType::RGBMTStar)
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Path cost: %f", planner->getPlannerInfo()->getCostConvergence().back());
+        if (result)
+        {
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Number of states in the path: %ld", planner->getPath().size());
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Planning time: %f [s]", planner->getPlannerInfo()->getPlanningTime());
+            if (planner_type == planning::PlannerType::RGBMTStar)
+                RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Path cost: %f", planner->getPlannerInfo()->getCostConvergence().back());
+        }
 
         // Just for debugging (Not recommended to waste time!)
         // std::string project_abs_path(__FILE__);
