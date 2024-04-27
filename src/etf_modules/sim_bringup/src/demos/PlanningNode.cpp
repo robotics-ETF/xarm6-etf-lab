@@ -52,7 +52,8 @@ void sim_bringup::PlanningNode::planningCallback()
             {
                 Planner::preprocessPath(Planner::getPath(), path);
                 Trajectory::clear();
-                Trajectory::addPath(path);
+                // Trajectory::addPath(path);
+                Trajectory::addPath(path, false);
                 state = publishing_trajectory;
             }
         }
@@ -61,7 +62,7 @@ void sim_bringup::PlanningNode::planningCallback()
         break;
     
     case publishing_trajectory:
-        Trajectory::publish();
+        Trajectory::publish(true);
         state = executing_trajectory;
         break;
 

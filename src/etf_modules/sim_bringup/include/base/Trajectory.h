@@ -30,9 +30,11 @@ namespace sim_bringup
         void addPath(const std::vector<std::shared_ptr<base::State>> &path, const std::vector<float> &time_instances);
         void addPath(const std::vector<Eigen::VectorXf> &path, const std::vector<float> &time_instances);
         void addPath(const std::vector<std::shared_ptr<base::State>> &path);
+        void addPath(const std::vector<std::shared_ptr<base::State>> &path, bool must_visit);
 
-        void publish(float time_delay = 0, bool print = false);
+        void publish(bool print = false);
         void clear();
+        inline size_t getNumPoints() const { return msg.points.size(); }
         
         rclcpp::Publisher<trajectory_msgs::msg::JointTrajectory>::SharedPtr publisher;
 
