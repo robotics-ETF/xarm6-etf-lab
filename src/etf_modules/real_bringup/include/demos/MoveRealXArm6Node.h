@@ -15,11 +15,12 @@ namespace real_bringup
     protected:
         void moveXArm6Callback() override { moveRealXArm6Callback(); }
         virtual void moveRealXArm6Callback();
-        void move1();
-        void move2();
-        void move3();
-        void move4();
-        void move5();
+        void testMode0();
+        void testMode01();
+        void testMode4();
+        void testMode6();
+        void testGripper();
+        
         void setPosition(const std::vector<float> &pose, float speed = 100, float acceleration = 1000);
         void goHome() override;
         void moveInJointSpace() override;

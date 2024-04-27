@@ -24,7 +24,7 @@ real_bringup::MoveRealXArm6Node::MoveRealXArm6Node(const std::string &node_name,
     // Mode 6: Joint space online planning mode. (Firmware >= v1.10.0)
     // Mode 7: Cartesian space online planning mode. (Firmware >= v1.11.0)
 
-    xarm_client.set_mode(4);
+    xarm_client.set_mode(0);
     xarm_client.set_state(0);
 
     xarm_client.set_gripper_enable(true);
@@ -42,14 +42,45 @@ real_bringup::MoveRealXArm6Node::MoveRealXArm6Node(const std::string &node_name,
 
 void real_bringup::MoveRealXArm6Node::moveRealXArm6Callback()
 {
-    // move1();
-    // move2();
-    // move3();
-    // move4();
-    move5();
+    // testMode0();
+    testMode01();
+    // testMode4();    // 'velocity_control' must be enabled in 'real_xarm6_etflab.launch.py' file
+    // testMode6();
+    // testGripper();
 }
 
-void real_bringup::MoveRealXArm6Node::move1()
+void real_bringup::MoveRealXArm6Node::testMode0()
+{
+    xarm_client.set_mode(0);
+    xarm_client.set_state(0);
+
+    switch (state)
+    {
+    case going_home:
+        goHome();
+        state = setting_position1;
+        break;
+
+    case setting_position1:
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Setting position 1...");
+        xarm_client.set_position({500, 0, 133, 0, M_PI_2, 0}, -1, 0.7*Robot::getMaxLinVel(), 0.7*Robot::getMaxLinAcc(), 0, false);
+        // setPosition({500, 0, 133, 0, M_PI_2, 0}, 200, 1000);
+        state = setting_position2;
+        break;
+
+    case setting_position2:
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Setting position 2...");
+        xarm_client.set_position({400, 0, 133, 0, M_PI_2, 0}, -1, 0.7*Robot::getMaxLinVel(), 0.7*Robot::getMaxLinAcc(), 0, false);
+        // setPosition({400, 0, 133, 0, M_PI_2, 0}, 200, 1000);
+        state = going_home;
+
+    default:
+        break;
+    }
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
+}
+
+void real_bringup::MoveRealXArm6Node::testMode01()
 {
     switch (state)
     {
@@ -73,83 +104,21 @@ void real_bringup::MoveRealXArm6Node::move1()
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
 }
 
-void real_bringup::MoveRealXArm6Node::move2()
+void real_bringup::MoveRealXArm6Node::testMode4()
 {
-    switch (state)
-    {
-    case going_home:
-        goHome();
-        state = setting_position1;
-        break;
+    xarm_client.set_mode(4);
+    xarm_client.set_state(0);
 
-    case setting_position1:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Setting position 1..."); 
-        setPosition({500, 0, 133, 0, M_PI_2, 0}, 200, 1000);
-        state = setting_position2;
-        break;
+    xarm_client.set_joint_maxacc(10);   // maximal: 20 [rad/s²]
+    xarm_client.vc_set_joint_velocity({-0.1, 0, 0, 0, 0, 0});
+    xarm_client.vc_set_joint_velocity({0.1, 0, 0, 0, 0, 0}, true, 1.0);
 
-    case setting_position2:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Setting position 2..."); 
-        setPosition({400, 0, 133, 0, M_PI_2, 0}, 200, 1000);
-        state = closing_gripper;
+    // xarm_client.set_servo_angle(home_angles, 1.0, 0.0, 0, false, -1, 1);
 
-    case closing_gripper:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Closing gripper..."); 
-        moveGripper(0);
-        state = opening_gripper;
-        break;
-
-    case opening_gripper:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Opening gripper..."); 
-        moveGripper(1);
-        state = going_home;
-        break;
-
-    default:
-        break;
-    }
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
 }
 
-void real_bringup::MoveRealXArm6Node::move3()
-{
-    switch (state)
-    {
-    case going_home:
-        goHome();
-        state = setting_position1;
-        break;
-
-    case setting_position1:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Setting position 1...");
-        xarm_client.set_position({500, 0, 133, 0, M_PI_2, 0}, -1, 0.7*Robot::getMaxLinVel(), 0.7*Robot::getMaxLinAcc(), 0, false);
-        state = setting_position2;
-        break;
-
-    case setting_position2:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Setting position 2...");
-        xarm_client.set_position({400, 0, 133, 0, M_PI_2, 0}, -1, 0.7*Robot::getMaxLinVel(), 0.7*Robot::getMaxLinAcc(), 0, false);
-        state = closing_gripper;
-
-    case closing_gripper:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Closing gripper..."); 
-        xarm_client.set_gripper_position(0);
-        state = opening_gripper;
-        break;
-
-    case opening_gripper:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Opening gripper..."); 
-        xarm_client.set_gripper_position(850, true, 1);
-        state = going_home;
-        break;
-
-    default:
-        break;
-    }
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
-}
-
-void real_bringup::MoveRealXArm6Node::move4()
+void real_bringup::MoveRealXArm6Node::testMode6()
 {
     xarm_client.set_mode(6);
     xarm_client.set_state(0);
@@ -161,17 +130,35 @@ void real_bringup::MoveRealXArm6Node::move4()
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
 }
 
-void real_bringup::MoveRealXArm6Node::move5()
+void real_bringup::MoveRealXArm6Node::testGripper()
 {
-    // xarm_client.set_mode(4);
-    // xarm_client.set_state(0);
+    xarm_client.set_mode(0);
+    xarm_client.set_state(0);
 
-    // xarm_client.set_joint_maxacc(10);   // maximum: 20.0 rad/s^2
-    xarm_client.vc_set_joint_velocity({-0.1, 0, 0, 0, 0, 0});
-    // xarm_client.vc_set_joint_velocity({0.1, 0, 0, 0, 0, 0}, true, 1.0);
+    switch (state)
+    {
+    case going_home:
+        goHome();
+        state = closing_gripper;
+        break;
 
-    // xarm_client.set_servo_angle(home_angles, 1.0, 0.0, 0, false, -1, 1);
+    case closing_gripper:
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Closing gripper..."); 
+        moveGripper(0);
+        // xarm_client.set_gripper_position(0);
+        state = opening_gripper;
+        break;
 
+    case opening_gripper:
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Opening gripper..."); 
+        moveGripper(1);
+        // xarm_client.set_gripper_position(850, true, 1);
+        state = going_home;
+        break;
+
+    default:
+        break;
+    }
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
 }
 
@@ -179,6 +166,7 @@ void real_bringup::MoveRealXArm6Node::goHome()
 {
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going home..."); 
     xarm_client.set_servo_angle(home_angles, Robot::getMaxVel(0), 0, 0, true);
+    // xarm_client.move_gohome(true);
 }
 
 void real_bringup::MoveRealXArm6Node::moveInJointSpace()
@@ -190,11 +178,16 @@ void real_bringup::MoveRealXArm6Node::moveInJointSpace()
 
     q << -M_PI_2, 0, 0, M_PI, M_PI_2, 0;
     path.emplace_back(q);
-    time_instances.emplace_back(2);
+    time_instances.emplace_back(1);
     
     q << -M_PI_2, -M_PI_4, 0, M_PI, M_PI_2, 0;
     path.emplace_back(q);
-    time_instances.emplace_back(4);
+    time_instances.emplace_back(2);
+
+    q << -1, -5, -172, 180, 92, 0;
+    q *= deg2rad;
+    path.emplace_back(q);
+    time_instances.emplace_back(5);
 
     Trajectory::clear();
     Trajectory::addPath(path, time_instances);
