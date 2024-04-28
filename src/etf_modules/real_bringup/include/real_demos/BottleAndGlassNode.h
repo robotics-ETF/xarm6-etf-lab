@@ -1,8 +1,8 @@
-#include "real_demos/MoveRealXArm6Node.h"
+#include "real_demos/MoveXArm6Node.h"
 
 namespace real_bringup
 {
-    class BottleAndGlassNode : public real_bringup::MoveRealXArm6Node
+    class BottleAndGlassNode : public real_bringup::MoveXArm6Node
     {
     public:
         BottleAndGlassNode(const std::string &node_name, const std::string &config_file_path);

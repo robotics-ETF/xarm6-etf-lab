@@ -7,10 +7,10 @@
 
 namespace real_bringup
 {
-    class MoveRealXArm6Node : public sim_bringup::MoveXArm6Node
+    class MoveXArm6Node : public sim_bringup::MoveXArm6Node
     {
     public:
-        MoveRealXArm6Node(const std::string &node_name, const std::string &config_file_path);
+        MoveXArm6Node(const std::string &node_name, const std::string &config_file_path);
 
     protected:
         void moveXArm6Callback() override { moveRealXArm6Callback(); }

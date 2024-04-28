@@ -1,7 +1,7 @@
 #include "real_demos/BottleAndGlassNode.h"
 
 real_bringup::BottleAndGlassNode::BottleAndGlassNode(const std::string &node_name, const std::string &config_file_path) : 
-    MoveRealXArm6Node(node_name, config_file_path) 
+    MoveXArm6Node(node_name, config_file_path) 
 {
     YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
     YAML::Node scenario { node["scenario"] };

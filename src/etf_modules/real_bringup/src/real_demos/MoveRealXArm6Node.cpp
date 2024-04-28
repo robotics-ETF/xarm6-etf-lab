@@ -1,6 +1,6 @@
-#include "real_demos/MoveRealXArm6Node.h"
+#include "real_demos/MoveXArm6Node.h"
 
-real_bringup::MoveRealXArm6Node::MoveRealXArm6Node(const std::string &node_name, const std::string &config_file_path) : 
+real_bringup::MoveXArm6Node::MoveXArm6Node(const std::string &node_name, const std::string &config_file_path) : 
     sim_bringup::MoveXArm6Node(node_name, config_file_path) 
 {
     // The defined service can only be activated at initialization if that service is configured to true. 
@@ -40,7 +40,7 @@ real_bringup::MoveRealXArm6Node::MoveRealXArm6Node(const std::string &node_name,
     state = going_home;
 }
 
-void real_bringup::MoveRealXArm6Node::moveRealXArm6Callback()
+void real_bringup::MoveXArm6Node::moveRealXArm6Callback()
 {
     // testMode0();
     testMode01();
@@ -49,7 +49,7 @@ void real_bringup::MoveRealXArm6Node::moveRealXArm6Callback()
     // testGripper();
 }
 
-void real_bringup::MoveRealXArm6Node::testMode0()
+void real_bringup::MoveXArm6Node::testMode0()
 {
     xarm_client.set_mode(0);
     xarm_client.set_state(0);
@@ -80,7 +80,7 @@ void real_bringup::MoveRealXArm6Node::testMode0()
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
 }
 
-void real_bringup::MoveRealXArm6Node::testMode01()
+void real_bringup::MoveXArm6Node::testMode01()
 {
     switch (state)
     {
@@ -104,7 +104,7 @@ void real_bringup::MoveRealXArm6Node::testMode01()
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
 }
 
-void real_bringup::MoveRealXArm6Node::testMode4()
+void real_bringup::MoveXArm6Node::testMode4()
 {
     xarm_client.set_mode(4);
     xarm_client.set_state(0);
@@ -118,7 +118,7 @@ void real_bringup::MoveRealXArm6Node::testMode4()
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
 }
 
-void real_bringup::MoveRealXArm6Node::testMode6()
+void real_bringup::MoveXArm6Node::testMode6()
 {
     xarm_client.set_mode(6);
     xarm_client.set_state(0);
@@ -130,7 +130,7 @@ void real_bringup::MoveRealXArm6Node::testMode6()
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
 }
 
-void real_bringup::MoveRealXArm6Node::testGripper()
+void real_bringup::MoveXArm6Node::testGripper()
 {
     xarm_client.set_mode(0);
     xarm_client.set_state(0);
@@ -162,14 +162,14 @@ void real_bringup::MoveRealXArm6Node::testGripper()
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
 }
 
-void real_bringup::MoveRealXArm6Node::goHome()
+void real_bringup::MoveXArm6Node::goHome()
 {
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going home..."); 
     xarm_client.set_servo_angle(home_angles, Robot::getMaxVel(0), 0, 0, true);
     // xarm_client.move_gohome(true);
 }
 
-void real_bringup::MoveRealXArm6Node::moveInJointSpace()
+void real_bringup::MoveXArm6Node::moveInJointSpace()
 {
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Moving in joint space...");
     std::vector<Eigen::VectorXf> path {};
@@ -194,7 +194,7 @@ void real_bringup::MoveRealXArm6Node::moveInJointSpace()
     Trajectory::publish();
 }
 
-void real_bringup::MoveRealXArm6Node::setPosition(const std::vector<float> &pose, float speed, float acceleration)
+void real_bringup::MoveXArm6Node::setPosition(const std::vector<float> &pose, float speed, float acceleration)
 {
     while (!set_position_client->wait_for_service(1s))
     {
@@ -219,7 +219,7 @@ void real_bringup::MoveRealXArm6Node::setPosition(const std::vector<float> &pose
         RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to set position!");
 }
 
-void real_bringup::MoveRealXArm6Node::testOrientation()
+void real_bringup::MoveXArm6Node::testOrientation()
 {
     std::vector<float> current_pose {};
     xarm_client.get_position(current_pose);
