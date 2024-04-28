@@ -1,4 +1,4 @@
-#include "demos/PickAndPlaceNode.h"
+#include "real_demos/PickAndPlaceNode.h"
 
 real_bringup::PickAndPlaceNode::PickAndPlaceNode(const std::string &node_name, const std::string &config_file_path) : 
     MoveRealXArm6Node(node_name, config_file_path) 

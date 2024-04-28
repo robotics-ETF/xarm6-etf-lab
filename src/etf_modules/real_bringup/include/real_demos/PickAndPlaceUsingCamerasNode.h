@@ -1,4 +1,4 @@
-#include "demos/PickAndPlaceNode.h"
+#include "real_demos/PickAndPlaceNode.h"
 #include "environments/AABB.h"
 
 #include <sensor_msgs/msg/point_cloud2.hpp>

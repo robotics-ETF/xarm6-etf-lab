@@ -1,4 +1,4 @@
-#include "demos/PickAndPlaceUsingCamerasNode.h"
+#include "real_demos/PickAndPlaceUsingCamerasNode.h"
 
 int main(int argc, char *argv[])
 {

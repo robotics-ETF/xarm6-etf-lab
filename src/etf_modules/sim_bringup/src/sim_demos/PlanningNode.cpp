@@ -1,4 +1,4 @@
-#include "demos/PlanningNode.h"
+#include "sim_demos/PlanningNode.h"
 
 sim_bringup::PlanningNode::PlanningNode(const std::string &node_name, const std::string &config_file_path) : 
     BaseNode(node_name, config_file_path),

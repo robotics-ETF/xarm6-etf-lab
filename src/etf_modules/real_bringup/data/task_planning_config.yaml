@@ -38,3 +38,6 @@ scenario:
   max_object_height: 0.1                                      # Maximal height of an object that can be picked up
   picking_object_wait_max: 4                                  # Number of periods 'period' to wait in [s]
   destination: [-0.5, 0, 0.2]                                 # Coordinates of a destination box
+  max_gripper_speed: 3000                                     # Range: [0, 5000] [mm/s]
+  opened_gripper_pos: 850                                     # Range: [0, 850] corresponding to [0, 85] [mm]
+  closed_gripper_pos: 0                                       # Range: [0, 850] corresponding to [0, 85] [mm]

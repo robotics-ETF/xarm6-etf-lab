@@ -2,7 +2,7 @@
 // Created by nermin on 28.08.23.
 //
 
-#include "demos/PlanningNode.h"
+#include "sim_demos/PlanningNode.h"
 
 namespace sim_bringup
 {
@@ -33,13 +33,11 @@ namespace sim_bringup
         };
         Task task, task_next;
 
-    private:
         std::shared_ptr<base::State> q_object_approach1, q_object_approach2;
         std::shared_ptr<base::State> q_object_pick;
         std::shared_ptr<base::State> q_goal;
         int obj_idx;
         int IK_computed;
-        size_t picking_object_wait, picking_object_wait_max;
         float max_object_height;
         Eigen::Vector3f destination;
     };

@@ -1,4 +1,4 @@
-#include "demos/MoveXArm6Node.h"
+#include "sim_demos/MoveXArm6Node.h"
 #include <glog/logging.h>
 
 int main(int argc, char *argv[])

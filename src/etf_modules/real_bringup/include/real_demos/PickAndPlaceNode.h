@@ -1,4 +1,4 @@
-#include "demos/MoveRealXArm6Node.h"
+#include "real_demos/MoveRealXArm6Node.h"
 
 namespace real_bringup
 {

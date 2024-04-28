@@ -1,4 +1,4 @@
-#include "demos/RealTimePlanningNode.h"
+#include "sim_demos/RealTimePlanningNode.h"
 
 typedef planning::drbt::DRGBT DP;    // 'DP' is Dynamic Planner
 

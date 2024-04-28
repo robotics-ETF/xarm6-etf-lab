@@ -1,4 +1,4 @@
-#include "demos/TaskPlanningNode.h"
+#include "sim_demos/TaskPlanningNode.h"
 
 sim_bringup::TaskPlanningNode::TaskPlanningNode(const std::string &node_name, const std::string &config_file_path) : 
     PlanningNode(node_name, config_file_path)
@@ -7,8 +7,6 @@ sim_bringup::TaskPlanningNode::TaskPlanningNode(const std::string &node_name, co
     YAML::Node scenario_node { node["scenario"] };
 
     max_object_height = scenario_node["max_object_height"].as<float>();
-    picking_object_wait_max = scenario_node["picking_object_wait_max"].as<size_t>();
-    picking_object_wait = picking_object_wait_max;
     for (size_t i = 0; i < 3; i++)
         destination(i) = scenario_node["destination"][i].as<float>();
 
@@ -58,7 +56,7 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
 
     case going_towards_object:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going towards the object...");
-        Robot::moveGripper(1);
+        // Robot::moveGripper(1);
         Planner::preprocessPath({q_object_approach1, q_object_approach2, q_object_pick}, path);
         Trajectory::clear();
         Trajectory::addPath(path);
@@ -68,14 +66,8 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
 
     case picking_object:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Picking the object...");
-        picking_object_wait--;
-        if (picking_object_wait == 2)
-            Robot::moveGripper(0);
-        else if (picking_object_wait == 0)
-        {
-            picking_object_wait = picking_object_wait_max;
-            task = raising_object;
-        }
+        // Robot::moveGripper(0);
+        task = raising_object;
         break;
 
     case raising_object:
@@ -98,7 +90,7 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
     
     case releasing_object:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Releasing the object...");
-        Robot::moveGripper(1);
+        // Robot::moveGripper(1);
         task = waiting_for_object;
         break;
 
@@ -119,10 +111,7 @@ void sim_bringup::TaskPlanningNode::planningCase()
     case State::planning:
         if (Planner::isReady())
         {
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Updating the environment..."); 
             AABB::updateEnvironment();
-
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Planning the path..."); 
             if (Planner::solve())
             {
                 Planner::preprocessPath(Planner::getPath(), path);

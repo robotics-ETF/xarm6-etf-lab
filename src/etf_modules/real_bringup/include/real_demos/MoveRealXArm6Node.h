@@ -1,4 +1,4 @@
-#include "demos/MoveXArm6Node.h"
+#include "sim_demos/MoveXArm6Node.h"
 
 #include <xarm_api/xarm_ros_client.h>
 #include <xarm_msgs/srv/move_cartesian.hpp>

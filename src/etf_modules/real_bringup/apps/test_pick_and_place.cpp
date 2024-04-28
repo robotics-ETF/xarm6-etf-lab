@@ -1,4 +1,4 @@
-#include "demos/PickAndPlaceNode.h"
+#include "real_demos/PickAndPlaceNode.h"
 
 int main(int argc, char *argv[])
 {

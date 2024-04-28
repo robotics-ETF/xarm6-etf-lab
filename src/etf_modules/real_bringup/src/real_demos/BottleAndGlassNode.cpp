@@ -1,4 +1,4 @@
-#include "demos/BottleAndGlassNode.h"
+#include "real_demos/BottleAndGlassNode.h"
 
 real_bringup::BottleAndGlassNode::BottleAndGlassNode(const std::string &node_name, const std::string &config_file_path) : 
     MoveRealXArm6Node(node_name, config_file_path) 

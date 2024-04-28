@@ -1,4 +1,4 @@
-#include "demos/MoveXArm6Node.h"
+#include "sim_demos/MoveXArm6Node.h"
 
 sim_bringup::MoveXArm6Node::MoveXArm6Node(const std::string &node_name, const std::string &config_file_path) : 
     BaseNode(node_name, config_file_path) 

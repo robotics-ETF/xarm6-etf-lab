@@ -73,9 +73,10 @@ bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shar
     if (max_planning_time_ != -1)
         max_planning_time = max_planning_time_;
     
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Planning the path..."); 
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Number of collision objects: %ld", scenario->getEnvironment()->getNumObjects());
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Start: "); std::cout << q_start << "\n";
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Goal: "); std::cout << q_goal << "\n";
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Start: "); std::cout << "\t" << q_start << "\n";
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Goal: "); std::cout << "\t" << q_goal << "\n";
 
     try
     {

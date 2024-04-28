@@ -17,7 +17,7 @@ set(SIM_BRINGUP_PATH "${XARM6_ETF_LAB_PATH}/src/etf_modules/sim_bringup")
 set(SIM_BRINGUP_INCLUDE_DIRS
   ${SIM_BRINGUP_PATH}/include
   ${SIM_BRINGUP_PATH}/include/base
-  ${SIM_BRINGUP_PATH}/include/demos
+  ${SIM_BRINGUP_PATH}/include/sim_demos
   ${SIM_BRINGUP_PATH}/include/environments
 )
 

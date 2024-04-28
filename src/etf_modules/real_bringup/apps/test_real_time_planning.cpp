@@ -1,4 +1,4 @@
-#include "demos/RealTimePlanningNode.h"
+#include "sim_demos/RealTimePlanningNode.h"
 #include <glog/logging.h>
 
 int main(int argc, char *argv[])

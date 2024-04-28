@@ -1,4 +1,4 @@
-#include "demos/PickAndPlaceUsingCamerasNode.h"
+#include "real_demos/PickAndPlaceUsingCamerasNode.h"
 
 real_bringup::PickAndPlaceUsingCamerasNode::PickAndPlaceUsingCamerasNode(const std::string &node_name, const std::string &config_file_path) : 
     PickAndPlaceNode(node_name, config_file_path),

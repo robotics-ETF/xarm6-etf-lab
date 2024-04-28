@@ -1,4 +1,4 @@
-#include "demos/MoveRealXArm6Node.h"
+#include "real_demos/MoveRealXArm6Node.h"
 
 real_bringup::MoveRealXArm6Node::MoveRealXArm6Node(const std::string &node_name, const std::string &config_file_path) : 
     sim_bringup::MoveXArm6Node(node_name, config_file_path) 
