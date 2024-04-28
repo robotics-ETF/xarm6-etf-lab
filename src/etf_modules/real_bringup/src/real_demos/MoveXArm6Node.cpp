@@ -40,7 +40,7 @@ real_bringup::MoveXArm6Node::MoveXArm6Node(const std::string &node_name, const s
     state = going_home;
 }
 
-void real_bringup::MoveXArm6Node::moveRealXArm6Callback()
+void real_bringup::MoveXArm6Node::moveXArm6Callback()
 {
     // testMode0();
     testMode01();

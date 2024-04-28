@@ -8,7 +8,7 @@ namespace real_bringup
         BottleAndGlassNode(const std::string &node_name, const std::string &config_file_path);
 
     protected:
-        void moveRealXArm6Callback() override { bottleAndGlassCallback(); }
+        void moveXArm6Callback() override { bottleAndGlassCallback(); }
         void bottleAndGlassCallback();
 
     private:

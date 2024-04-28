@@ -8,7 +8,7 @@ namespace real_bringup
         PickAndPlaceNode(const std::string &node_name, const std::string &config_file_path);
 
     protected:    
-        void moveRealXArm6Callback() override { pickAndPlaceCallback(); }
+        void moveXArm6Callback() override { pickAndPlaceCallback(); }
         virtual void pickAndPlaceCallback();
 
     private:

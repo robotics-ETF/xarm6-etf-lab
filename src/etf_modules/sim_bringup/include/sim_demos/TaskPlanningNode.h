@@ -13,7 +13,7 @@ namespace sim_bringup
 
     protected:
         void planningCallback() override { taskPlanningCallback(); }
-        void taskPlanningCallback();
+        virtual void taskPlanningCallback();
         void planningCase();
         bool computeObjectApproachAndPickStates();
         int chooseObject() override;

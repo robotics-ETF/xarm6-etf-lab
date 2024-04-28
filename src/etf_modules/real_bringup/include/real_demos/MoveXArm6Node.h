@@ -13,8 +13,7 @@ namespace real_bringup
         MoveXArm6Node(const std::string &node_name, const std::string &config_file_path);
 
     protected:
-        void moveXArm6Callback() override { moveRealXArm6Callback(); }
-        virtual void moveRealXArm6Callback();
+        virtual void moveXArm6Callback() override;
         void testMode0();
         void testMode01();
         void testMode4();
