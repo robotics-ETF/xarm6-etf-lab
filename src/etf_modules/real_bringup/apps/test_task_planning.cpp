@@ -1,4 +1,4 @@
-#include "demos/TaskPlanningNode.h"
+#include "real_demos/TaskPlanningNode.h"
 #include <glog/logging.h>
 
 int main(int argc, char *argv[])
@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
 	const std::string config_file_path = "/real_bringup/data/task_planning_config.yaml";
 
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<sim_bringup::TaskPlanningNode>(node_name, config_file_path));
+    rclcpp::spin(std::make_shared<real_bringup::TaskPlanningNode>(node_name, config_file_path));
     rclcpp::shutdown();
 	google::ShutDownCommandLineFlags();
     return 0;
