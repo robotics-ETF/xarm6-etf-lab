@@ -35,6 +35,7 @@ namespace sim_bringup
         void publish(bool print = false);
         void clear();
         inline size_t getNumPoints() const { return msg.points.size(); }
+        inline float getTrajectoryMaxTimeStep() const { return trajectory_max_time_step; }
         
         rclcpp::Publisher<trajectory_msgs::msg::JointTrajectory>::SharedPtr publisher;
 
