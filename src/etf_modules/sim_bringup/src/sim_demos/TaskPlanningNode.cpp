@@ -121,7 +121,7 @@ void sim_bringup::TaskPlanningNode::planningCase()
             }
         }
         else
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting for the planner..."); 
+            RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Waiting for the planner..."); 
         break;
     
     case State::publishing_trajectory:

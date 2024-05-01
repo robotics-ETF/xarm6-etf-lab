@@ -76,7 +76,7 @@ bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shar
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Planning the path..."); 
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Number of collision objects: %ld", scenario->getEnvironment()->getNumObjects());
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Start: "); std::cout << "\t" << q_start << "\n";
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Goal: "); std::cout << "\t" << q_goal << "\n";
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Goal:  "); std::cout << "\t" << q_goal << "\n";
 
     try
     {
@@ -113,7 +113,7 @@ bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shar
         if (result)
         {
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Number of states in the path: %ld", planner->getPath().size());
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Planning time: %f [s]", planner->getPlannerInfo()->getPlanningTime());
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Planning time: %f [ms]", planner->getPlannerInfo()->getPlanningTime() * 1e3);
             if (planner_type == planning::PlannerType::RGBMTStar)
                 RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Path cost: %f", planner->getPlannerInfo()->getCostConvergence().back());
         }
