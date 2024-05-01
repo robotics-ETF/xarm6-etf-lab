@@ -23,7 +23,9 @@ namespace sim_bringup
         void taskComputingNextConfiguration();
         void taskReplanning();
         void replan(float max_planning_time) override;
-        void computeTrajectory();
+        virtual void computeTrajectory();
+
+        bool replanning_result;
 
     };
 }
