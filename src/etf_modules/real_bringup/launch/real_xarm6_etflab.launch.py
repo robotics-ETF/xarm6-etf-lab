@@ -23,7 +23,7 @@ def generate_launch_description():
     hw_ns = LaunchConfiguration('hw_ns', default='xarm')
     limited = LaunchConfiguration('limited', default=True)
     effort_control = LaunchConfiguration('effort_control', default=False)
-    velocity_control = LaunchConfiguration('velocity_control', default=False)
+    velocity_control = LaunchConfiguration('velocity_control', default=True)
     add_gripper = LaunchConfiguration('add_gripper', default=True)
     add_vacuum_gripper = LaunchConfiguration('add_vacuum_gripper', default=False)
     baud_checkset = LaunchConfiguration('baud_checkset', default=True)

@@ -2,7 +2,8 @@
 
 typedef planning::drbt::DRGBT DP;    // 'DP' is Dynamic Planner
 
-sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_name, const std::string &config_file_path) : 
+sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_name, const std::string &config_file_path, 
+                                                        const std::string &output_file_name) : 
     BaseNode(node_name, config_file_path),
     AABB(config_file_path),
     DP(Planner::scenario->getStateSpace(), Planner::scenario->getStart(), Planner::scenario->getGoal())
@@ -32,6 +33,14 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
         RGBMTStarConfig::TERMINATE_WHEN_PATH_IS_FOUND = true;
     
     replanning_result = -1;
+
+    if (!output_file_name.empty())
+    {
+        std::cout << "Nermin: " << project_abs_path + config_file_path.substr(0, config_file_path.size()-5) + output_file_name << "\n";
+        output_file.open(project_abs_path + config_file_path.substr(0, config_file_path.size()-5) + output_file_name, std::ofstream::out);
+        recording_trajectory_timer = this->create_wall_timer(std::chrono::microseconds(size_t(Trajectory::getTrajectoryMaxTimeStep() * 1e6)), 
+                                     std::bind(&RealTimePlanningNode::recordingTrajectoryCallback, this));
+    }
 }
 
 void sim_bringup::RealTimePlanningNode::planningCallback()
@@ -226,7 +235,34 @@ void sim_bringup::RealTimePlanningNode::computeTrajectory()
     DP::spline_next->setTimeStart();
     Trajectory::publish();
 
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Delay time:   %f [ms]", t_delay * 1e3);
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Publish time: %f [ms] for %ld points", t_publish * 1e3, Trajectory::getNumPoints());
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Sleep time:   %f [ms]", (t_delay - t_publish) * 1e3);
+    // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Delay time:   %f [ms]", t_delay * 1e3);
+    // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Publish time: %f [ms] for %ld points", t_publish * 1e3, Trajectory::getNumPoints());
+    // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Sleep time:   %f [ms]", (t_delay - t_publish) * 1e3);
+}
+
+void sim_bringup::RealTimePlanningNode::recordingTrajectoryCallback()
+{
+    if (DP::getPlannerInfo()->getNumIterations() == 0)
+        return;
+
+    float time_spline { DP::spline_next->getTimeCurrent(true) };
+    output_file << "Time [s]: \n";
+    output_file << DP::getElapsedTime(DP::time_alg_start) << "\n";
+
+    output_file << "Position (referent): \n";
+    output_file << DP::spline_next->getPosition(time_spline).transpose() << "\n";
+    output_file << "Position (measured): \n";
+    output_file << Robot::getJointsPosition().transpose() << "\n";
+
+    output_file << "Velocity (referent): \n";
+    output_file << DP::spline_next->getVelocity(time_spline).transpose() << "\n";
+    output_file << "Velocity (measured): \n";
+    output_file << Robot::getJointsVelocity().transpose() << "\n";
+
+    // output_file << "Acceleration (referent): \n";
+    // output_file << DP::spline_next->getAcceleration(time_spline).transpose() << "\n";
+    // output_file << "Acceleration (measured): \n";
+    // output_file << Robot::getJointsAcceleration().transpose() << "\n";
+
+    output_file << "--------------------------------------------------------------------\n";
 }

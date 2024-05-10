@@ -9,7 +9,6 @@ real_bringup::MoveXArm6Node::MoveXArm6Node(const std::string &node_name, const s
     // See 5.4 xarm_api at: https://github.com/xArm-Developer/xarm_ros2/tree/humble
     xarm_client_node = std::make_shared<rclcpp::Node>("xarm_client_node");
     xarm_client.init(xarm_client_node, "xarm");
-
     xarm_client.clean_error();
     xarm_client.clean_warn();
     xarm_client.motion_enable(true);
@@ -23,7 +22,6 @@ real_bringup::MoveXArm6Node::MoveXArm6Node(const std::string &node_name, const s
     // Mode 5: Cartesian velocity control mode.
     // Mode 6: Joint space online planning mode. (Firmware >= v1.10.0)
     // Mode 7: Cartesian space online planning mode. (Firmware >= v1.11.0)
-
     xarm_client.set_mode(0);
     xarm_client.set_state(0);
 
