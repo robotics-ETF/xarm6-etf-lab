@@ -31,7 +31,7 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
     if (DRGBTConfig::STATIC_PLANNER_TYPE == planning::PlannerType::RGBMTStar)
         RGBMTStarConfig::TERMINATE_WHEN_PATH_IS_FOUND = true;
     
-    replanning_result = 0;
+    replanning_result = -1;
 }
 
 void sim_bringup::RealTimePlanningNode::planningCallback()
@@ -219,12 +219,12 @@ void sim_bringup::RealTimePlanningNode::computeTrajectory()
 
     std::chrono::steady_clock::time_point time_start_ { std::chrono::steady_clock::now() };
     Trajectory::clear();
-    Trajectory::addPoints(DP::spline_next, t_delay, DP::spline_next->getTimeFinal());
-    Trajectory::publish();
+    Trajectory::addPoints(DP::spline_next, 0.0f, DP::spline_next->getTimeFinal());
 
     float t_publish { DP::getElapsedTime(time_start_) };
     std::this_thread::sleep_for(std::chrono::nanoseconds(size_t((t_delay - t_publish) * 1e9)));
     DP::spline_next->setTimeStart();
+    Trajectory::publish();
 
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Delay time:   %f [ms]", t_delay * 1e3);
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Publish time: %f [ms] for %ld points", t_publish * 1e3, Trajectory::getNumPoints());
