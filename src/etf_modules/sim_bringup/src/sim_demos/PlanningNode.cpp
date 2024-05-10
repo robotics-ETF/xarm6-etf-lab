@@ -6,7 +6,7 @@ sim_bringup::PlanningNode::PlanningNode(const std::string &node_name, const std:
     Octomap(config_file_path),
     ConvexHulls(config_file_path)
 {
-    AABB::setEnvironment(scenario->getEnvironment());
+    AABB::setEnvironment(Planner::scenario->getEnvironment());
     if (AABB::getMinNumCaptures() == 1)
         AABB::subscription = this->create_subscription<sensor_msgs::msg::PointCloud2>
             ("/bounding_boxes", 10, std::bind(&AABB::callback, this, std::placeholders::_1));
@@ -23,8 +23,8 @@ sim_bringup::PlanningNode::PlanningNode(const std::string &node_name, const std:
     //     ("/convex_hulls_polygons", 10, std::bind(&ConvexHulls::polygonsCallback, this, std::placeholders::_1));
     
     state = waiting;
-    q_start = scenario->getStart();
-    q_goal = scenario->getGoal();
+    q_start = Planner::scenario->getStart();
+    q_goal = Planner::scenario->getGoal();
     path = {};
 }
 
@@ -36,7 +36,7 @@ void sim_bringup::PlanningNode::planningCallback()
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting...");
         if (Robot::isReady() && AABB::isReady())
         {
-            scenario->setStart(Robot::getJointsPositionPtr());
+            Planner::scenario->setStart(Robot::getJointsPositionPtr());
             state = planning;
         }
         break;
@@ -68,7 +68,7 @@ void sim_bringup::PlanningNode::planningCallback()
 
     case executing_trajectory:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Executing trajectory...");
-        if (Robot::isReached(scenario->getGoal()))
+        if (Robot::isReached(Planner::scenario->getGoal()))
         {
             rclcpp::shutdown();
             return;

@@ -13,7 +13,7 @@ robot:
   table_included: true                                        # Please check whether 'table' is added in 'environment'
   max_vel:  [1.5, 1.5, 1.5, 1.5, 1.5, 1.5]                    # Maximal velocity of each robot's joint in [rad/s]
   max_acc:  [3, 3, 3, 3, 3, 3]                                # Maximal acceleration of each robot's joint in [rad/s²]
-  max_jerk: [20, 20, 20, 20, 20, 20]                          # Maximal jerk of each robot's joint in [rad/s³]
+  max_jerk: [30, 30, 30, 30, 30, 30]                          # Maximal jerk of each robot's joint in [rad/s³]
 
 planner:
   # type: "RRT-Connect"

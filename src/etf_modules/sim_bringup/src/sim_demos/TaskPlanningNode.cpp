@@ -43,8 +43,8 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
         if (IK_computed == 1)
         {
             AABB::resetMeasurements();
-            scenario->setStart(Robot::getJointsPositionPtr());
-            scenario->setGoal(q_object_approach1);
+            Planner::scenario->setStart(Robot::getJointsPositionPtr());
+            Planner::scenario->setGoal(q_object_approach1);
             task = planning;
             task_next = going_towards_object;
             IK_computed = -1;
@@ -82,8 +82,8 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
     case moving_object_to_destination:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Moving the object to destination...");
         AABB::resetMeasurements();
-        scenario->setStart(q_object_approach1);
-        scenario->setGoal(q_goal);
+        Planner::scenario->setStart(q_object_approach1);
+        Planner::scenario->setGoal(q_goal);
         task = planning;
         task_next = releasing_object;
         break;
@@ -131,7 +131,7 @@ void sim_bringup::TaskPlanningNode::planningCase()
 
     case State::executing_trajectory:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Executing trajectory...");            
-        if (Robot::isReached(scenario->getGoal()))
+        if (Robot::isReached(Planner::scenario->getGoal()))
         {
             state = State::planning;
             task = task_next;
