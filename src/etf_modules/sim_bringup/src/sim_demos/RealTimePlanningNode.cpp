@@ -31,7 +31,7 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
     if (DRGBTConfig::STATIC_PLANNER_TYPE == planning::PlannerType::RGBMTStar)
         RGBMTStarConfig::TERMINATE_WHEN_PATH_IS_FOUND = true;
     
-    replanning_result = false;
+    replanning_result = 0;
 }
 
 void sim_bringup::RealTimePlanningNode::planningCallback()
@@ -41,14 +41,15 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
     DP::time_iter_start = std::chrono::steady_clock::now();     // Start the iteration clock
     AABB::updateEnvironment();
 
-    if (replanning_result)  // New path is found within the specified time limit, thus update predefined path to the goal
+    if (replanning_result == 1)  // New path is found within the specified time limit, thus update predefined path to the goal
     {
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "The path has been replanned in %f [ms].", Planner::getPlanningTime() * 1e3);
         Planner::preprocessPath(Planner::getPath(), DP::predefined_path, DP::max_edge_length);
         DP::clearHorizon(base::State::Status::Reached, false);
         DP::q_next = std::make_shared<planning::drbt::HorizonState>(DP::q_target, 0);
+        replanning_result = -1;
     }
-    else
+    else if (replanning_result == 0)
     {
         RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Replanning is required. New path is not found! ");
         DP::replanning = true;
@@ -73,7 +74,7 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
         DP::time_alg_start = DP::time_iter_start;       // Start the algorithm clock
         
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Obtaining an inital path...");
-        replan(DRGBTConfig::MAX_ITER_TIME - 1e-3);      // 1 [ms] is reserved for other lines
+        replan(DRGBTConfig::MAX_ITER_TIME - 2e-3);      // 2 [ms] is reserved for other lines
         
         break;
     
@@ -160,7 +161,7 @@ void sim_bringup::RealTimePlanningNode::taskReplanning()
     {
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TASK 2: Replanning... ");
         if (Planner::isReady())
-            replan(DRGBTConfig::MAX_ITER_TIME - DP::getElapsedTime(DP::time_iter_start) - 2e-3);    // 2 [ms] is subtracted because of the following code lines
+            replan(DRGBTConfig::MAX_ITER_TIME - DP::getElapsedTime(DP::time_iter_start) - 2e-3);    // 2 [ms] is reserved for other lines
         else
             RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Planner is not ready! ");
     }

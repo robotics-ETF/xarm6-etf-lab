@@ -25,7 +25,9 @@ namespace sim_bringup
         void replan(float max_planning_time) override;
         virtual void computeTrajectory();
 
-        bool replanning_result;
+        int replanning_result;  //  0: replanning was not successful
+                                //  1: replanning was successful and predefined path needs to be updated
+                                // -1: replanning was successful but predefined path does not need to be updated
 
     };
 }
