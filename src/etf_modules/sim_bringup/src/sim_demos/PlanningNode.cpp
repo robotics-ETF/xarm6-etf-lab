@@ -56,16 +56,12 @@ void sim_bringup::PlanningNode::planningCallback()
                 Trajectory::clear();
                 // Trajectory::addPath(path);
                 Trajectory::addPath(path, false);
-                state = publishing_trajectory;
+                Trajectory::publish(true);
+                state = executing_trajectory;
             }
         }
         else
             RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Waiting for the planner or environment to set up..."); 
-        break;
-    
-    case publishing_trajectory:
-        Trajectory::publish(true);
-        state = executing_trajectory;
         break;
 
     case executing_trajectory:

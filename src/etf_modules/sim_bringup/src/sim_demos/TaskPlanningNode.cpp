@@ -117,16 +117,12 @@ void sim_bringup::TaskPlanningNode::planningCase()
                 Planner::preprocessPath(Planner::getPath(), path);
                 Trajectory::clear();
                 Trajectory::addPath(path, false);
-                state = State::publishing_trajectory;
+                Trajectory::publish();
+                state = State::executing_trajectory;
             }
         }
         else
             RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Waiting for the planner or environment to set up..."); 
-        break;
-    
-    case State::publishing_trajectory:
-        Trajectory::publish();
-        state = State::executing_trajectory;
         break;
 
     case State::executing_trajectory:

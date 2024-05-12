@@ -25,7 +25,6 @@ namespace sim_bringup
         {
             waiting,
             planning,
-            publishing_trajectory,
             executing_trajectory
         };
         State state;
