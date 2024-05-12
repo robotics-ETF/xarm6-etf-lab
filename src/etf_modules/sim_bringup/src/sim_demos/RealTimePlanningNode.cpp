@@ -182,8 +182,6 @@ void sim_bringup::RealTimePlanningNode::taskReplanning()
 void sim_bringup::RealTimePlanningNode::replan(float max_planning_time)
 {
     replanning_result = false;
-    std::thread replanning_thread {};
-
     try
     {
         if (max_planning_time < 0)
@@ -192,14 +190,16 @@ void sim_bringup::RealTimePlanningNode::replan(float max_planning_time)
         switch (DRGBTConfig::REAL_TIME_SCHEDULING)
         {
         case planning::RealTimeScheduling::FPS:
+        {
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Replanning with Fixed Priority Scheduling ");
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Trying to replan in %f [ms]...", max_planning_time * 1e3);
-            replanning_thread = std::thread([this, &max_planning_time]() 
+            std::thread replanning_thread([this, &max_planning_time]() 
             {
                 replanning_result = Planner::solve(DP::q_target, DP::q_goal, max_planning_time);
             });
+            replanning_thread.detach();
             break;
-        
+        }
         case planning::RealTimeScheduling::None:
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Replanning without real-time scheduling ");
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Trying to replan in %f [ms]...", max_planning_time * 1e3);
@@ -207,7 +207,6 @@ void sim_bringup::RealTimePlanningNode::replan(float max_planning_time)
             break;
         }
         
-        replanning_thread.detach();
     }
     catch (std::exception &e)
     {

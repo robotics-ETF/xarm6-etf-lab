@@ -87,7 +87,7 @@ void sim_bringup::AABB::updateEnvironment()
 {
     if (!ready)
     {
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Environment cannot be updated!");
+        RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Environment cannot be updated!");
         return;
     }
     
