@@ -85,6 +85,12 @@ bool sim_bringup::AABB::whetherToRemove([[maybe_unused]] const Eigen::Vector3f &
 
 void sim_bringup::AABB::updateEnvironment()
 {
+    if (!ready)
+    {
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Environment cannot be updated!");
+        return;
+    }
+    
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Updating environment..."); 
     env->removeObjects("table", false);
     

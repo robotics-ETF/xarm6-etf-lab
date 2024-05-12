@@ -109,7 +109,7 @@ void sim_bringup::TaskPlanningNode::planningCase()
         break;
     
     case State::planning:
-        if (Planner::isReady())
+        if (Planner::isReady() && AABB::isReady())
         {
             AABB::updateEnvironment();
             if (Planner::solve())
@@ -121,7 +121,7 @@ void sim_bringup::TaskPlanningNode::planningCase()
             }
         }
         else
-            RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Waiting for the planner..."); 
+            RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Waiting for the planner or environment to set up..."); 
         break;
     
     case State::publishing_trajectory:
