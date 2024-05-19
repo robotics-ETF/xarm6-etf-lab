@@ -36,7 +36,8 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
 
     if (!output_file_name.empty())
     {
-        std::cout << "Nermin: " << project_abs_path + config_file_path.substr(0, config_file_path.size()-5) + output_file_name << "\n";
+        std::cout << "Recorded data will be saved to: " 
+                  << project_abs_path + config_file_path.substr(0, config_file_path.size()-5) + output_file_name << "\n";
         output_file.open(project_abs_path + config_file_path.substr(0, config_file_path.size()-5) + output_file_name, std::ofstream::out);
         recording_trajectory_timer = this->create_wall_timer(std::chrono::microseconds(size_t(Trajectory::getTrajectoryMaxTimeStep() * 1e6)), 
                                      std::bind(&RealTimePlanningNode::recordingTrajectoryCallback, this));
@@ -92,7 +93,7 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
         // Current robot position and velocity (measured vs computed)
         DP::q_current = DP::ss->getNewState(DP::spline_next->getPosition(DP::spline_next->getTimeCurrent(true)));
         // std::cout << "q_current (measured): " << Robot::getJointsPositionPtr() << "\n";
-        std::cout << "q_current (computed): " << DP::q_current << "\n";
+        // std::cout << "q_current (computed): " << DP::q_current << "\n";
         // std::cout << "q_current_dot (measured): " << Robot::getJointsVelocityPtr() << "\n";
         // std::cout << "q_current_dot (computed): " << DP::ss->getNewState(DP::spline_next->getVelocity(DP::spline_next->getTimeCurrent(true))) << "\n";
         
