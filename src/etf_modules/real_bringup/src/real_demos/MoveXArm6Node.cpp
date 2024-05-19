@@ -15,7 +15,7 @@ real_bringup::MoveXArm6Node::MoveXArm6Node(const std::string &node_name, const s
 
     // See 6.1 Mode Explanation at: https://github.com/xArm-Developer/xarm_ros#report_type-argument
     // Mode 0: xArm controller (position) mode
-    // Mode 1: External trajectory planner (position) mode
+    // Mode 1: External trajectory planner (position) mode (JointTrajectoryController can be used)
     // Mode 2: Free-Drive (zero gravity) mode.
     // Mode 3: Reserved.
     // Mode 4: Joint velocity control mode.
@@ -41,9 +41,9 @@ real_bringup::MoveXArm6Node::MoveXArm6Node(const std::string &node_name, const s
 void real_bringup::MoveXArm6Node::moveXArm6Callback()
 {
     // testMode0();
-    testMode01();
-    // testMode4();    // 'velocity_control' must be enabled in 'real_xarm6_etflab.launch.py' file
-    // testMode6();
+    // testMode01();
+    // testMode4();
+    testMode6();
     // testGripper();
 }
 
@@ -83,8 +83,6 @@ void real_bringup::MoveXArm6Node::testMode01()
     switch (state)
     {
     case going_home:
-        xarm_client.set_mode(0);
-        xarm_client.set_state(0);
         goHome();
         state = moving_in_joint_space;
         break;
@@ -106,12 +104,30 @@ void real_bringup::MoveXArm6Node::testMode4()
 {
     xarm_client.set_mode(4);
     xarm_client.set_state(0);
-
     xarm_client.set_joint_maxacc(10);   // maximal: 20 [rad/s²]
-    xarm_client.vc_set_joint_velocity({-0.1, 0, 0, 0, 0, 0});
-    xarm_client.vc_set_joint_velocity({0.1, 0, 0, 0, 0, 0}, true, 1.0);
 
-    // xarm_client.set_servo_angle(home_angles, 1.0, 0.0, 0, false, -1, 1);
+    switch (state)
+    {
+    case going_home:
+        goHome();
+        state = setting_position1;
+        break;
+
+    case setting_position1:
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Setting position 1...");
+        xarm_client.vc_set_joint_velocity({-0.5, 0, 0, 0, 0, 0}, true, 1);
+        state = setting_position2;
+        break;
+
+    case setting_position2:
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Setting position 2...");
+        xarm_client.vc_set_joint_velocity({0.5, 0, 0, 0, 0, 0}, true, 1);
+        state = setting_position1;
+        break;
+    
+    default:
+        break;
+    }
 
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
 }
@@ -121,9 +137,28 @@ void real_bringup::MoveXArm6Node::testMode6()
     xarm_client.set_mode(6);
     xarm_client.set_state(0);
 
-    xarm_client.set_servo_angle({-M_PI_2, 0, 0, M_PI, M_PI_2, 0}, 1.0, 0.0, 0, false, -1, 1);
-    xarm_client.set_servo_angle({-M_PI_2, -M_PI_4, 0, M_PI, M_PI_2, 0}, 1.0, 0.0, 0, false, -1, 1);
-    xarm_client.set_servo_angle(home_angles, 1.0, 0.0, 0, false, -1, 1);
+    switch (state)
+    {
+    case going_home:
+        goHome();
+        state = setting_position1;
+        break;
+
+    case setting_position1:
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Setting position 1...");
+        xarm_client.set_servo_angle({-M_PI, 0, 0, M_PI, M_PI_2, 0}, 0.1, 0, 0, false);  // speed can be set from 0 to PI [rad/s]
+        state = setting_position2;
+        break;
+
+    case setting_position2:
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Setting position 2...");
+        xarm_client.set_servo_angle({-M_PI_2, -M_PI_4, 0, M_PI, M_PI_2, 0}, 0.5, 0, 0, false);
+        state = setting_position1;
+        break;
+
+    default:
+        break;
+    }
 
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
 }
@@ -160,11 +195,15 @@ void real_bringup::MoveXArm6Node::testGripper()
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 
 }
 
+// Note: Mode will be switched to 0.
 void real_bringup::MoveXArm6Node::goHome()
 {
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going home..."); 
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going home...");
+    xarm_client.set_mode(0);
+    xarm_client.set_state(0);
     xarm_client.set_servo_angle(home_angles, Robot::getMaxVel(0), 0, 0, true);
     // xarm_client.move_gohome(true);
+
 }
 
 void real_bringup::MoveXArm6Node::moveInJointSpace()
