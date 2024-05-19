@@ -93,7 +93,7 @@ void real_bringup::TaskPlanningNode::taskPlanningCallback()
     case moving_object_to_destination:
         xarm_client.get_gripper_position(&gripper_pos);
         // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Gripper position: %f", gripper_pos);
-        if (gripper_pos <= closed_gripper_pos)   // Nothing is caught
+        if (gripper_pos <= closed_gripper_pos + 10)   // Nothing is caught
         {
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Trying to pick the object again...");
             xarm_client.set_gripper_position(opened_gripper_pos);
