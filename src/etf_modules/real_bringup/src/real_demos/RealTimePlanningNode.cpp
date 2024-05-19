@@ -11,11 +11,14 @@ real_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node
     
     xarm_client_node = std::make_shared<rclcpp::Node>("xarm_client_node");
     xarm_client.init(xarm_client_node, "xarm");
-    // xarm_client.clean_error();
-    // xarm_client.clean_warn();
+    xarm_client.clean_error();
+    xarm_client.clean_warn();
     xarm_client.motion_enable(true);
-    xarm_client.set_mode(1);
+    xarm_client.set_mode(6);
     xarm_client.set_state(0);
+    xarm_client.set_joint_maxacc(Robot::getMaxAcc(0));
+    xarm_client.set_joint_jerk(Robot::getMaxJerk(0));
+    xarm_client.save_conf();
 }
 
 void real_bringup::RealTimePlanningNode::computeTrajectory()
@@ -29,22 +32,8 @@ void real_bringup::RealTimePlanningNode::computeTrajectory()
     else
     {
         std::this_thread::sleep_for(std::chrono::nanoseconds(size_t(t_delay * 1e9)));
-        DP::spline_next->setTimeStart();        
+        DP::spline_next->setTimeStart();
     }
-
-    // std::vector<float> position {};
-    // float t { DP::spline_next->getTimeCurrent(true) + DRGBTConfig::MAX_ITER_TIME };
-    // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Inside publishing trajectory callback...");
-    // std::cout << "Time: " << t << " [s]\t Position: ";
-    // for (size_t i = 0; i < Robot::getNumDOFs(); i++)
-    // {
-    //     position.emplace_back(DP::spline_next->getPosition(t, i));
-    //     std::cout << position[i] << " ";
-    // }
-    // std::cout << "\n";
-    
-    // xarm_client.set_servo_angle(position, false, -1.0, -1.0);    // When using mode 6
-    // // xarm_client.set_servo_angle(position, Robot::getMaxVel(0), Robot::getMaxAcc(0), 0.0, false, -1.0, -1.0);  // When using mode 6
 }
 
 void real_bringup::RealTimePlanningNode::publishingTrajectoryCallback()
@@ -59,8 +48,6 @@ void real_bringup::RealTimePlanningNode::publishingTrajectoryCallback()
     }
     // std::cout << "\n";
     
-    // xarm_client.set_servo_angle(position, false, -1.0, -1.0);    // When using mode 6 (Works too slow. I don't know why...)
-    // xarm_client.set_servo_angle(position, Robot::getMaxVel(0), Robot::getMaxAcc(0), 0.0, false, -1.0, -1.0); // When using mode 6 (Works too slow. I don't know why...)
-
-    xarm_client.set_servo_angle_j(position);    // When using mode 1 (Works okay!)
+    // xarm_client.set_servo_angle_j(position);                                    // When using mode 1
+    xarm_client.set_servo_angle(position, Robot::getMaxVel(0), 0, 0, false);    // When using mode 6
 }
