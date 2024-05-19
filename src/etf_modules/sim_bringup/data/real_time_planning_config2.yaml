@@ -27,7 +27,7 @@ planner:
   # type: "RGBT-Connect"
   type: "RGBMT*"
   configurations: "/RPMPLv2"
-  trajectory_max_time_step: 0.01                              # In [s]
+  trajectory_max_time_step: 0.004                             # In [s]
 
 environment:
   - box:

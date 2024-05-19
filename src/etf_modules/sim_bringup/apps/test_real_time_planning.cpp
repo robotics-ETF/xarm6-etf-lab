@@ -15,19 +15,21 @@ int main(int argc, char *argv[])
 	size_t num { 1 };
 
 	rclcpp::init(argc, argv);
-	rclcpp::spin(std::make_shared<sim_bringup::RealTimePlanningNode>(node_name, config_file_path0, "_test" + std::to_string(num) + ".log"));
+	rclcpp::spin(std::make_shared<sim_bringup::RealTimePlanningNode>(node_name, config_file_path0));
 	rclcpp::shutdown();
 	rclcpp::sleep_for(std::chrono::milliseconds(100));
 
 	while (true)
 	{
 		rclcpp::init(argc, argv);
-		rclcpp::spin(std::make_shared<sim_bringup::RealTimePlanningNode>(node_name, config_file_path1, "_test" + std::to_string(num) + ".log"));
+		rclcpp::spin(std::make_shared<sim_bringup::RealTimePlanningNode>(node_name, config_file_path1));
+		// rclcpp::spin(std::make_shared<sim_bringup::RealTimePlanningNode>(node_name, config_file_path1, "_test" + std::to_string(num) + ".log"));
 		rclcpp::shutdown();
 		rclcpp::sleep_for(std::chrono::milliseconds(100));
 
 		rclcpp::init(argc, argv);
-		rclcpp::spin(std::make_shared<sim_bringup::RealTimePlanningNode>(node_name, config_file_path2, "_test" + std::to_string(num) + ".log"));
+		rclcpp::spin(std::make_shared<sim_bringup::RealTimePlanningNode>(node_name, config_file_path2));
+		// rclcpp::spin(std::make_shared<sim_bringup::RealTimePlanningNode>(node_name, config_file_path2, "_test" + std::to_string(num) + ".log"));
 		rclcpp::shutdown();
 		rclcpp::sleep_for(std::chrono::milliseconds(100));
 
