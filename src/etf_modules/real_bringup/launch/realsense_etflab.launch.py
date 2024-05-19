@@ -53,13 +53,13 @@ def generate_launch_description():
 
     tf_node_link_base_aruco_marker = Node(package = "tf2_ros", 
             executable = "static_transform_publisher",
-            arguments = ["0.43", "0", "0", "1.57079", "0", "0", "link_base", "aruco_marker"]
+            arguments = ["0.44", "0", "0", "1.57079", "0", "0", "link_base", "aruco_marker"]
     )
 
     tf_node_aruco_marker_camera_left_link = Node(package = "tf2_ros", 
             name="left_transform",
             executable = "static_transform_publisher",
-            arguments = ["-1.14", "0", "0.92", "0.37", "0.67", "0.06", \
+            arguments = ["-1.11", "0", "0.92", "0.37", "0.67", "0.06", \
                         "aruco_marker", "camera_left_link"]     # (x,y,z, yaw(z), pich(y), roll(x))
 	)
 
