@@ -82,6 +82,7 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
     case moving_object_to_destination:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Moving the object to destination...");
         AABB::resetMeasurements();
+        q_object_approach1 = Planner::scenario->getStateSpace()->getNewState(q_object_approach1->getCoord());   // Reset all additional data set before for 'q_object_approach1'
         Planner::scenario->setStart(q_object_approach1);
         Planner::scenario->setGoal(q_goal);
         task = planning;
@@ -180,7 +181,7 @@ bool sim_bringup::TaskPlanningNode::computeObjectApproachAndPickStates()
                        p_pick_z);
     size_t num { 0 };
     std::shared_ptr<base::State> q_init { Robot::getJointsPositionPtr() };
-    while (num++ <= 100)
+    while (num++ <= 10)
     {
         q_object_approach1 = Robot::getRobot()->computeInverseKinematics(R, p_approach1, q_init);
         if (q_object_approach1 == nullptr)
