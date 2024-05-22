@@ -75,8 +75,18 @@ bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shar
     
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Planning the path..."); 
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Number of collision objects: %ld", scenario->getEnvironment()->getNumObjects());
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Start: "); std::cout << "\t" << q_start << "\n";
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Goal:  "); std::cout << "\t" << q_goal << "\n";
+    switch (scenario->getNumDimensions())
+    {
+    case 6:
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Start: (%f, %f, %f, %f, %f, %f)", q_start->getCoord(0), q_start->getCoord(1), 
+            q_start->getCoord(2), q_start->getCoord(3), q_start->getCoord(4), q_start->getCoord(5));
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Goal:  (%f, %f, %f, %f, %f, %f)", q_goal->getCoord(0), q_goal->getCoord(1), 
+            q_goal->getCoord(2), q_goal->getCoord(3), q_goal->getCoord(4), q_goal->getCoord(5));
+        break;
+    
+    default:
+        break;
+    }
 
     try
     {
