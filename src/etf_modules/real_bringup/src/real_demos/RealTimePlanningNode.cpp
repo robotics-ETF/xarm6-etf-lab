@@ -24,16 +24,14 @@ real_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node
 void real_bringup::RealTimePlanningNode::computeTrajectory()
 {
     float t_delay { DP::updateCurrentState(true) };
-
     if (DP::spline_next == DP::spline_current)  // Trajectory has been already computed!
     {
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Not computing a new trajectory! ");
+        return;
     }
-    else
-    {
-        std::this_thread::sleep_for(std::chrono::nanoseconds(size_t(t_delay * 1e9)));
-        DP::spline_next->setTimeStart();
-    }
+    
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "New trajectory is computed! ");
+    DP::spline_next->setTimeStart(t_delay);
 }
 
 void real_bringup::RealTimePlanningNode::publishingTrajectoryCallback()
