@@ -1,4 +1,4 @@
-#include "demos/PlanningNode.h"
+#include "sim_demos/PlanningNode.h"
 #include <glog/logging.h>
 
 int main(int argc, char *argv[])
@@ -17,10 +17,12 @@ int main(int argc, char *argv[])
 		rclcpp::init(argc, argv);
 		rclcpp::spin(std::make_shared<sim_bringup::PlanningNode>(node_name, config_file_path1));
 		rclcpp::shutdown();
+		rclcpp::sleep_for(std::chrono::milliseconds(100));
 
 		rclcpp::init(argc, argv);
 		rclcpp::spin(std::make_shared<sim_bringup::PlanningNode>(node_name, config_file_path2));
 		rclcpp::shutdown();
+		rclcpp::sleep_for(std::chrono::milliseconds(100));
 	}
 	
 	google::ShutDownCommandLineFlags();

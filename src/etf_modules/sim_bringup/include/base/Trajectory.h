@@ -25,21 +25,22 @@ namespace sim_bringup
         void addPoint(float time_instance, const Eigen::VectorXf &position, const Eigen::VectorXf &velocity);
         void addPoint(float time_instance, const Eigen::VectorXf &position, const Eigen::VectorXf &velocity, 
                       const Eigen::VectorXf &acceleration);
+        void addPoints(std::shared_ptr<planning::trajectory::Spline> spline, float t_offset, float t_final);
         
         void addPath(const std::vector<std::shared_ptr<base::State>> &path, const std::vector<float> &time_instances);
         void addPath(const std::vector<Eigen::VectorXf> &path, const std::vector<float> &time_instances);
         void addPath(const std::vector<std::shared_ptr<base::State>> &path);
+        void addPath(const std::vector<std::shared_ptr<base::State>> &path, bool must_visit);
 
-        void publish(float time_delay = 0);
+        void publish(bool print = false);
         void clear();
+        inline size_t getNumPoints() const { return msg.points.size(); }
+        inline float getTrajectoryMaxTimeStep() const { return trajectory_max_time_step; }
         
         rclcpp::Publisher<trajectory_msgs::msg::JointTrajectory>::SharedPtr publisher;
 
     private:
-        void preprocessPath(const std::vector<std::shared_ptr<base::State>> &path, std::vector<Eigen::VectorXf> &new_path);
-
         trajectory_msgs::msg::JointTrajectory msg;
-        float max_edge_length;
         float trajectory_max_time_step;
     };
 }

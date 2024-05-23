@@ -1,4 +1,4 @@
-#include "demos/MoveXArm6Node.h"
+#include "sim_demos/MoveXArm6Node.h"
 
 sim_bringup::MoveXArm6Node::MoveXArm6Node(const std::string &node_name, const std::string &config_file_path) : 
     BaseNode(node_name, config_file_path) 
@@ -18,6 +18,9 @@ void sim_bringup::MoveXArm6Node::moveXArm6Callback()
     case moving_in_joint_space:
         moveInJointSpace();
         state = going_home;
+        break;
+
+    default:
         break;
     }
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "--------------------------------------------"); 

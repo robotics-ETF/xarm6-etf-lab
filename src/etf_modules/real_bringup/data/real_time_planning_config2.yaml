@@ -1,4 +1,4 @@
-period: 0.1                                                   # Maximal runtime of a single iteration in [s]
+period: 0.050                                                 # Maximal runtime of a single iteration in [s]
 
 real_time:
   scheduling: "FPS"                                           # "FPS" - Fixed Priority Scheduling

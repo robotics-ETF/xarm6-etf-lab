@@ -12,8 +12,8 @@ robot:
   gripper_length: 0.17                                        # In [m]
   table_included: true                                        # Please check whether 'table' is added in 'environment'
   max_vel:  [3.1415, 3.1415, 3.1415, 3.1415, 3.1415, 3.1415]  # Maximal velocity of each robot's joint in [rad/s]
-  max_acc:  [6.3611, 6.3611, 6.3611, 6.3611, 6.3611, 6.3611]  # Maximal acceleration of each robot's joint in [rad/s²]
-  max_jerk: [159.15, 159.15, 159.15, 159.15, 159.15, 159.15]  # Maximal jerk of each robot's joint in [rad/s³]
+  max_acc:  [20, 20, 20, 20, 20, 20]                          # Maximal acceleration of each robot's joint in [rad/s²]
+  max_jerk: [500, 500, 500, 500, 500, 500]                    # Maximal jerk of each robot's joint in [rad/s³]
 
 planner:
   # type: "RRT-Connect"
@@ -22,8 +22,8 @@ planner:
   type: "RGBMT*"
   configurations: "/RPMPLv2"
   max_planning_time: 0.8                                      # In [s]
-  max_edge_length: 0.5                                        # In [rad]
-  trajectory_max_time_step: 0.1                               # In [s]
+  max_edge_length: 0.1                                        # In [rad]
+  trajectory_max_time_step: 0.01                              # In [s]
 
 environment:
   - box:

@@ -40,7 +40,7 @@ sim_bringup::BaseNode::BaseNode(const std::string &node_name, const std::string 
         else
             throw std::logic_error("State space does not exist!");
 
-        YAML::Node q_start_node { node["robot"]["q_start" ]};
+        YAML::Node q_start_node { node["robot"]["q_start"] };
         YAML::Node q_goal_node { node["robot"]["q_goal"] };
         std::shared_ptr<base::State> q_start { nullptr };
         std::shared_ptr<base::State> q_goal { nullptr };

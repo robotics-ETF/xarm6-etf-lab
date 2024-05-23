@@ -1,4 +1,4 @@
-#include "demos/PlanningNode.h"
+#include "sim_demos/PlanningNode.h"
 
 sim_bringup::PlanningNode::PlanningNode(const std::string &node_name, const std::string &config_file_path) : 
     BaseNode(node_name, config_file_path),
@@ -6,7 +6,7 @@ sim_bringup::PlanningNode::PlanningNode(const std::string &node_name, const std:
     Octomap(config_file_path),
     ConvexHulls(config_file_path)
 {
-    AABB::setEnvironment(scenario->getEnvironment());
+    AABB::setEnvironment(Planner::scenario->getEnvironment());
     if (AABB::getMinNumCaptures() == 1)
         AABB::subscription = this->create_subscription<sensor_msgs::msg::PointCloud2>
             ("/bounding_boxes", 10, std::bind(&AABB::callback, this, std::placeholders::_1));
@@ -23,8 +23,9 @@ sim_bringup::PlanningNode::PlanningNode(const std::string &node_name, const std:
     //     ("/convex_hulls_polygons", 10, std::bind(&ConvexHulls::polygonsCallback, this, std::placeholders::_1));
     
     state = waiting;
-    q_start = scenario->getStart();
-    q_goal = scenario->getGoal();
+    q_start = Planner::scenario->getStart();
+    q_goal = Planner::scenario->getGoal();
+    path = {};
 }
 
 void sim_bringup::PlanningNode::planningCallback()
@@ -33,15 +34,17 @@ void sim_bringup::PlanningNode::planningCallback()
     {
     case waiting:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting...");
-        if (Robot::isReady())
+        if (Robot::isReady() && AABB::isReady())
         {
-            scenario->setStart(Robot::getJointsPositionPtr());
+            Planner::scenario->setStart(Robot::getJointsPositionPtr());
             state = planning;
         }
+        else
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Robot or environment is not ready...");
         break;
 
     case planning:
-        if (Planner::isReady())
+        if (Planner::isReady() && AABB::isReady())
         {
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Updating the environment..."); 
             AABB::updateEnvironment();
@@ -49,23 +52,21 @@ void sim_bringup::PlanningNode::planningCallback()
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Planning the path..."); 
             if (Planner::solve())
             {
+                Planner::preprocessPath(Planner::getPath(), path);
                 Trajectory::clear();
-                Trajectory::addPath(Planner::getPath());
-                state = publishing_trajectory;
+                // Trajectory::addPath(path);
+                Trajectory::addPath(path, false);
+                Trajectory::publish();
+                state = executing_trajectory;
             }
         }
         else
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting for the planner..."); 
-        break;
-    
-    case publishing_trajectory:
-        Trajectory::publish();
-        state = executing_trajectory;
+            RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Waiting for the planner or environment to set up..."); 
         break;
 
     case executing_trajectory:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Executing trajectory...");
-        if (Robot::isReached(scenario->getGoal()))
+        if (Robot::isReached(Planner::scenario->getGoal()))
         {
             rclcpp::shutdown();
             return;

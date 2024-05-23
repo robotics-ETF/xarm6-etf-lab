@@ -46,13 +46,16 @@ namespace sim_bringup
         inline float getMaxLinAcc() const { return max_lin_acc; }
         inline float getMaxLinJerk() const { return max_lin_jerk; }
 
+        inline const Eigen::VectorXf &getMaxVel() const { return robot->getMaxVel(); }
         inline float getMaxVel(size_t num) const { return robot->getMaxVel(num); }
+        inline const Eigen::VectorXf &getMaxAcc() const { return robot->getMaxAcc(); }
         inline float getMaxAcc(size_t num) const { return robot->getMaxAcc(num); }
+        inline const Eigen::VectorXf &getMaxJerk() const { return robot->getMaxJerk(); }
         inline float getMaxJerk(size_t num) const { return robot->getMaxJerk(num); }
         inline size_t getNumDOFs() const { return num_DOFs; }
 
         void jointsStateCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg);
-        bool isReady();
+        inline bool isReady() { return ready; }
         bool isReached(std::shared_ptr<base::State> q, float tol = 0.01);
         void moveGripper(float position, float max_effort = 5.0);
         

@@ -121,10 +121,10 @@ void perception_etflab::ObjectSegmentationNode::realPointCloudCallback(const sen
     std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> pcl_subclusters {};
 
     removeOutliers(output_cloud_xyzrgb3);
-	// Robot::removeFromScene2(output_cloud_xyzrgb3);
+	Robot::removeFromScene2(output_cloud_xyzrgb3);
     Clusters::computeClusters(output_cloud_xyzrgb3, pcl_clusters);
 
-	Robot::removeFromScene(pcl_clusters);	// Better for real robot!
+	// Robot::removeFromScene(pcl_clusters);
 	// Robot::removeFromScene3(pcl_clusters);  // If using, uncomment "xarm_client_node" and "xarm_client" in the 'Robot' constructor
 
   	publishObjectsPointCloud(pcl_clusters);

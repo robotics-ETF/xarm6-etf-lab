@@ -11,9 +11,9 @@ robot:
   capsules_radius: [0.047, 0.12, 0.11, 0.09, 0.05, 0.1]       # When the gripper is attached
   gripper_length: 0.17                                        # In [m]
   table_included: true                                        # Please check whether 'table' is added in 'environment'
-  max_vel:  [3.1415, 3.1415, 3.1415, 3.1415, 3.1415, 3.1415]  # Maximal velocity of each robot's joint in [rad/s]
-  max_acc:  [6.3611, 6.3611, 6.3611, 6.3611, 6.3611, 6.3611]  # Maximal acceleration of each robot's joint in [rad/s²]
-  max_jerk: [159.15, 159.15, 159.15, 159.15, 159.15, 159.15]  # Maximal jerk of each robot's joint in [rad/s³]
+  max_vel:  [1.5, 1.5, 1.5, 1.5, 1.5, 1.5]                    # Maximal velocity of each robot's joint in [rad/s]
+  max_acc:  [10, 10, 10, 10, 10, 10]                          # Maximal acceleration of each robot's joint in [rad/s²]
+  max_jerk: [100, 100, 100, 100, 100, 100]                    # Maximal jerk of each robot's joint in [rad/s³]
 
 planner:
   # type: "RRT-Connect"
@@ -35,5 +35,9 @@ cameras:
   min_num_captures: 3                                         # Minimal number of captures/frames of a single STATIC obstacle to become valid
   
 scenario:
-  max_object_height: 0.1                                      # Maximal height of an object that can be picked up
+  max_object_height: 0.05                                     # Maximal height of an object that can be picked up
+  picking_object_wait_max: 4                                  # Number of periods 'period' to wait in [s]
   destination: [-0.5, 0, 0.2]                                 # Coordinates of a destination box
+  max_gripper_speed: 5000                                     # Range: [0, 5000] [mm/s]
+  opened_gripper_pos: 850                                     # Range: [0, 850] corresponding to [0, 85] [mm]
+  closed_gripper_pos: 10                                      # Range: [0, 850] corresponding to [0, 85] [mm]

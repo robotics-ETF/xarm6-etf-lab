@@ -25,12 +25,12 @@ namespace sim_bringup
         {
             waiting,
             planning,
-            publishing_trajectory,
             executing_trajectory
         };
         State state;
 
         std::shared_ptr<base::State> q_start;
         std::shared_ptr<base::State> q_goal;
+        std::vector<std::shared_ptr<base::State>> path;
     };
 }

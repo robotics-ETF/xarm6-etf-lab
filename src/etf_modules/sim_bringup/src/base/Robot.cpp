@@ -64,9 +64,9 @@ sim_bringup::Robot::Robot(const std::string &config_file_path)
             if (max_vel_node.size() != num_DOFs)
                 throw std::logic_error("The size of 'max_vel' is not correct!");
 
-            std::vector<float> max_vel {};
+            Eigen::VectorXf max_vel(num_DOFs);
             for (size_t i = 0; i < num_DOFs; i++)
-                max_vel.emplace_back(max_vel_node[i].as<float>());
+                max_vel(i) = max_vel_node[i].as<float>();
 
             robot->setMaxVel(max_vel);
         }
@@ -79,9 +79,9 @@ sim_bringup::Robot::Robot(const std::string &config_file_path)
             if (max_acc_node.size() != num_DOFs)
                 throw std::logic_error("The size of 'max_acc' is not correct!");
 
-            std::vector<float> max_acc {};
+            Eigen::VectorXf max_acc(num_DOFs);
             for (size_t i = 0; i < num_DOFs; i++)
-                max_acc.emplace_back(max_acc_node[i].as<float>());
+                max_acc(i) = max_acc_node[i].as<float>();
 
             robot->setMaxAcc(max_acc);
         }
@@ -94,9 +94,9 @@ sim_bringup::Robot::Robot(const std::string &config_file_path)
             if (max_jerk_node.size() != num_DOFs)
                 throw std::logic_error("The size of 'max_jerk' is not correct!");
 
-            std::vector<float> max_jerk {};
+            Eigen::VectorXf max_jerk(num_DOFs);
             for (size_t i = 0; i < num_DOFs; i++)
-                max_jerk.emplace_back(max_jerk_node[i].as<float>());
+                max_jerk(i) = max_jerk_node[i].as<float>();
                 
             robot->setMaxJerk(max_jerk);
         }
@@ -134,25 +134,24 @@ sim_bringup::Robot::Robot(const std::string &config_file_path)
 
 void sim_bringup::Robot::jointsStateCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg)
 {
+    ready = false;
     for (size_t i = 0; i < num_DOFs; i++)
     {
         joints_position(i) = msg->actual.positions[i];
-        // joints_velocity(i) = msg->actual.velocities[i];          // It does not work!
-        // joints_acceleration(i) = msg->actual.accelerations[i];   // It does not work!
+        joints_velocity(i) = msg->actual.velocities[i];
+        // joints_acceleration(i) = msg->actual.accelerations[i];   // Not supported for xarm6.
     }
 	ready = true;
     
     // if (num_DOFs == 6)
-    //     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Robot joint states: (%f, %f, %f, %f, %f, %f).", 
+    // {
+    //     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Robot joints position:     (%f, %f, %f, %f, %f, %f).", 
     //         joints_position(0), joints_position(1), joints_position(2), joints_position(3), joints_position(4), joints_position(5));
-}
-
-bool sim_bringup::Robot::isReady()
-{
-    if (ready)
-        return true;
-
-    return false;
+    //     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Robot joints velocity:     (%f, %f, %f, %f, %f, %f).", 
+    //         joints_velocity(0), joints_velocity(1), joints_velocity(2), joints_velocity(3), joints_velocity(4), joints_velocity(5));
+    //     // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Robot joints acceleration: (%f, %f, %f, %f, %f, %f).", 
+    //     //     joints_acceleration(0), joints_acceleration(1), joints_acceleration(2), joints_acceleration(3), joints_acceleration(4), joints_acceleration(5));
+    // }
 }
 
 bool sim_bringup::Robot::isReached(std::shared_ptr<base::State> q, float tol)

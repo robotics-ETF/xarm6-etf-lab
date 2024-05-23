@@ -1,16 +1,14 @@
-#include "demos/TaskPlanningNode.h"
+#include "sim_demos/TaskPlanningNode.h"
 
 sim_bringup::TaskPlanningNode::TaskPlanningNode(const std::string &node_name, const std::string &config_file_path) : 
     PlanningNode(node_name, config_file_path)
 {
     YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
-    YAML::Node scenario { node["scenario"] };
+    YAML::Node scenario_node { node["scenario"] };
 
-    max_object_height = scenario["max_object_height"].as<float>();
-    picking_object_wait_max = scenario["picking_object_wait_max"].as<size_t>();
-    picking_object_wait = picking_object_wait_max;
+    max_object_height = scenario_node["max_object_height"].as<float>();
     for (size_t i = 0; i < 3; i++)
-        destination(i) = scenario["destination"][i].as<float>();
+        destination(i) = scenario_node["destination"][i].as<float>();
 
     IK_computed = -1;
     task = waiting_for_object;
@@ -24,8 +22,10 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
     case waiting_for_object:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting for the object...");
         AABB::resetMeasurements();
-        if (Robot::isReady())
+        if (Robot::isReady() && AABB::isReady())
             task = choosing_object;
+        else
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Robot or environment is not ready...");
         break;
 
     case choosing_object:
@@ -43,8 +43,8 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
         if (IK_computed == 1)
         {
             AABB::resetMeasurements();
-            scenario->setStart(Robot::getJointsPositionPtr());
-            scenario->setGoal(q_object_approach1);
+            Planner::scenario->setStart(Robot::getJointsPositionPtr());
+            Planner::scenario->setGoal(q_object_approach1);
             task = planning;
             task_next = going_towards_object;
             IK_computed = -1;
@@ -56,26 +56,25 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
 
     case going_towards_object:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going towards the object...");
+        // Robot::moveGripper(1);
+        Planner::preprocessPath({q_object_approach1, q_object_approach2, q_object_pick}, path);
         Trajectory::clear();
-        Trajectory::addPath({q_object_approach1, q_object_approach2, q_object_pick});
+        Trajectory::addPath(path);
         Trajectory::publish();
         task = picking_object;
         break;
 
     case picking_object:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Picking the object...");
-        picking_object_wait--;
-        if (picking_object_wait == 0)
-        {
-            picking_object_wait = picking_object_wait_max;
-            task = raising_object;
-        }
+        // Robot::moveGripper(0);
+        task = raising_object;
         break;
 
     case raising_object:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Raising the object...");
+        Planner::preprocessPath({q_object_pick, q_object_approach1}, path);
         Trajectory::clear();
-        Trajectory::addPath({q_object_pick, q_object_approach1});
+        Trajectory::addPath(path);
         Trajectory::publish();
         task = moving_object_to_destination;
         break;
@@ -83,14 +82,16 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
     case moving_object_to_destination:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Moving the object to destination...");
         AABB::resetMeasurements();
-        scenario->setStart(q_object_approach1);
-        scenario->setGoal(q_goal);
+        q_object_approach1 = Planner::scenario->getStateSpace()->getNewState(q_object_approach1->getCoord());   // Reset all additional data set before for 'q_object_approach1'
+        Planner::scenario->setStart(q_object_approach1);
+        Planner::scenario->setGoal(q_goal);
         task = planning;
         task_next = releasing_object;
         break;
     
     case releasing_object:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Releasing the object...");
+        // Robot::moveGripper(1);
         task = waiting_for_object;
         break;
 
@@ -109,31 +110,25 @@ void sim_bringup::TaskPlanningNode::planningCase()
         break;
     
     case State::planning:
-        if (Planner::isReady())
+        if (Planner::isReady() && AABB::isReady())
         {
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Updating the environment..."); 
             AABB::updateEnvironment();
-
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Planning the path..."); 
             if (Planner::solve())
             {
+                Planner::preprocessPath(Planner::getPath(), path);
                 Trajectory::clear();
-                Trajectory::addPath(Planner::getPath());
-                state = State::publishing_trajectory;
+                Trajectory::addPath(path, false);
+                Trajectory::publish();
+                state = State::executing_trajectory;
             }
         }
         else
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting for the planner..."); 
-        break;
-    
-    case State::publishing_trajectory:
-        Trajectory::publish();
-        state = State::executing_trajectory;
+            RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Waiting for the planner or environment to set up..."); 
         break;
 
     case State::executing_trajectory:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Executing trajectory...");            
-        if (Robot::isReached(scenario->getGoal()))
+        if (Robot::isReached(Planner::scenario->getGoal()))
         {
             state = State::planning;
             task = task_next;
@@ -186,7 +181,7 @@ bool sim_bringup::TaskPlanningNode::computeObjectApproachAndPickStates()
                        p_pick_z);
     size_t num { 0 };
     std::shared_ptr<base::State> q_init { Robot::getJointsPositionPtr() };
-    while (num++ <= 100)
+    while (num++ <= 10)
     {
         q_object_approach1 = Robot::getRobot()->computeInverseKinematics(R, p_approach1, q_init);
         if (q_object_approach1 == nullptr)
@@ -245,7 +240,8 @@ int sim_bringup::TaskPlanningNode::chooseObject()
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Object %ld. dim = (%f, %f, %f), pos = (%f, %f, %f). Num. captures %ld.",
             i, dimensions[i].x(), dimensions[i].y(), dimensions[i].z(), 
                positions[i].x(), positions[i].y(), positions[i].z(), num_captures[i]);
-        if (num_captures[i] >= min_num_captures && positions[i].z() > z_max && positions[i].z() < max_object_height)  // Pick only "small" objects
+        if (num_captures[i] >= min_num_captures && positions[i].z() > z_max && 
+            dimensions[i].z() < max_object_height && positions[i].z() < max_object_height / 2)  // Pick only "small" objects from the table
         {
             z_max = positions[i].z();
             obj_idx_ = i;

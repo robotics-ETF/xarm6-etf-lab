@@ -1,4 +1,4 @@
-#include "demos/MoveXArm6Node.h"
+#include "sim_demos/MoveXArm6Node.h"
 
 #include <xarm_api/xarm_ros_client.h>
 #include <xarm_msgs/srv/move_cartesian.hpp>
@@ -7,15 +7,22 @@
 
 namespace real_bringup
 {
-    class MoveRealXArm6Node : public sim_bringup::MoveXArm6Node
+    class MoveXArm6Node : public sim_bringup::MoveXArm6Node
     {
     public:
-        MoveRealXArm6Node(const std::string &node_name, const std::string &config_file_path);
+        MoveXArm6Node(const std::string &node_name, const std::string &config_file_path);
 
     protected:
-        void moveXArm6Callback() override { moveRealXArm6Callback(); }
-        virtual void moveRealXArm6Callback();
+        virtual void moveXArm6Callback() override;
+        void testMode0();
+        void testMode01();
+        void testMode4();
+        void testMode6();
+        void testGripper();
+        
         void setPosition(const std::vector<float> &pose, float speed = 100, float acceleration = 1000);
+        void goHome() override;
+        void moveInJointSpace() override;
         void testOrientation();
 
         std::shared_ptr<rclcpp::Node> xarm_client_node;

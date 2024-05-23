@@ -52,7 +52,7 @@ install(DIRECTORY
 
 # Install Python executables
 install(PROGRAMS
-  scripts/test_move_real_xarm6.py
+  scripts/test_move_xarm6.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
