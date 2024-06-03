@@ -12,7 +12,7 @@ sim_bringup::TaskPlanningNode::TaskPlanningNode(const std::string &node_name, co
 
     IK_computed = -1;
     task = waiting_for_object;
-    state = State::planning;
+    state = State::waiting;
 }
 
 void sim_bringup::TaskPlanningNode::taskPlanningCallback()
@@ -107,30 +107,49 @@ void sim_bringup::TaskPlanningNode::planningCase()
     switch (state)
     {
     case State::waiting:
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting...");
+        if (Robot::isReady() && AABB::isReady() && Planner::isReady())
+        {
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Updating environment...");
+            AABB::updateEnvironment();
+
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Planning a path...");
+            std::thread planning_thread([this]() 
+            {
+                planning_result = Planner::solve();
+            });
+            planning_thread.detach();
+            state = State::planning;
+        }
+        else
+            RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Waiting for the initial setup...");
         break;
     
     case State::planning:
-        if (Planner::isReady() && AABB::isReady())
+        if (planning_result == 1)
         {
-            AABB::updateEnvironment();
-            if (Planner::solve())
-            {
-                Planner::preprocessPath(Planner::getPath(), path);
-                Trajectory::clear();
-                Trajectory::addPath(path, false);
-                Trajectory::publish();
-                state = State::executing_trajectory;
-            }
+            Planner::preprocessPath(Planner::getPath(), path);
+            Trajectory::clear();
+            // Trajectory::addPath(path);
+            Trajectory::addPath(path, false);
+            Trajectory::publish();
+            planning_result = -1;
+            state = State::executing_trajectory;
+        }
+        else if (planning_result == 0)
+        {
+            planning_result = -1;
+            state = State::waiting;
         }
         else
-            RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Waiting for the planner or environment to set up..."); 
+            RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Waiting for the planner to finish...");
         break;
 
     case State::executing_trajectory:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Executing trajectory...");            
         if (Robot::isReached(Planner::scenario->getGoal()))
         {
-            state = State::planning;
+            state = State::waiting;
             task = task_next;
         }
         break;
