@@ -25,7 +25,7 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
         if (Robot::isReady() && AABB::isReady())
             task = choosing_object;
         else
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Robot or environment is not ready...");
+            RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Robot or environment is not ready...");
         break;
 
     case choosing_object:
