@@ -120,6 +120,13 @@ sim_bringup::Robot::Robot(const std::string &config_file_path)
             max_lin_jerk = max_lin_jerk_node.as<float>();
         else
             RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Maximal robot's linear jerk is not defined!");
+
+        YAML::Node self_collision_checking_node { robot_node["self_collision_checking"] };
+        if (self_collision_checking_node.IsDefined())
+            robot->setSelfCollisionChecking(self_collision_checking_node.as<bool>());
+        else
+            RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "It is not defined whether self-collision should be checked! By default, it is true.");
+    
     }
     catch (std::exception &e)
     {
