@@ -4,7 +4,6 @@
 import rclpy
 from rclpy.node import Node
 from builtin_interfaces.msg import Duration
-
 from std_msgs.msg import String
 from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 
@@ -36,36 +35,37 @@ class TestMoveXarm6Node(Node):
             0.0,
             0.0,
             0.0,
-            0.0,
-            0.0,
-            0.0,
+            3.1415, 
+            1.5708,
+            0.0
             ]
         joint_point1.time_from_start = Duration(sec=1)
         trajectory.points.append(joint_point1)
 
         joint_point2 = JointTrajectoryPoint()
         joint_point2.positions = [
-            0.5,
-            0.0,
-            -0.6,
-            0.0,
-            0.0,
-            0.0,
+            3.1415, 
+            0.7854, 
+            -3.1415, 
+            -3.1415, 
+            0.0, 
+            3.1415
             ]
         joint_point2.time_from_start = Duration(sec=2)
         trajectory.points.append(joint_point2)
+        
 
-        joint_point3 = JointTrajectoryPoint()
-        joint_point3.positions = [
-            -0.5,
-            0.0,
-            -0.6,
-            0.0,
-            0.0,
-            0.0,
-            ]
-        joint_point3.time_from_start = Duration(sec=3)
-        trajectory.points.append(joint_point3)
+        # joint_point3 = JointTrajectoryPoint()
+        # joint_point3.positions = [
+        #     3.1415, 
+        #     0.7854, 
+        #     -3.1415, 
+        #     -3.1415, 
+        #     0, 
+        #     3.1415
+        #     ]
+        # joint_point3.time_from_start = Duration(sec=3)
+        # trajectory.points.append(joint_point3)
 
         self.trajectory_publihser.publish(trajectory)
 

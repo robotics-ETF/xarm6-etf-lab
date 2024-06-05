@@ -101,6 +101,8 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "----------------------------------------------------------------\n");
 }
 
+
+
 void sim_bringup::TaskPlanningNode::planningCase()
 {
     switch (state)

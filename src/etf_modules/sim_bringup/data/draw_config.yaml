@@ -1,4 +1,4 @@
-period: 5.0                                                 # In [s]
+period: 10.0                                                 # In [s]
 
 robot:
   type: "xarm6"

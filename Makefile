@@ -41,3 +41,8 @@ make full_build_container:
 	make dependencies
 	make build
 	
+	
+
+draw_%:
+	python3 /home/hanka/Desktop/DMP/draw_character.py $*
+	ros2 run sim_bringup test_draw

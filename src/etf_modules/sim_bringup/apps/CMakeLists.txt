@@ -18,15 +18,14 @@ add_executable(test_real_time_planning test_real_time_planning.cpp)
 target_compile_features(test_real_time_planning PUBLIC c_std_99 cxx_std_17)
 target_link_libraries(test_real_time_planning PUBLIC sim_bringup)
 
-add_executable(test_write_letter test_write_letter.cpp)
-target_compile_features(test_write_letter PUBLIC c_std_99 cxx_std_17)
-target_link_libraries(test_write_letter PUBLIC sim_bringup)
-
+add_executable(test_draw test_draw.cpp)
+target_compile_features(test_draw PUBLIC c_std_99 cxx_std_17)
+target_link_libraries(test_draw PUBLIC sim_bringup yaml-cpp)
 install(TARGETS 
   test_move_xarm6
   test_read_octomap
   test_planning
   test_task_planning
   test_real_time_planning
-  test_write_letter
+  test_draw
   DESTINATION lib/${PROJECT_NAME})
