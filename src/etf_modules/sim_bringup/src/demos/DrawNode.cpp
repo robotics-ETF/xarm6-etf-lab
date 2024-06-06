@@ -9,8 +9,7 @@ sim_bringup::DrawNode::DrawNode(const std::string &node_name, const std::string 
     for (size_t i = 0; i < 4; i++)
         project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
     YAML::Node dmp { YAML::LoadFile(project_abs_path + "/sim_bringup/dmps/dmp.yaml") };
-    // YAML::Node dmp { YAML::LoadFile("/home/hanka/Desktop/DMP/dmp.yaml") };
-
+    
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Reading YAML file");
 
     YAML::Node node { dmp["x"] }; 
@@ -72,7 +71,7 @@ bool sim_bringup::DrawNode::moveInJointSpace()
     std::vector<std::shared_ptr<base::State>> path;
     int k = 0;
     for (int i = 0; i < instances; i++){
-        KDL::Vector curr(0.2 + y[i]/6., 0.1 + x[i]/6., 0.1);
+        KDL::Vector curr(0.2 + y[i]/6., -0.1 - x[i]/6., 0.1);
         KDL::Vector n(curr.x(), curr.y(), 0); n.Normalize();
         KDL::Vector s(curr.y(), -curr.x(), 0); s.Normalize();
         KDL::Vector a(0, 0, -1);
@@ -103,11 +102,14 @@ bool sim_bringup::DrawNode::moveInJointSpace()
         path.emplace_back(q);
         time_instances.emplace_back(T/instances * (i + 1) + 3);
         prev_q = q_copy;
+        Trajectory::addMarker(curr, i);
     }
 
     Trajectory::clear();
     Trajectory::addPath(path, time_instances);
     Trajectory::publish();
+    Trajectory::publish_markers();
+    Trajectory::clear_markers();
     return true;
 }
 

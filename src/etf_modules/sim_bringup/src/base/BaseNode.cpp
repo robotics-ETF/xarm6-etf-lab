@@ -4,6 +4,7 @@ sim_bringup::BaseNode::BaseNode(const std::string &node_name, const std::string 
     Node(node_name),
     Trajectory(config_file_path),
     Planner(config_file_path)
+
 {
     project_abs_path = std::string(__FILE__);
     for (size_t i = 0; i < 4; i++)
@@ -15,6 +16,9 @@ sim_bringup::BaseNode::BaseNode(const std::string &node_name, const std::string 
 
         Trajectory::publisher = this->create_publisher<trajectory_msgs::msg::JointTrajectory>
             ("/xarm6_traj_controller/joint_trajectory", 10);
+            
+        Trajectory::marker_publisher = this->create_publisher<visualization_msgs::msg::MarkerArray>
+            ("visualization_marker_array", 10);
         
         Robot::joints_state_subscription = this->create_subscription<control_msgs::msg::JointTrajectoryControllerState>
             ("/xarm6_traj_controller/state", 10, std::bind(&Robot::jointsStateCallback, this, std::placeholders::_1));

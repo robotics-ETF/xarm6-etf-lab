@@ -13,6 +13,8 @@ sim_bringup::Trajectory::Trajectory(const std::string &config_file_path) :
         project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
     
     YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
+    YAML::Node marker_node { node["marker"]};
+    marker_size = marker_node["size"].as<float>();
     YAML::Node planner_node { node["planner"] };
 
     if (planner_node["max_edge_length"])
@@ -234,10 +236,52 @@ void sim_bringup::Trajectory::publish(float time_delay)
     msg.header.stamp.sec = int32_t(time_delay);
     msg.header.stamp.nanosec = (time_delay - msg.header.stamp.sec) * 1e9;
     publisher->publish(msg);
+    
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Publishing trajectory ...");
+    // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%s\n", publisher->get_topic_name());
 }
 
 void sim_bringup::Trajectory::clear()
 {
     msg.points.clear();
+}
+
+void sim_bringup::Trajectory::addMarker(KDL::Vector coordinates, int instance){
+    visualization_msgs::msg::Marker marker;
+    marker.header.frame_id = "world";
+    marker.header.stamp = rclcpp::Time();
+    marker.ns = "trajectory";
+    marker.id = instance;
+    marker.type = visualization_msgs::msg::Marker::SPHERE;
+    marker.action = visualization_msgs::msg::Marker::ADD;
+    marker.pose.position.x = coordinates.x();
+    marker.pose.position.y = coordinates.y();
+    marker.pose.position.z = coordinates.z();
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 1.0;
+    marker.pose.orientation.w = 0.0;
+    marker.scale.x = marker_size;  // Change the diameter if needed
+    marker.scale.y = marker_size;  // Change the diameter if needed
+    marker.scale.z = marker_size;  // Change the diameter if needed
+
+    // Set the color of the marker (RGBA format)
+    marker.color.r = 0.0;  // Red component
+    marker.color.g = 1.0;  // Green component
+    marker.color.b = 0.0;  // Blue component
+    marker.color.a = 1.0;  // Alpha (transparency)
+
+    // Set the lifetime of the marker (optional)
+    marker.lifetime = rclcpp::Duration::from_seconds(10.0);
+    markers.markers.push_back(marker);
+
+}
+void sim_bringup::Trajectory::publish_markers()
+{
+    marker_publisher->publish(markers);
+}
+
+void sim_bringup::Trajectory::clear_markers()
+{
+    markers.markers.clear();
 }

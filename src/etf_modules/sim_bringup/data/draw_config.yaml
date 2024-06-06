@@ -30,3 +30,6 @@ environment:
       label: "table"
       dim: [1.5, 1.5, 0.1]
       pos: [0, 0, -0.05]
+
+marker:
+  size: 0.01
