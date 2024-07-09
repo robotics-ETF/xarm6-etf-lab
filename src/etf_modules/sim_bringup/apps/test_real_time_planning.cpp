@@ -14,10 +14,10 @@ int main(int argc, char *argv[])
 	const std::string config_file_path2 = "/sim_bringup/data/real_time_planning_config2.yaml";
 	size_t num { 1 };
 
-	rclcpp::init(argc, argv);
-	rclcpp::spin(std::make_shared<sim_bringup::RealTimePlanningNode>(node_name, config_file_path0));
-	rclcpp::shutdown();
-	rclcpp::sleep_for(std::chrono::milliseconds(100));
+	// rclcpp::init(argc, argv);
+	// rclcpp::spin(std::make_shared<sim_bringup::RealTimePlanningNode>(node_name, config_file_path0));
+	// rclcpp::shutdown();
+	// rclcpp::sleep_for(std::chrono::milliseconds(100));
 
 	while (true)
 	{

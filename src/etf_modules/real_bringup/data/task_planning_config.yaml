@@ -12,7 +12,7 @@ robot:
   gripper_length: 0.17                                        # In [m]
   table_included: true                                        # Please check whether 'table' is added in 'environment'
   self_collision_checking: true                               # Whether self-collision should be checked
-  max_vel:  [2, 2, 2, 2, 2, 2]                                # Maximal velocity of each robot's joint in [rad/s]
+  max_vel:  [1.5, 1.5, 1.5, 1.5, 1.5, 1.5]                    # Maximal velocity of each robot's joint in [rad/s]
   max_acc:  [20, 20, 20, 20, 20, 20]                          # Maximal acceleration of each robot's joint in [rad/s²]
   max_jerk: [200, 200, 200, 200, 200, 200]                    # Maximal jerk of each robot's joint in [rad/s³]
 
