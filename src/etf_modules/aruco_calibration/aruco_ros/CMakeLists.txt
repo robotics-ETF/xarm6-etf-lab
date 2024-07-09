@@ -28,6 +28,18 @@ foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${Dependency} REQUIRED)
 endforeach()
 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+find_package(fcl 0.7 REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(nanoflann REQUIRED)
+find_package(rpmpl_library REQUIRED)
+
+include_directories(
+  include
+  ${EIGEN3_INCLUDE_DIR}
+  ${RPMPL_LIBRARY_INCLUDE_DIRS}
+)
+
 #generate_dynamic_reconfigure_options(
 #  cfg/ArucoThreshold.cfg
 #)
