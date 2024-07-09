@@ -22,8 +22,10 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
     aruco_msgs
     sensor_msgs
     visualization_msgs
+    std_msgs
 )
 find_package(ament_cmake REQUIRED)
+
 foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${Dependency} REQUIRED)
 endforeach()
@@ -31,6 +33,11 @@ endforeach()
 #generate_dynamic_reconfigure_options(
 #  cfg/ArucoThreshold.cfg
 #)
+add_executable(talker src/publisher_member_function.cpp)
+ament_target_dependencies(talker rclcpp std_msgs)
+
+add_executable(listener src/subscriber_member_function.cpp)
+ament_target_dependencies(listener rclcpp std_msgs geometry_msgs)
 
 add_library(aruco_ros_utils SHARED src/aruco_ros_utils.cpp)
 target_include_directories(aruco_ros_utils
@@ -96,7 +103,12 @@ endif()
 #############
 ## Install ##
 #############
+install(TARGETS
+  talker
+  listener
+  DESTINATION lib/${PROJECT_NAME})
 
+  
 install(TARGETS aruco_ros_utils
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib

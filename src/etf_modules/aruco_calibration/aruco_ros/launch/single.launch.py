@@ -44,7 +44,7 @@ def generate_launch_description():
     )
 
     marker_size_arg = DeclareLaunchArgument(
-        'marker_size', default_value='0.189',
+        'marker_size', default_value='0.085',
         description='Marker size in m. '
     )
 
