@@ -13,6 +13,7 @@ robot:
   capsules_radius: [0.047, 0.12, 0.11, 0.09, 0.05, 0.1]
   gripper_length: 0.17
   table_included: true
+  self_collision_checking: true
   WS_center: [0.0, 0.0, 0.267]
   WS_radius: 1.5
   max_vel: [1.5, 1.5, 1.5, 1.5, 1.5, 1.5]

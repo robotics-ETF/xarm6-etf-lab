@@ -7,6 +7,8 @@
 #include "environments/Octomap.h"
 #include "environments/ConvexHulls.h"
 
+#include <thread>
+
 namespace sim_bringup
 {
     class PlanningNode : public sim_bringup::BaseNode,
@@ -32,5 +34,6 @@ namespace sim_bringup
         std::shared_ptr<base::State> q_start;
         std::shared_ptr<base::State> q_goal;
         std::vector<std::shared_ptr<base::State>> path;
+        int planning_result;
     };
 }

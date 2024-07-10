@@ -30,7 +30,7 @@ void real_bringup::TaskPlanningNode::taskPlanningCallback()
         if (Robot::isReady() && AABB::isReady())
             task = choosing_object;
         else
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Robot or environment is not ready...");
+            RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Robot or environment is not ready...");
         break;
 
     case choosing_object:
@@ -103,6 +103,7 @@ void real_bringup::TaskPlanningNode::taskPlanningCallback()
         {
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Moving the object to destination...");
             AABB::resetMeasurements();
+            q_object_approach1 = Planner::scenario->getStateSpace()->getNewState(q_object_approach1->getCoord());   // Reset all additional data set before for 'q_object_approach1'
             scenario->setStart(q_object_approach1);
             scenario->setGoal(q_goal);
             task = planning;

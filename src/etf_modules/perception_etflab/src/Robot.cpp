@@ -194,16 +194,15 @@ void perception_etflab::Robot::visualizeCapsules()
         marker.header.frame_id = "world";
         // marker.header.stamp = now();
     Eigen::Vector3f A {}, B {}, C {}, AB {};
-    float theta {};
+    float theta_2 {};   // theta/2
 
     for (long int i = 0; i < skeleton->cols() - 1; i++) 
     {
         A = skeleton->col(i);
         B = skeleton->col(i+1);
         AB = B - A;
-        C = Eigen::Vector3f::UnitZ().cross(AB);
-        C.normalize();
-        theta = acos(Eigen::Vector3f::UnitZ().dot(AB) / AB.norm());
+        C = (Eigen::Vector3f::UnitZ().cross(AB)).normalized();
+        theta_2 = acos(Eigen::Vector3f::UnitZ().dot(AB) / AB.norm()) / 2;
         // LOG(INFO) << "Skeleton: " << A.transpose() << " --- " << B.transpose();
 
         marker.type = visualization_msgs::msg::Marker::CYLINDER;
@@ -211,10 +210,10 @@ void perception_etflab::Robot::visualizeCapsules()
         marker.pose.position.x = (A(0) + B(0)) / 2;
         marker.pose.position.y = (A(1) + B(1)) / 2;
         marker.pose.position.z = (A(2) + B(2)) / 2;
-        marker.pose.orientation.x = C.x() * sin(theta/2);
-        marker.pose.orientation.y = C.y() * sin(theta/2);
-        marker.pose.orientation.z = C.z() * sin(theta/2);
-        marker.pose.orientation.w = cos(theta/2);
+        marker.pose.orientation.x = C.x() * sin(theta_2);
+        marker.pose.orientation.y = C.y() * sin(theta_2);
+        marker.pose.orientation.z = C.z() * sin(theta_2);
+        marker.pose.orientation.w = cos(theta_2);
         marker.scale.x = 2 * robot->getCapsuleRadius(i);
         marker.scale.y = 2 * robot->getCapsuleRadius(i);
         marker.scale.z = AB.norm();

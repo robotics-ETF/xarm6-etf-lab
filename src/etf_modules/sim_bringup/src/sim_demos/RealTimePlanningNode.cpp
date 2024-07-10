@@ -55,8 +55,10 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
     {
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "The path has been replanned in %f [ms].", Planner::getPlanningTime() * 1e3);
         Planner::preprocessPath(Planner::getPath(), DP::predefined_path, DP::max_edge_length);
-        DP::clearHorizon(base::State::Status::Reached, false);
-        DP::q_next = std::make_shared<planning::drbt::HorizonState>(DP::q_target, 0);
+        DP::horizon.clear();
+        DP::status = base::State::Status::Reached;
+        DP::replanning = false;
+        DP::q_next = std::make_shared<planning::drbt::HorizonState>(DP::q_current, 0, DP::q_current);
         replanning_result = -1;
     }
     else if (replanning_result == 0)
@@ -102,10 +104,10 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
         if (!DP::ss->isValid(DP::q_current))
         {
             RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "********** Robot is stopping. Collision has been occurred!!! **********");
-            DP::q_target = DP::q_current;
-            DP::clearHorizon(base::State::Status::Trapped, true);
-            DP::q_next = std::make_shared<planning::drbt::HorizonState>(DP::q_target, -1);
-            DP::q_next->setStateReached(DP::q_target);
+            DP::horizon.clear();
+            DP::status = base::State::Status::Trapped;
+            DP::replanning = true;
+            DP::q_next = std::make_shared<planning::drbt::HorizonState>(DP::q_current, -1, DP::q_current);
 
             // If you want to terminate the algorithm, uncomment the following:
             // DP::planner_info->setSuccessState(false);
@@ -143,22 +145,12 @@ void sim_bringup::RealTimePlanningNode::taskComputingNextConfiguration()
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TASK 1: Computing next configuration... ");
     
     // Since the environment may change, a new distance is required!
-    float d_c { DP::ss->computeDistance(DP::q_target, true) };
-    if (d_c <= 0)   // The desired/target conf. is not safe, thus the robot is required to stop immediately, 
-    {               // and compute the horizon again from 'q_current'
-        // TODO: Emergency stopping needs to be implemented using quartic spline.
-        DP::q_target = DP::q_current;
-        d_c = DP::ss->computeDistance(DP::q_target, true);
-        DP::clearHorizon(base::State::Status::Trapped, true);
-        DP::q_next = std::make_shared<planning::drbt::HorizonState>(DP::q_target, -1);
-        DP::q_next->setStateReached(DP::q_target);
-        // std::cout << "Not updating the robot current state since d_c < 0. \n";
-    }
+    DP::d_c = DP::ss->computeDistance(DP::q_current, true);
     
     if (DP::status != base::State::Status::Advanced)
         DP::generateHorizon();
 
-    DP::updateHorizon(d_c);
+    DP::updateHorizon();
     DP::generateGBur();
     DP::computeNextState();
     computeTrajectory();
@@ -179,7 +171,8 @@ void sim_bringup::RealTimePlanningNode::taskReplanning()
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Replanning is not required! ");
 }
 
-// Try to replan the predefined path from the target to the goal configuration within the specified time
+/// @brief Try to replan the predefined path from 'q_current' to 'q_goal' during a specified time limit 'max_planning_time'.
+/// @param max_planning_time Maximal (re)planning time in [s].
 void sim_bringup::RealTimePlanningNode::replan(float max_planning_time)
 {
     replanning_result = false;
@@ -196,7 +189,7 @@ void sim_bringup::RealTimePlanningNode::replan(float max_planning_time)
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Trying to replan in %f [ms]...", max_planning_time * 1e3);
             std::thread replanning_thread([this, &max_planning_time]() 
             {
-                replanning_result = Planner::solve(DP::q_target, DP::q_goal, max_planning_time);
+                replanning_result = Planner::solve(DP::q_current, DP::q_goal, max_planning_time);
             });
             replanning_thread.detach();
             break;
@@ -204,7 +197,7 @@ void sim_bringup::RealTimePlanningNode::replan(float max_planning_time)
         case planning::RealTimeScheduling::None:
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Replanning without real-time scheduling ");
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Trying to replan in %f [ms]...", max_planning_time * 1e3);
-            replanning_result = Planner::solve(DP::q_target, DP::q_goal, max_planning_time);
+            replanning_result = Planner::solve(DP::q_current, DP::q_goal, max_planning_time);
             break;
         }
         

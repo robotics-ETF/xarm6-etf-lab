@@ -11,9 +11,10 @@ robot:
   capsules_radius: [0.047, 0.12, 0.11, 0.09, 0.05, 0.1]       # When the gripper is attached
   gripper_length: 0.17                                        # In [m]
   table_included: true                                        # Please check whether 'table' is added in 'environment'
-  max_vel:  [1.5, 1.5, 1.5, 1.5, 1.5, 1.5]                    # Maximal velocity of each robot's joint in [rad/s]
-  max_acc:  [10, 10, 10, 10, 10, 10]                          # Maximal acceleration of each robot's joint in [rad/s²]
-  max_jerk: [100, 100, 100, 100, 100, 100]                    # Maximal jerk of each robot's joint in [rad/s³]
+  self_collision_checking: true                               # Whether self-collision should be checked
+  max_vel:  [2, 2, 2, 2, 2, 2]                                # Maximal velocity of each robot's joint in [rad/s]
+  max_acc:  [20, 20, 20, 20, 20, 20]                          # Maximal acceleration of each robot's joint in [rad/s²]
+  max_jerk: [200, 200, 200, 200, 200, 200]                    # Maximal jerk of each robot's joint in [rad/s³]
 
 planner:
   # type: "RRT-Connect"
@@ -21,7 +22,7 @@ planner:
   # type: "RGBT-Connect"
   type: "RGBMT*"
   configurations: "/RPMPLv2"
-  max_planning_time: 0.8                                      # In [s]
+  max_planning_time: 1.9                                      # In [s]
   max_edge_length: 0.1                                        # In [rad]
   trajectory_max_time_step: 0.004                             # In [s]
 
