@@ -4,6 +4,7 @@ set(XARM6_ETF_LAB_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 get_filename_component(XARM6_ETF_LAB_PATH ${XARM6_ETF_LAB_PATH} DIRECTORY)
 get_filename_component(XARM6_ETF_LAB_PATH ${XARM6_ETF_LAB_PATH} DIRECTORY)
 get_filename_component(XARM6_ETF_LAB_PATH ${XARM6_ETF_LAB_PATH} DIRECTORY)
+get_filename_component(XARM6_ETF_LAB_PATH ${XARM6_ETF_LAB_PATH} DIRECTORY)
 
 # message("xarm6-etf-lab path: ${XARM6_ETF_LAB_PATH}")
 find_library(RPMPL_LIBRARY
