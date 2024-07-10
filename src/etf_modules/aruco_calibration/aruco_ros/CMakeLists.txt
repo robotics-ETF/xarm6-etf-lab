@@ -96,6 +96,9 @@ target_include_directories(marker_publisher
 ament_target_dependencies(marker_publisher ${THIS_PACKAGE_INCLUDE_DEPENDS})
 target_link_libraries(marker_publisher ${OpenCV_LIBRARIES})
 
+add_executable(transformation_pub_sub src/transformation_pub_sub.cpp)
+ament_target_dependencies(transformation_pub_sub rclcpp geometry_msgs)
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
 
@@ -121,6 +124,10 @@ install(DIRECTORY include/
         DESTINATION include
         FILES_MATCHING PATTERN "*.h"
 )
+
+install(TARGETS
+  transformation_pub_sub
+  DESTINATION lib/${PROJECT_NAME})
 
 foreach(dir etc launch)
     install(DIRECTORY ${dir}/
