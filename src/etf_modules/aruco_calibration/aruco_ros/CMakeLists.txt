@@ -22,6 +22,7 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
     aruco_msgs
     sensor_msgs
     visualization_msgs
+    control_msgs
 )
 find_package(ament_cmake REQUIRED)
 foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
@@ -96,8 +97,18 @@ target_include_directories(marker_publisher
 ament_target_dependencies(marker_publisher ${THIS_PACKAGE_INCLUDE_DEPENDS})
 target_link_libraries(marker_publisher ${OpenCV_LIBRARIES})
 
-add_executable(transformation_pub_sub src/transformation_pub_sub.cpp)
-ament_target_dependencies(transformation_pub_sub rclcpp geometry_msgs)
+add_executable(camera_calibration src/CameraCalibrationNode.cpp)
+
+target_include_directories(camera_calibration
+  PUBLIC
+  include)
+
+target_include_directories(camera_calibration
+  SYSTEM PUBLIC
+  ${OpenCV_INCLUDE_DIRS}
+)
+ament_target_dependencies(camera_calibration ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(camera_calibration ${RPMPL_LIBRARY} ${RPMPL_LIBRARIES})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
@@ -125,8 +136,8 @@ install(DIRECTORY include/
         FILES_MATCHING PATTERN "*.h"
 )
 
-install(TARGETS
-  transformation_pub_sub
+install(TARGETS 
+  camera_calibration
   DESTINATION lib/${PROJECT_NAME})
 
 foreach(dir etc launch)
@@ -135,5 +146,3 @@ foreach(dir etc launch)
 endforeach()
 
 ament_package()
-
-
