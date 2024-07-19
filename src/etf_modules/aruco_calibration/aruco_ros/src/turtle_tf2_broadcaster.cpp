@@ -1,5 +1,23 @@
 #include "turtle_tf2_broadcaster.h"
 
+void printKDLFrame(const KDL::Frame& frame, const rclcpp::Logger& logger)
+{
+    // Extract the translation part
+    KDL::Vector translation = frame.p;
+    
+    // Extract the rotation part as a rotation matrix
+    KDL::Rotation rotation = frame.M;
+    double roll, pitch, yaw;
+    rotation.GetRPY(roll, pitch, yaw);
+
+    // Print the translation components
+    RCLCPP_INFO(logger, "Translation: x = %f, y = %f, z = %f", translation.x(), translation.y(), translation.z());
+    
+    // Print the rotation components (in Roll-Pitch-Yaw format)
+    RCLCPP_INFO(logger, "Rotation: roll = %f, pitch = %f, yaw = %f", roll, pitch, yaw);
+}
+
+
 FramePublisher::FramePublisher()
   : Node("turtle_tf2_frame_publisher")
   {
@@ -46,12 +64,14 @@ void FramePublisher::jointsStateCallback(const control_msgs::msg::JointTrajector
         joints_position(i) = msg->actual.positions[i];
 
 	frame = robot->computeForwardKinematics(std::make_shared<base::RealVectorSpaceState>(joints_position))->back();
-	frame.p += aruco_bias.x() * frame.M.UnitX();
-	frame.p += aruco_bias.y() * frame.M.UnitY();
-	frame.p += aruco_bias.z() * frame.M.UnitZ();
+	// frame.p += aruco_bias.x() * frame.M.UnitX();
+	// frame.p += aruco_bias.y() * frame.M.UnitY();
+	// frame.p += aruco_bias.z() * frame.M.UnitZ();
 
 	// KDL::Rotation rot = frame.M; 	// orijentacija
 	// KDL::Vector pos = frame.p;		// pozicija
+
+  printKDLFrame(frame, this->get_logger());
 
   geometry_msgs::msg::TransformStamped t;
 
@@ -60,8 +80,6 @@ void FramePublisher::jointsStateCallback(const control_msgs::msg::JointTrajector
   t.header.stamp = this->get_clock()->now();
   t.header.frame_id = "nas_marker_frame";
   t.child_frame_id = "world";
-  
-  RCLCPP_INFO(this->get_logger(), "RADII NAS MARKER FRAME");
   
   tf_broadcaster_->sendTransform(t);
 }
@@ -100,9 +118,9 @@ void FramePublisher::jointsStateCallback(const control_msgs::msg::JointTrajector
     t.transform.rotation.z = 1;
     t.transform.rotation.w = 1;
     
-    RCLCPP_INFO(this->get_logger(), "RADI FIKSNI FRAME");
+    // RCLCPP_INFO(this->get_logger(), "RADI FIKSNI FRAME");
     // Send the transformation
-    tf_broadcaster_->sendTransform(t);
+    // tf_broadcaster_->sendTransform(t);
   }
 
 
@@ -112,4 +130,5 @@ int main(int argc, char * argv[])
   rclcpp::spin(std::make_shared<FramePublisher>());
   rclcpp::shutdown();
   return 0;
+
 }
