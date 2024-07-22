@@ -98,6 +98,51 @@ target_include_directories(marker_publisher
 ament_target_dependencies(marker_publisher ${THIS_PACKAGE_INCLUDE_DEPENDS})
 target_link_libraries(marker_publisher ${OpenCV_LIBRARIES})
 
+add_executable(update_calib_points src/update_calib_points.cpp)
+target_include_directories(update_calib_points
+  PUBLIC
+  include)
+
+target_include_directories(update_calib_points
+  SYSTEM PUBLIC
+  ${OpenCV_INCLUDE_DIRS}
+)
+
+ament_target_dependencies(update_calib_points ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(update_calib_points ${RPMPL_LIBRARY} ${RPMPL_LIBRARIES})
+
+add_executable(update_calib_pts_cam src/update_calib_pts_cam.cpp)
+target_include_directories(update_calib_pts_cam
+  PUBLIC
+  include)
+
+target_include_directories(update_calib_pts_cam
+  SYSTEM PUBLIC
+  ${OpenCV_INCLUDE_DIRS}
+)
+
+ament_target_dependencies(update_calib_pts_cam ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(update_calib_pts_cam ${RPMPL_LIBRARY} ${RPMPL_LIBRARIES})
+
+
+# calculate camera coordinates
+
+
+add_executable(calculate_cam_cords src/calculate_cam_cords.cpp)
+target_include_directories(calculate_cam_cords
+  PUBLIC
+  include)
+
+target_include_directories(calculate_cam_cords
+  SYSTEM PUBLIC
+  ${OpenCV_INCLUDE_DIRS}
+)
+
+ament_target_dependencies(calculate_cam_cords ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(calculate_cam_cords ${RPMPL_LIBRARY} ${RPMPL_LIBRARIES})
+
+# camera calibration
+
 add_executable(camera_calibration src/CameraCalibrationNode.cpp)
 
 target_include_directories(camera_calibration
@@ -152,6 +197,15 @@ install(DIRECTORY include/
         FILES_MATCHING PATTERN "*.h"
 )
 
+
+# calculate camera coordinates
+
+install(TARGETS
+  calculate_cam_cords
+  DESTINATION lib/${PROJECT_NAME})
+
+# camera calibration
+
 install(TARGETS 
   camera_calibration
   DESTINATION lib/${PROJECT_NAME})
@@ -159,6 +213,14 @@ install(TARGETS
 # for tf broadcaster
 install(TARGETS
   turtle_tf2_broadcaster
+  DESTINATION lib/${PROJECT_NAME})
+
+install(TARGETS 
+  update_calib_points
+  DESTINATION lib/${PROJECT_NAME})
+
+install(TARGETS 
+  update_calib_pts_cam
   DESTINATION lib/${PROJECT_NAME})
 
 install(DIRECTORY launch

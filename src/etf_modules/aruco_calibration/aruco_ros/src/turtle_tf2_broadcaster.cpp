@@ -1,5 +1,8 @@
 #include "turtle_tf2_broadcaster.h"
 
+using namespace std::chrono_literals;
+
+
 void printKDLFrame(const KDL::Frame& frame, const rclcpp::Logger& logger)
 {
     // Extract the translation part
@@ -53,6 +56,29 @@ geometry_msgs::msg::Transform kdlFrameToTransform(const KDL::Frame& frame)
     return transform;
 }
 
+geometry_msgs::msg::TransformStamped transformFrameInWorld(const KDL::Frame& frame)
+{
+
+    KDL::Frame tmp_frame = frame;
+    
+
+    KDL::Rotation rotation_z = KDL::Rotation::RotZ(M_PI / 2.0);
+    KDL::Rotation rotation_x = KDL::Rotation::RotX(-M_PI / 2.0);
+
+    tmp_frame.M = tmp_frame.M * rotation_z;
+    tmp_frame.M = tmp_frame.M * rotation_x;
+
+    KDL::Frame robot_marker_kin = tmp_frame.Inverse();
+
+    geometry_msgs::msg::TransformStamped t;
+    
+    t = tf2::kdlToTransform(robot_marker_kin);
+
+    return t;
+}
+
+
+
 
 FramePublisher::FramePublisher()
   : Node("turtle_tf2_frame_publisher")
@@ -77,6 +103,10 @@ FramePublisher::FramePublisher()
 
     joints_state_subscription = this->create_subscription<control_msgs::msg::JointTrajectoryControllerState>
 		("/xarm6_traj_controller/state", 10, std::bind(&FramePublisher::jointsStateCallback, this, std::placeholders::_1));
+
+    aruco_position_pub = this->create_publisher<geometry_msgs::msg::TransformStamped>("dir_kin_aruco_pos", 10);
+    timer_ = this->create_wall_timer(
+    500ms, std::bind(&FramePublisher::DirKinArucoPosCallback, this));
     
     const std::string config_file_path = "/aruco_calibration/aruco_ros/data/robot_config.yaml";
 
@@ -106,37 +136,20 @@ void FramePublisher::jointsStateCallback(const control_msgs::msg::JointTrajector
 	frame.p += aruco_bias.y() * frame.M.UnitY();
 	frame.p += aruco_bias.z() * frame.M.UnitZ();
 
-	// KDL::Rotation rot = frame.M; 	// orijentacija
-	// KDL::Vector pos = frame.p;		// pozicija
-
-  printKDLFrame(frame, this->get_logger());
-
   geometry_msgs::msg::TransformStamped t;
 
-
-  // KDL::Frame camera_marker_tr = transformStampedToKDLFrame(camera_marker_t);
-  // KDL::Frame robot_camera = frame * camera_marker_tr.Inverse();
-
-
-  KDL::Rotation rotation_z = KDL::Rotation::RotZ(M_PI / 2.0);
-  KDL::Rotation rotation_x = KDL::Rotation::RotX(-M_PI / 2.0);
-
-  
-  frame.M = frame.M * rotation_z;
-  frame.M = frame.M * rotation_x;
-
-  KDL::Frame robot_marker_kin = frame.Inverse();
-
-  t = tf2::kdlToTransform(robot_marker_kin);
+  t = transformFrameInWorld(frame);
    
   t.header.stamp = this->get_clock()->now();
   t.header.frame_id = "nas_marker_frame";
   t.child_frame_id = "world";
+
+  printKDLFrame(transformStampedToKDLFrame(t), this->get_logger());
   
   tf_broadcaster_->sendTransform(t);
 }
 
-  void FramePublisher::handle_turtle_pose(const std::shared_ptr<geometry_msgs::msg::TransformStamped> msg)
+void FramePublisher::handle_turtle_pose(const std::shared_ptr<geometry_msgs::msg::TransformStamped> msg)
   {
     geometry_msgs::msg::TransformStamped t;
 
@@ -175,6 +188,20 @@ void FramePublisher::jointsStateCallback(const control_msgs::msg::JointTrajector
     // tf_broadcaster_->sendTransform(t);
   }
 
+
+void FramePublisher::DirKinArucoPosCallback(){
+  
+  geometry_msgs::msg::TransformStamped t;
+
+  t = transformFrameInWorld(frame);
+
+  t.header.stamp = this->get_clock()->now();
+  t.header.frame_id = "nas_marker_frame";
+  t.child_frame_id = "world";
+
+  aruco_position_pub->publish(t);
+
+}
 
 int main(int argc, char * argv[])
 {

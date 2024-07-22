@@ -22,6 +22,7 @@ public:
 	FramePublisher();
     void jointsStateCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg);
 	void handle_turtle_pose(const geometry_msgs::msg::TransformStamped::SharedPtr msg);
+	void DirKinArucoPosCallback();
 
 private:
   	rclcpp::Subscription<geometry_msgs::msg::TransformStamped>::SharedPtr tf_subscription;
@@ -32,4 +33,6 @@ private:
     Eigen::Vector3f aruco_bias;
     rclcpp::Subscription<geometry_msgs::msg::TransformStamped>::SharedPtr subscription_;
   	std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
+	rclcpp::Publisher<geometry_msgs::msg::TransformStamped>::SharedPtr aruco_position_pub;
+	rclcpp::TimerBase::SharedPtr timer_;
 };
