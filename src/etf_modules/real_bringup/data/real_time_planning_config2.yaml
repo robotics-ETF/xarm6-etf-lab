@@ -2,7 +2,7 @@ period: 0.050                                                 # Maximal runtime 
 
 real_time:
   scheduling: "FPS"                                           # "FPS" - Fixed Priority Scheduling
-  max_time_task1: 0.050                                       # Maximal time in [s] which Task 1 can take from the processor
+  max_time_task1: 0.025                                       # Maximal time in [s] which Task 1 can take from the processor
 
 robot:
   type: "xarm6"
