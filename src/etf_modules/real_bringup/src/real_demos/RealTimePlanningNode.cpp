@@ -23,25 +23,20 @@ real_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node
 
 void real_bringup::RealTimePlanningNode::computeTrajectory()
 {
+    // Only the following code is necessary, since trajectory is published in 'publishingTrajectoryCallback' function using 'xarm_client'.
     float t_delay { DP::updateCurrentState(true) };
-    if (DP::spline_next == DP::spline_current)  // Trajectory has been already computed!
-    {
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Not computing a new trajectory! ");
-        return;
-    }
-    
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "New trajectory is computed! ");
-    DP::spline_next->setTimeStart(t_delay);
+    DP::splines->spline_next->setTimeStart(t_delay);
 }
 
 void real_bringup::RealTimePlanningNode::publishingTrajectoryCallback()
 {
     std::vector<float> position {};
-    float t { DP::spline_next->getTimeCurrent(true) + Trajectory::getTrajectoryMaxTimeStep() };
+    float t { DP::splines->spline_next->getTimeCurrent(true) + Trajectory::getTrajectoryMaxTimeStep() };
     // std::cout << "Time: " << t << " [s]\t Position: ";
     for (size_t i = 0; i < Robot::getNumDOFs(); i++)
     {
-        position.emplace_back(DP::spline_next->getPosition(t, i));
+        position.emplace_back(DP::splines->spline_next->getPosition(t, i));
         // std::cout << position[i] << " ";
     }
     // std::cout << "\n";

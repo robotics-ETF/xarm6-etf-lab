@@ -47,7 +47,7 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
 void sim_bringup::RealTimePlanningNode::planningCallback()
 {
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "----------------------------------------------------------------------------");
-    RCLCPP_DEBUG(rclcpp::get_logger("rclcpp"), "Iteration num. %ld", DP::planner_info->getNumIterations());
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Iteration num. %ld", DP::planner_info->getNumIterations());
     DP::time_iter_start = std::chrono::steady_clock::now();     // Start the iteration clock
     AABB::updateEnvironment();
 
@@ -93,11 +93,11 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
     default:
         // ------------------------------------------------------------------------------- //
         // Current robot position and velocity (measured vs computed)
-        DP::q_current = DP::ss->getNewState(DP::spline_next->getPosition(DP::spline_next->getTimeCurrent(true)));
-        // std::cout << "q_current (measured): " << Robot::getJointsPositionPtr() << "\n";
-        // std::cout << "q_current (computed): " << DP::q_current << "\n";
-        // std::cout << "q_current_dot (measured): " << Robot::getJointsVelocityPtr() << "\n";
-        // std::cout << "q_current_dot (computed): " << DP::ss->getNewState(DP::spline_next->getVelocity(DP::spline_next->getTimeCurrent(true))) << "\n";
+        DP::q_current = DP::ss->getNewState(DP::splines->spline_next->getPosition(DP::splines->spline_next->getTimeCurrent(true)));
+        std::cout << "Current position (measured): " << Robot::getJointsPositionPtr() << "\n";
+        std::cout << "Current position (computed): " << DP::q_current << "\n";
+        // std::cout << "Current velocity (measured): " << Robot::getJointsVelocityPtr() << "\n";
+        // std::cout << "Current velocity (computed): " << DP::ss->getNewState(DP::splines->spline_next->getVelocity(DP::splines->spline_next->getTimeCurrent(true))) << "\n";
         
         // ------------------------------------------------------------------------------- //
         // Checking whether the collision occurs
@@ -145,7 +145,7 @@ void sim_bringup::RealTimePlanningNode::taskComputingNextConfiguration()
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TASK 1: Computing next configuration... ");
     
     // Since the environment may change, a new distance is required!
-    DP::d_c = DP::ss->computeDistance(DP::q_current, true);
+    DP::ss->computeDistance(DP::q_current, true);
     
     if (DP::status != base::State::Status::Advanced)
         DP::generateHorizon();
@@ -234,22 +234,22 @@ void sim_bringup::RealTimePlanningNode::recordingTrajectoryCallback()
     if (DP::getPlannerInfo()->getNumIterations() == 0)
         return;
 
-    float time_spline { DP::spline_next->getTimeCurrent(true) };
+    float time_spline { DP::splines->spline_next->getTimeCurrent(true) };
     output_file << "Time [s]: \n";
     output_file << DP::getElapsedTime(DP::time_alg_start) << "\n";
 
     output_file << "Position (referent): \n";
-    output_file << DP::spline_next->getPosition(time_spline).transpose() << "\n";
+    output_file << DP::splines->spline_next->getPosition(time_spline).transpose() << "\n";
     output_file << "Position (measured): \n";
     output_file << Robot::getJointsPosition().transpose() << "\n";
 
     output_file << "Velocity (referent): \n";
-    output_file << DP::spline_next->getVelocity(time_spline).transpose() << "\n";
+    output_file << DP::splines->spline_next->getVelocity(time_spline).transpose() << "\n";
     output_file << "Velocity (measured): \n";
     output_file << Robot::getJointsVelocity().transpose() << "\n";
 
     // output_file << "Acceleration (referent): \n";
-    // output_file << DP::spline_next->getAcceleration(time_spline).transpose() << "\n";
+    // output_file << DP::splines->spline_next->getAcceleration(time_spline).transpose() << "\n";
     // output_file << "Acceleration (measured): \n";
     // output_file << Robot::getJointsAcceleration().transpose() << "\n";
 
