@@ -17,6 +17,42 @@ void printKDLFrame(const KDL::Frame& frame, const rclcpp::Logger& logger)
     RCLCPP_INFO(logger, "Rotation: roll = %f, pitch = %f, yaw = %f", roll, pitch, yaw);
 }
 
+KDL::Frame transformStampedToKDLFrame(const geometry_msgs::msg::TransformStamped& transform)
+{
+    KDL::Vector translation(
+        transform.transform.translation.x,
+        transform.transform.translation.y,
+        transform.transform.translation.z
+    );
+
+    KDL::Rotation rotation = KDL::Rotation::Quaternion(
+        transform.transform.rotation.x,
+        transform.transform.rotation.y,
+        transform.transform.rotation.z,
+        transform.transform.rotation.w
+    );
+
+    return KDL::Frame(rotation, translation);
+}
+
+geometry_msgs::msg::Transform kdlFrameToTransform(const KDL::Frame& frame)
+{
+    geometry_msgs::msg::Transform transform;
+
+    transform.translation.x = frame.p.x();
+    transform.translation.y = frame.p.y();
+    transform.translation.z = frame.p.z();
+
+    double x, y, z, w;
+    frame.M.GetQuaternion(x, y, z, w);
+    transform.rotation.x = x;
+    transform.rotation.y = y;
+    transform.rotation.z = z;
+    transform.rotation.w = w;
+
+    return transform;
+}
+
 
 FramePublisher::FramePublisher()
   : Node("turtle_tf2_frame_publisher")
@@ -64,9 +100,11 @@ void FramePublisher::jointsStateCallback(const control_msgs::msg::JointTrajector
         joints_position(i) = msg->actual.positions[i];
 
 	frame = robot->computeForwardKinematics(std::make_shared<base::RealVectorSpaceState>(joints_position))->back();
-	// frame.p += aruco_bias.x() * frame.M.UnitX();
-	// frame.p += aruco_bias.y() * frame.M.UnitY();
-	// frame.p += aruco_bias.z() * frame.M.UnitZ();
+
+  
+	frame.p += aruco_bias.x() * frame.M.UnitX();
+	frame.p += aruco_bias.y() * frame.M.UnitY();
+	frame.p += aruco_bias.z() * frame.M.UnitZ();
 
 	// KDL::Rotation rot = frame.M; 	// orijentacija
 	// KDL::Vector pos = frame.p;		// pozicija
@@ -75,7 +113,21 @@ void FramePublisher::jointsStateCallback(const control_msgs::msg::JointTrajector
 
   geometry_msgs::msg::TransformStamped t;
 
-  t = tf2::kdlToTransform(frame);
+
+  // KDL::Frame camera_marker_tr = transformStampedToKDLFrame(camera_marker_t);
+  // KDL::Frame robot_camera = frame * camera_marker_tr.Inverse();
+
+
+  KDL::Rotation rotation_z = KDL::Rotation::RotZ(M_PI / 2.0);
+  KDL::Rotation rotation_x = KDL::Rotation::RotX(-M_PI / 2.0);
+
+  
+  frame.M = frame.M * rotation_z;
+  frame.M = frame.M * rotation_x;
+
+  KDL::Frame robot_marker_kin = frame.Inverse();
+
+  t = tf2::kdlToTransform(robot_marker_kin);
    
   t.header.stamp = this->get_clock()->now();
   t.header.frame_id = "nas_marker_frame";
