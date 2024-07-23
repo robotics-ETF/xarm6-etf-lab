@@ -8,6 +8,18 @@
 #include <tf2/LinearMath/Matrix3x3.h>
 
 
+void printEigenMatrix(const Eigen::Matrix4d& matrix) {
+    // Convert Eigen::Matrix4d to a string representation
+    std::ostringstream oss;
+    oss << matrix;
+
+    // Get the string representation of the matrix
+    std::string matrixStr = oss.str();
+
+    // Print the matrix using rclcpp logging
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%s", matrixStr.c_str());
+}
+
 void writeMatrixToYaml(const Eigen::Matrix4d& matrix, const std::string& filename) {
     YAML::Emitter out;
 
@@ -31,6 +43,26 @@ void writeMatrixToYaml(const Eigen::Matrix4d& matrix, const std::string& filenam
     } else {
         RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to open file %s", filename.c_str());
     }
+}
+
+Eigen::Matrix4d averageMatrix(const std::vector<Eigen::Matrix4d>& matrices) {
+    // Check if the vector is empty
+    if (matrices.empty()) {
+        throw std::invalid_argument("Cannot compute average of empty vector");
+    }
+
+    int numMatrices = matrices.size();
+    Eigen::Matrix4d average = Eigen::Matrix4d::Zero();
+
+    // Sum all matrices
+    for (const auto& matrix : matrices) {
+        average += matrix;
+    }
+
+    // Calculate average
+    average /= static_cast<double>(numMatrices);
+
+    return average;
 }
 
 std::vector<geometry_msgs::msg::Transform> readTransformsFromYAML(const std::string &file_path, const std::string &key) {
@@ -120,13 +152,20 @@ void processTransform() {
         dir_kin_transforms_homo.push_back(transformToHomogeneousMatrix(transform_node));
     }
 
-     for (const auto &transform_node : camera_transforms) {
+    for (const auto &transform_node : camera_transforms) {
         camera_transforms_homo.push_back(transformToHomogeneousMatrix(transform_node));
     }
 
-    Eigen::Matrix4d camera_robot = camera_transforms_homo[0] * dir_kin_transforms_homo[0].inverse();
+    std::vector<Eigen::Matrix4d> camera_cords;
 
-    writeMatrixToYaml(camera_robot.inverse(), camera_coordinates_file_path);
+    for (size_t i = 0; i < dir_kin_transforms.size(); i++){
+        Eigen::Matrix4d camera_cord = dir_kin_transforms_homo[i] * camera_transforms_homo[i].inverse() ;
+        camera_cords.push_back(camera_cord);
+    }
+
+    Eigen::Matrix4d camera_cord_avg = averageMatrix(camera_cords);
+
+    writeMatrixToYaml(camera_cord_avg, camera_coordinates_file_path);
 
 
 }

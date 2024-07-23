@@ -68,7 +68,7 @@ geometry_msgs::msg::TransformStamped transformFrameInWorld(const KDL::Frame& fra
     tmp_frame.M = tmp_frame.M * rotation_z;
     tmp_frame.M = tmp_frame.M * rotation_x;
 
-    KDL::Frame robot_marker_kin = tmp_frame.Inverse();
+    KDL::Frame robot_marker_kin = tmp_frame;
 
     geometry_msgs::msg::TransformStamped t;
     
@@ -141,8 +141,8 @@ void FramePublisher::jointsStateCallback(const control_msgs::msg::JointTrajector
   t = transformFrameInWorld(frame);
    
   t.header.stamp = this->get_clock()->now();
-  t.header.frame_id = "nas_marker_frame";
-  t.child_frame_id = "world";
+  t.header.frame_id = "world";
+  t.child_frame_id = "nas_marker_frame";
 
   printKDLFrame(transformStampedToKDLFrame(t), this->get_logger());
   
@@ -196,8 +196,8 @@ void FramePublisher::DirKinArucoPosCallback(){
   t = transformFrameInWorld(frame);
 
   t.header.stamp = this->get_clock()->now();
-  t.header.frame_id = "nas_marker_frame";
-  t.child_frame_id = "world";
+  t.header.frame_id = "world";
+  t.child_frame_id = "nas_marker_frame";
 
   aruco_position_pub->publish(t);
 
