@@ -20,11 +20,11 @@ void printEigenMatrix(const Eigen::Matrix4d& matrix) {
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%s", matrixStr.c_str());
 }
 
-void writeMatrixToYaml(const Eigen::Matrix4d& matrix, const std::string& filename) {
+void writeMatrixToYaml(const Eigen::Matrix4d& matrix, const std::string& filename, std::string key_name) {
+    // Prepare the YAML content
     YAML::Emitter out;
-
     out << YAML::BeginMap;
-    out << YAML::Key << "matrix" << YAML::Value << YAML::BeginSeq;
+    out << YAML::Key << key_name << YAML::Value << YAML::BeginSeq;
     for (int i = 0; i < matrix.rows(); ++i) {
         out << YAML::Flow << YAML::BeginSeq;
         for (int j = 0; j < matrix.cols(); ++j) {
@@ -35,13 +35,14 @@ void writeMatrixToYaml(const Eigen::Matrix4d& matrix, const std::string& filenam
     out << YAML::EndSeq;
     out << YAML::EndMap;
 
-    std::ofstream fout(filename);
+    // Open the file in append mode
+    std::ofstream fout(filename, std::ios::out | std::ios::app);
     if (fout.is_open()) {
-        fout << out.c_str();
+        fout << out.c_str(); // Write the YAML content
         fout.close();
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Matrix written to %s", filename.c_str());
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Matrix appended to %s", filename.c_str());
     } else {
-        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to open file %s", filename.c_str());
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to open file %s for writing", filename.c_str());
     }
 }
 
@@ -138,7 +139,8 @@ void processTransform() {
     for (size_t i = 0; i < 4; i++)
         project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
     const std::string calib_pts_file_path = project_abs_path + "/aruco_calibration/aruco_ros/data/calib_points.yaml";
-    const std::string camera_coordinates_file_path = project_abs_path + "/aruco_calibration/aruco_ros/data/camera_coordinates.yaml";
+    const std::string camera_coordinates_file_path_final = project_abs_path + "/aruco_calibration/aruco_ros/data/camera_coordinates_final.yaml";
+    const std::string camera_coordinates_file_path_all = project_abs_path + "/aruco_calibration/aruco_ros/data/camera_coordinates_all.yaml";
 
     // Read transforms from the YAML file
     auto dir_kin_transforms = readTransformsFromYAML(calib_pts_file_path, "transforms_dir_kin");
@@ -160,13 +162,13 @@ void processTransform() {
 
     for (size_t i = 0; i < dir_kin_transforms.size(); i++){
         Eigen::Matrix4d camera_cord = dir_kin_transforms_homo[i] * camera_transforms_homo[i].inverse() ;
+        writeMatrixToYaml(camera_cord, camera_coordinates_file_path_all, "matrix" + std::to_string(i));
         camera_cords.push_back(camera_cord);
     }
 
     Eigen::Matrix4d camera_cord_avg = averageMatrix(camera_cords);
 
-    writeMatrixToYaml(camera_cord_avg, camera_coordinates_file_path);
-
+    writeMatrixToYaml(camera_cord_avg, camera_coordinates_file_path_final, "final_matrix");
 
 }
 
