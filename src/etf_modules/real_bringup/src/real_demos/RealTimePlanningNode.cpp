@@ -25,21 +25,19 @@ void real_bringup::RealTimePlanningNode::computeTrajectory()
 {
     // Only the following code is necessary, since trajectory is published in 'publishingTrajectoryCallback' function using 'xarm_client'.
     float t_delay { DP::updateCurrentState(true) };
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "New trajectory is computed! ");
-    DP::splines->spline_next->setTimeStart(t_delay);
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "New trajectory is computed! Delay time: %f [ms]", t_delay * 1e3);
+    if (DP::splines->spline_next != DP::splines->spline_current)  // New spline is computed
+        DP::splines->spline_next->setTimeStart(t_delay);
 }
 
 void real_bringup::RealTimePlanningNode::publishingTrajectoryCallback()
 {
     std::vector<float> position {};
     float t { DP::splines->spline_next->getTimeCurrent(true) + Trajectory::getTrajectoryMaxTimeStep() };
-    // std::cout << "Time: " << t << " [s]\t Position: ";
+    Eigen::VectorXf pos { DP::splines->spline_next->getPosition(t) };
+    // std::cout << "Time: " << t << " [s]\t Position: " << pos.transpose() << "\n";
     for (size_t i = 0; i < Robot::getNumDOFs(); i++)
-    {
-        position.emplace_back(DP::splines->spline_next->getPosition(t, i));
-        // std::cout << position[i] << " ";
-    }
-    // std::cout << "\n";
+        position.emplace_back(pos(i));
     
     // xarm_client.set_servo_angle_j(position);                                    // When using mode 1
     xarm_client.set_servo_angle(position, Robot::getMaxVel(0), 0, 0, false);    // When using mode 6
