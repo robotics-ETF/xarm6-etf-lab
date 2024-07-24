@@ -202,6 +202,7 @@ void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::St
     const float vel_coeff_const { 0.9 };
     auto time_start = std::chrono::steady_clock::now();
     float max_time { 1.0 };
+    bool monotonic { true };
 
     splines.front() = std::make_shared<planning::trajectory::Spline5>
     (
@@ -223,7 +224,7 @@ void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::St
 
         if (i == path.size() - 1)   // Final configuration will be reached, thus final velocity and acceleration must be zero!
         {
-            found = splines[i]->compute(path.back()->getCoord());
+            found = splines[i]->compute(path.back()->getCoord()) && splines[i]->checkPositionMonotonicity() != 0;
             if (!found) 
             {
                 // std::cout << "Not found! \n";
@@ -234,6 +235,21 @@ void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::St
                 break;
         }
 
+        if (i > 1)
+        {
+            monotonic = true;
+            for (size_t k = 1; k < Robot::getNumDOFs(); k++)
+            {
+                if (std::abs((path[i]->getCoord(k) - path[i-1]->getCoord(k)) / (path[i-1]->getCoord(k) - path[i-2]->getCoord(k)) - 
+                             (path[i]->getCoord(k-1) - path[i-1]->getCoord(k-1)) / (path[i-1]->getCoord(k-1) - path[i-2]->getCoord(k-1))) > 
+                    RealVectorSpaceConfig::EQUALITY_THRESHOLD)  // Two vectors are non-linearly dependent
+                {
+                    monotonic = false;
+                    break;
+                }
+            }
+        }
+        
         if (!must_visit)
             q_final = (path[i-1]->getCoord() + path[i]->getCoord()) / 2;
         else
@@ -258,7 +274,8 @@ void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::St
                 )
             };
             
-            if (spline_new->compute(q_final, q_final_dot)) 
+            if (spline_new->compute(q_final, q_final_dot) && 
+                ((monotonic && spline_new->checkPositionMonotonicity() != 0) || !monotonic))
             {
                 *splines[i] = *spline_new;
                 q_final_dot_min = q_final_dot;
@@ -271,7 +288,8 @@ void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::St
 
         if (!found)
         {
-            found = splines[i]->compute(q_final);
+            found = splines[i]->compute(q_final) && 
+                    ((monotonic && splines[i]->checkPositionMonotonicity() != 0) || !monotonic);
             if (!found)
             {
                 // std::cout << "Not found! \n";
