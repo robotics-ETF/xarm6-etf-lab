@@ -22,11 +22,25 @@ set(THIS_PACKAGE_INCLUDE_DEPENDS
     aruco_msgs
     sensor_msgs
     visualization_msgs
+    control_msgs
+    tf2_kdl
 )
 find_package(ament_cmake REQUIRED)
 foreach(Dependency IN ITEMS ${THIS_PACKAGE_INCLUDE_DEPENDS})
   find_package(${Dependency} REQUIRED)
 endforeach()
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+find_package(fcl 0.7 REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(nanoflann REQUIRED)
+find_package(rpmpl_library REQUIRED)
+
+include_directories(
+  include
+  ${EIGEN3_INCLUDE_DIR}
+  ${RPMPL_LIBRARY_INCLUDE_DIRS}
+)
 
 #generate_dynamic_reconfigure_options(
 #  cfg/ArucoThreshold.cfg
@@ -84,6 +98,64 @@ target_include_directories(marker_publisher
 ament_target_dependencies(marker_publisher ${THIS_PACKAGE_INCLUDE_DEPENDS})
 target_link_libraries(marker_publisher ${OpenCV_LIBRARIES})
 
+add_executable(update_calib_points src/update_calib_points.cpp)
+target_include_directories(update_calib_points
+  PUBLIC
+  include)
+
+target_include_directories(update_calib_points
+  SYSTEM PUBLIC
+  ${OpenCV_INCLUDE_DIRS}
+)
+
+ament_target_dependencies(update_calib_points ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(update_calib_points ${RPMPL_LIBRARY} ${RPMPL_LIBRARIES})
+
+add_executable(update_calib_pts_cam src/update_calib_pts_cam.cpp)
+target_include_directories(update_calib_pts_cam
+  PUBLIC
+  include)
+
+target_include_directories(update_calib_pts_cam
+  SYSTEM PUBLIC
+  ${OpenCV_INCLUDE_DIRS}
+)
+
+ament_target_dependencies(update_calib_pts_cam ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(update_calib_pts_cam ${RPMPL_LIBRARY} ${RPMPL_LIBRARIES})
+
+
+# calculate camera coordinates
+
+
+add_executable(calculate_cam_cords src/calculate_cam_cords.cpp)
+target_include_directories(calculate_cam_cords
+  PUBLIC
+  include)
+
+target_include_directories(calculate_cam_cords
+  SYSTEM PUBLIC
+  ${OpenCV_INCLUDE_DIRS}
+)
+
+ament_target_dependencies(calculate_cam_cords ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(calculate_cam_cords ${RPMPL_LIBRARY} ${RPMPL_LIBRARIES})
+
+# camera calibration
+
+add_executable(camera_calibration src/CameraCalibrationNode.cpp)
+
+target_include_directories(camera_calibration
+  PUBLIC
+  include)
+
+target_include_directories(camera_calibration
+  SYSTEM PUBLIC
+  ${OpenCV_INCLUDE_DIRS}
+)
+ament_target_dependencies(camera_calibration ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(camera_calibration ${RPMPL_LIBRARY} ${RPMPL_LIBRARIES})
+
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)
 
@@ -92,6 +164,21 @@ if(BUILD_TESTING)
   )
   ament_lint_auto_find_test_dependencies()
 endif()
+
+# for tf2 broadcaster
+
+add_executable(turtle_tf2_broadcaster src/turtle_tf2_broadcaster.cpp)
+
+target_include_directories(turtle_tf2_broadcaster
+  PUBLIC
+  include)
+
+target_include_directories(turtle_tf2_broadcaster
+  SYSTEM PUBLIC
+  ${OpenCV_INCLUDE_DIRS}
+)
+ament_target_dependencies(turtle_tf2_broadcaster ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(turtle_tf2_broadcaster ${RPMPL_LIBRARY} ${RPMPL_LIBRARIES})
 
 #############
 ## Install ##
@@ -110,11 +197,38 @@ install(DIRECTORY include/
         FILES_MATCHING PATTERN "*.h"
 )
 
+
+# calculate camera coordinates
+
+install(TARGETS
+  calculate_cam_cords
+  DESTINATION lib/${PROJECT_NAME})
+
+# camera calibration
+
+install(TARGETS 
+  camera_calibration
+  DESTINATION lib/${PROJECT_NAME})
+
+# for tf broadcaster
+install(TARGETS
+  turtle_tf2_broadcaster
+  DESTINATION lib/${PROJECT_NAME})
+
+install(TARGETS 
+  update_calib_points
+  DESTINATION lib/${PROJECT_NAME})
+
+install(TARGETS 
+  update_calib_pts_cam
+  DESTINATION lib/${PROJECT_NAME})
+
+install(DIRECTORY launch
+  DESTINATION share/${PROJECT_NAME})
+
 foreach(dir etc launch)
     install(DIRECTORY ${dir}/
             DESTINATION share/${PROJECT_NAME}/${dir})
 endforeach()
 
 ament_package()
-
-
