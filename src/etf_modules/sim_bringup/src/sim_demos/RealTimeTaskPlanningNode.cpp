@@ -6,6 +6,7 @@ sim_bringup::RealTimeTaskPlanningNode::RealTimeTaskPlanningNode(const std::strin
     YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
     dynamic_planner_config_file_path = node["planner"]["dynamic_planner_config_file_path"].as<std::string>();
     dynamic_node = YAML::LoadFile(project_abs_path + dynamic_planner_config_file_path);
+    state = State::waiting;
 }
 
 void sim_bringup::RealTimeTaskPlanningNode::planningCase()
@@ -13,9 +14,6 @@ void sim_bringup::RealTimeTaskPlanningNode::planningCase()
     switch (state)
     {
     case State::waiting:
-        break;
-    
-    case State::planning:
         // Update start and goal configuration
         file_out = std::ofstream(project_abs_path + dynamic_planner_config_file_path, std::ofstream::out);
         for (size_t i = 0; i < Robot::getNumDOFs(); i++)
@@ -34,19 +32,23 @@ void sim_bringup::RealTimeTaskPlanningNode::planningCase()
             executor.spin();
         });
         dynamic_planner_thread.detach();
-        state = State::executing_trajectory;        
+        state = State::planning;
         break;
     
-    case State::executing_trajectory:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Executing trajectory...");
-        if (Robot::isReached(Planner::scenario->getGoal()))
+    case State::planning:
+        if (real_time_planning_node->getPlanningResult() == 1)
         {
             executor.cancel();
             executor.remove_node(real_time_planning_node);
             real_time_planning_node = nullptr;
-            state = State::planning;
+            state = State::waiting;
             task = task_next;
         }
+        else
+            RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Dynamic planning is in progress...");
+        break;
+
+    case State::executing_trajectory:   // Trajectory is executed simultaneously during the process of planning.
         break;
     }
 }

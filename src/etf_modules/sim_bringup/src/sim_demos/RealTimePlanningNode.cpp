@@ -2,8 +2,8 @@
 
 typedef planning::drbt::DRGBT DP;    // 'DP' is Dynamic Planner
 
-sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_name, const std::string &config_file_path, bool loop_, 
-                                                        const std::string &output_file_name) : 
+sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_name, const std::string &config_file_path, 
+                                                        bool loop_execution_, const std::string &output_file_name) : 
     BaseNode(node_name, config_file_path),
     AABB(config_file_path),
     DP(Planner::scenario->getStateSpace(), Planner::scenario->getStart(), Planner::scenario->getGoal())
@@ -32,8 +32,9 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
     if (DRGBTConfig::STATIC_PLANNER_TYPE == planning::PlannerType::RGBMTStar)
         RGBMTStarConfig::TERMINATE_WHEN_PATH_IS_FOUND = true;
     
+    planning_result = -1;
     replanning_result = -1;
-    loop = loop_;
+    loop_execution = loop_execution_;
     q_start_init = Planner::scenario->getStart();
     q_goal_init = Planner::scenario->getGoal();
     max_error = Eigen::VectorXf::Zero(Robot::getNumDOFs());
@@ -57,6 +58,7 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Iteration num. %ld", DP::planner_info->getNumIterations());
     DP::time_iter_start = std::chrono::steady_clock::now();     // Start the iteration clock
     AABB::updateEnvironment();
+    planning_result = -1;
 
     if (replanning_result == 1)  // New path is found within the specified time limit, thus update predefined path to the goal
     {
@@ -114,13 +116,7 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
             DP::horizon.clear();
             DP::status = base::State::Status::Trapped;
             DP::replanning = true;
-            DP::q_next = std::make_shared<planning::drbt::HorizonState>(DP::q_current, -1, DP::q_current);
-
-            // If you want to terminate the algorithm, uncomment the following:
-            // DP::planner_info->setSuccessState(false);
-            // DP::planner_info->setPlanningTime(DP::planner_info->getIterationTimes().back());
-            // rclcpp::shutdown();
-            
+            DP::q_next = std::make_shared<planning::drbt::HorizonState>(DP::q_current, -1, DP::q_current);            
             return;     // The algorithm will still continue its execution.
         }
         
@@ -144,18 +140,23 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
     DP::planner_info->addIterationTime(DP::getElapsedTime(DP::time_alg_start));
     if (DP::checkTerminatingCondition(DP::status))
     {
-        if (loop)
+        if (loop_execution)
         {
             DP::q_start = q_goal_init;
             DP::q_goal = q_start_init;
             q_start_init = DP::q_start;
             q_goal_init = DP::q_goal;
-            DP::planner_info->setNumIterations(0);  // Go from the beginning
+
+            DP::replanning = true;
+            taskReplanning();
         }
         else
-            rclcpp::shutdown();
+        {
+            DP::q_start = DP::q_goal;   // Robot will automatically stop and wait until 'DP::q_goal' is changed
+            planning_result = DP::planner_info->getSuccessState();
+        }
+
     }
-    
 }
 
 void sim_bringup::RealTimePlanningNode::taskComputingNextConfiguration()

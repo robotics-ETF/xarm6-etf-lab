@@ -7,7 +7,7 @@ namespace real_bringup
     class RealTimePlanningNode : public sim_bringup::RealTimePlanningNode
     {
     public:
-        RealTimePlanningNode(const std::string &node_name, const std::string &config_file_path, bool loop_, 
+        RealTimePlanningNode(const std::string &node_name, const std::string &config_file_path, bool loop_execution_, 
                              const std::string &output_file_name = "");
 
     protected:
