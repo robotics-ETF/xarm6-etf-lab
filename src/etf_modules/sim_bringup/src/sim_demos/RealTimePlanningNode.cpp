@@ -2,7 +2,7 @@
 
 typedef planning::drbt::DRGBT DP;    // 'DP' is Dynamic Planner
 
-sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_name, const std::string &config_file_path, 
+sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_name, const std::string &config_file_path, bool loop_, 
                                                         const std::string &output_file_name) : 
     BaseNode(node_name, config_file_path),
     AABB(config_file_path),
@@ -33,6 +33,10 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
         RGBMTStarConfig::TERMINATE_WHEN_PATH_IS_FOUND = true;
     
     replanning_result = -1;
+    loop = loop_;
+    q_start_init = Planner::scenario->getStart();
+    q_goal_init = Planner::scenario->getGoal();
+    max_error = Eigen::VectorXf::Zero(Robot::getNumDOFs());
 
     if (!output_file_name.empty())
     {
@@ -46,6 +50,9 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
 
 void sim_bringup::RealTimePlanningNode::planningCallback()
 {
+    if (DP::q_start == DP::q_goal)
+        return;
+
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "----------------------------------------------------------------------------");
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Iteration num. %ld", DP::planner_info->getNumIterations());
     DP::time_iter_start = std::chrono::steady_clock::now();     // Start the iteration clock
@@ -94,8 +101,8 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
         // ------------------------------------------------------------------------------- //
         // Current robot position and velocity (measured vs computed)
         DP::q_current = DP::ss->getNewState(DP::splines->spline_next->getPosition(DP::splines->spline_next->getTimeCurrent(true)));
-        std::cout << "Current position (measured): " << Robot::getJointsPositionPtr() << "\n";
-        std::cout << "Current position (computed): " << DP::q_current << "\n";
+        // std::cout << "Current position (measured): " << Robot::getJointsPositionPtr() << "\n";
+        // std::cout << "Current position (computed): " << DP::q_current << "\n";
         // std::cout << "Current velocity (measured): " << Robot::getJointsVelocityPtr() << "\n";
         // std::cout << "Current velocity (computed): " << DP::ss->getNewState(DP::splines->spline_next->getVelocity(DP::splines->spline_next->getTimeCurrent(true))) << "\n";
         
@@ -136,7 +143,18 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
     DP::planner_info->setNumIterations(DP::planner_info->getNumIterations() + 1);
     DP::planner_info->addIterationTime(DP::getElapsedTime(DP::time_alg_start));
     if (DP::checkTerminatingCondition(DP::status))
-        rclcpp::shutdown();
+    {
+        if (loop)
+        {
+            DP::q_start = q_goal_init;
+            DP::q_goal = q_start_init;
+            q_start_init = DP::q_start;
+            q_goal_init = DP::q_goal;
+            DP::planner_info->setNumIterations(0);  // Go from the beginning
+        }
+        else
+            rclcpp::shutdown();
+    }
     
 }
 
@@ -239,7 +257,8 @@ void sim_bringup::RealTimePlanningNode::recordingTrajectoryCallback()
     output_file << DP::getElapsedTime(DP::time_alg_start) << "\n";
 
     output_file << "Position (referent): \n";
-    output_file << DP::splines->spline_next->getPosition(time_spline).transpose() << "\n";
+    Eigen::VectorXf pos_ref { DP::splines->spline_next->getPosition(time_spline) };
+    output_file << pos_ref.transpose() << "\n";
     output_file << "Position (measured): \n";
     output_file << Robot::getJointsPosition().transpose() << "\n";
 
@@ -254,4 +273,9 @@ void sim_bringup::RealTimePlanningNode::recordingTrajectoryCallback()
     // output_file << Robot::getJointsAcceleration().transpose() << "\n";
 
     output_file << "--------------------------------------------------------------------\n";
+
+    Eigen::VectorXf error { (pos_ref - Robot::getJointsPosition()).cwiseAbs() };
+    max_error = max_error.cwiseMax(error);
+    std::cout << "Curr. error: " << error.transpose() << "\n";
+    std::cout << "Max. error:  " << max_error.transpose() << "\n";
 }

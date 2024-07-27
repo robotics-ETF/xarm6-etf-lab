@@ -2,9 +2,9 @@
 
 typedef planning::drbt::DRGBT DP;    // 'DP' is Dynamic Planner
 
-real_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_name, const std::string &config_file_path, 
+real_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_name, const std::string &config_file_path, bool loop_, 
                                                          const std::string &output_file_name) : 
-    sim_bringup::RealTimePlanningNode(node_name, config_file_path, output_file_name)
+    sim_bringup::RealTimePlanningNode(node_name, config_file_path, loop_, output_file_name)
 {    
     publishing_trajectory_timer = this->create_wall_timer(std::chrono::microseconds(size_t(Trajectory::getTrajectoryMaxTimeStep() * 1e6)), 
                                   std::bind(&RealTimePlanningNode::publishingTrajectoryCallback, this));

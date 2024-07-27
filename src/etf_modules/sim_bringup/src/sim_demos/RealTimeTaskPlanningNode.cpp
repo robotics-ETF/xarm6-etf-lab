@@ -28,7 +28,8 @@ void sim_bringup::RealTimeTaskPlanningNode::planningCase()
 
         dynamic_planner_thread = std::thread([this]() 
         {
-            real_time_planning_node = std::make_shared<sim_bringup::RealTimePlanningNode>("real_time_planning_node", dynamic_planner_config_file_path);
+            real_time_planning_node = std::make_shared<sim_bringup::RealTimePlanningNode>
+                                      ("real_time_planning_node", dynamic_planner_config_file_path, false);
             executor.add_node(real_time_planning_node);
             executor.spin();
         });
