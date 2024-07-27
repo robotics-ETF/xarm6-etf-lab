@@ -14,6 +14,7 @@ void sim_bringup::RealTimeTaskPlanningNode::planningCase()
     switch (state)
     {
     case State::waiting:
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Preparing dynamic planner...");
         // Update start and goal configuration
         file_out = std::ofstream(project_abs_path + dynamic_planner_config_file_path, std::ofstream::out);
         for (size_t i = 0; i < Robot::getNumDOFs(); i++)
