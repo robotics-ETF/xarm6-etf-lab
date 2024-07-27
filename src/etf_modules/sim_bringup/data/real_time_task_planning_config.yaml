@@ -12,7 +12,7 @@ robot:
   gripper_length: 0.17                                        # In [m]
   table_included: true                                        # Please check whether 'table' is added in 'environment'
   self_collision_checking: true                               # Whether self-collision should be checked
-  max_vel:  [3.1415, 3.1415, 3.1415, 3.1415, 3.1415, 3.1415]  # Maximal velocity of each robot's joint in [rad/s]
+  max_vel:  [2, 2, 2, 2, 2, 2]                                # Maximal velocity of each robot's joint in [rad/s]
   max_acc:  [20, 20, 20, 20, 20, 20]                          # Maximal acceleration of each robot's joint in [rad/s²]
   max_jerk: [500, 500, 500, 500, 500, 500]                    # Maximal jerk of each robot's joint in [rad/s³]
 
@@ -22,10 +22,9 @@ planner:
   # type: "RGBT-Connect"
   type: "RGBMT*"
   configurations: "/RPMPLv2"
-  max_planning_time: 0.5                                      # In [s]
-  max_edge_length: 0.3                                        # In [rad]
+  max_edge_length: 0.2                                        # In [rad]
   trajectory_max_time_step: 0.004                             # In [s]
-  dynamic_planner_config_file_path: "/sim_bringup/data/real_time_planning_config.yaml"
+  dynamic_planner_config_file_path: "/sim_bringup/data/real_time_planning_config2.yaml"
 
 environment:
   - box:
@@ -37,5 +36,5 @@ cameras:
   min_num_captures: 3                                         # Minimal number of captures/frames of a single STATIC obstacle to become valid
   
 scenario:
-  max_object_height: 0.1                                      # Maximal height of an object that can be picked up
+  max_object_height: 0.11                                     # Maximal height of an object that can be picked up
   destination: [-0.5, 0, 0.2]                                 # Coordinates of a destination box
