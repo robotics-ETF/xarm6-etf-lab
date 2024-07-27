@@ -175,8 +175,8 @@ void sim_bringup::Robot::moveGripper(float position, float max_effort)
 {
     if (!gripper_client->wait_for_action_server()) 
     {
-      RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Action server not available after waiting!");
-      rclcpp::shutdown();
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Action server not available after waiting!");
+        return;
     }
 
     auto goal { control_msgs::action::GripperCommand::Goal() };
