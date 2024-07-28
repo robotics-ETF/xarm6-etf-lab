@@ -97,7 +97,7 @@ void perception_etflab::Obstacles::move(std::vector<pcl::PointCloud<pcl::PointXY
     clusters = obstacles;
 }
 
-void perception_etflab::Obstacles::move(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl)
+void perception_etflab::Obstacles::move([[maybe_unused]] pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl)
 {
 }
 

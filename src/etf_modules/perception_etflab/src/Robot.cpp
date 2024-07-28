@@ -56,7 +56,9 @@ void perception_etflab::Robot::jointsStateCallback(const control_msgs::msg::Join
 void perception_etflab::Robot::removeFromScene(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters)
 {
     if (clusters.empty())
+    {
         return;
+    }
 
 	// Compute robot skeleton only if the robot changed its configuration
 	if ((joints_state->getCoord() - robot->getConfiguration()->getCoord()).norm() > 1e-3)
@@ -106,8 +108,10 @@ void perception_etflab::Robot::removeFromScene(std::vector<pcl::PointCloud<pcl::
 void perception_etflab::Robot::removeFromScene2(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl)
 {
     if (pcl->empty())
+    {
         return;
-
+    }
+    
 	// Compute robot skeleton only if the robot changed its configuration
 	if ((joints_state->getCoord() - robot->getConfiguration()->getCoord()).norm() > 1e-3)
 	{
