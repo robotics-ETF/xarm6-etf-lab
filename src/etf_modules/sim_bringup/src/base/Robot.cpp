@@ -28,18 +28,18 @@ sim_bringup::Robot::Robot(const std::string &config_file_path)
         else
             RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Gripper is not included!");
 
-        YAML::Node table_included_node { robot_node["table_included"] };
-        bool table_included { false }; 
-        if (table_included_node.IsDefined()) 
-            table_included = table_included_node.as<bool>();
+        YAML::Node ground_included_node { robot_node["ground_included"] };
+        size_t ground_included { 0 }; 
+        if (ground_included_node.IsDefined()) 
+            ground_included = ground_included_node.as<size_t>();
         else
-            RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Table is not included in the scene!");
+            RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Ground is not included in the scene!");
 
         std::string type { robot_node["type"].as<std::string>() };
         if (type == "xarm6")
             robot = std::make_shared<robots::xArm6>(project_abs_path + robot_node["urdf"].as<std::string>(),
                                                     gripper_length,
-                                                    table_included);
+                                                    ground_included);
         else
             throw std::logic_error("Robot type is not specified!");
 

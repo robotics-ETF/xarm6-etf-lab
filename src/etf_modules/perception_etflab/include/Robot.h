@@ -23,7 +23,7 @@ namespace perception_etflab
     public:
         Robot(const std::string &config_file_path);
 
-		inline float getTableRadius() const { return table_radius; }
+		inline float getGroundRadius() const { return ground_radius; }
         inline size_t getNumDOFs() const { return num_DOFs; }
 
 		void jointsStateCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg);
@@ -43,7 +43,7 @@ namespace perception_etflab
 		std::shared_ptr<rclcpp::Node> xarm_client_node;
 		xarm_api::XArmROSClient xarm_client;
         std::vector<float> tolerance_radius;
-		float table_radius;
+		float ground_radius;
         size_t num_DOFs;
     };
 }

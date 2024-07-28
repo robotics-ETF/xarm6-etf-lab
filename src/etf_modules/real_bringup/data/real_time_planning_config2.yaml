@@ -14,7 +14,7 @@ robot:
   q_goal:  [0, 0, -0.5236, 3.1415, 1.04719, 0]
   capsules_radius: [0.047, 0.12, 0.11, 0.09, 0.05, 0.1]       # When the gripper is attached
   gripper_length: 0.17                                        # In [m]
-  table_included: true                                        # Please check whether 'table' is added in 'environment'
+  ground_included: 2                                          # Please check whether 'ground' is added in 'environment'
   self_collision_checking: true                               # Whether self-collision should be checked
   WS_center: [0.0, 0.0, 0.267]                                # Workspace center point in [m]
   WS_radius: 1.5                                              # Workspace radius in [m] assuming spherical workspace shape
@@ -32,7 +32,7 @@ planner:
 
 environment:
   - box:
-      label: "table"
+      label: "ground"
       dim: [1.5, 1.5, 0.1]
       pos: [0, 0, -0.05]
       min_dist_tol: 0.05                                      # Minimal distance tolerance for a static obstacle to not be included into a dynamic scene

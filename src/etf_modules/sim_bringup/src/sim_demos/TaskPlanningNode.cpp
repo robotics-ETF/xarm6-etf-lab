@@ -259,7 +259,7 @@ int sim_bringup::TaskPlanningNode::chooseObject()
             i, dimensions[i].x(), dimensions[i].y(), dimensions[i].z(), 
                positions[i].x(), positions[i].y(), positions[i].z(), num_captures[i]);
         if (num_captures[i] >= min_num_captures && positions[i].z() > z_max && 
-            dimensions[i].z() < max_object_height && positions[i].z() < max_object_height / 2)  // Pick only "small" objects from the table
+            dimensions[i].z() < max_object_height && positions[i].z() < max_object_height / 2)  // Pick only "small" objects from the ground
         {
             z_max = positions[i].z();
             obj_idx_ = i;

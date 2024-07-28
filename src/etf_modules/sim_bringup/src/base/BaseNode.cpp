@@ -29,7 +29,7 @@ sim_bringup::BaseNode::BaseNode(const std::string &node_name, const std::string 
         if (node["environment"].IsDefined())
             env = std::make_shared<env::Environment>(config_file_path, project_abs_path);
         else
-            RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Predefined environment is not set up! Be careful since table is not added to the scene!");
+            RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Predefined environment is not set up! Be careful since ground is not added to the scene!");
                 
         std::shared_ptr<base::StateSpace> ss { nullptr };
         std::string state_space = node["robot"]["space"].as<std::string>();

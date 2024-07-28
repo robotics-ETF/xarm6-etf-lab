@@ -92,7 +92,7 @@ void sim_bringup::AABB::updateEnvironment()
     }
     
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Updating environment..."); 
-    env->removeObjects("table", false);
+    env->removeObjects("ground", false);
     
     for (size_t i = 0; i < positions.size(); i++)
     {
