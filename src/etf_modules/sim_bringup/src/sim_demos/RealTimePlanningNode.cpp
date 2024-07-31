@@ -94,7 +94,7 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
         DP::time_alg_start = DP::time_iter_start;       // Start the algorithm clock
         
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Obtaining an inital path...");
-        replan(DRGBTConfig::MAX_ITER_TIME - 2e-3);      // 2 [ms] is reserved for other lines
+        taskReplanning(true);
         
         break;
     
@@ -174,13 +174,16 @@ void sim_bringup::RealTimePlanningNode::taskComputingNextConfiguration()
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Elapsed time for TASK 1: %f [ms].", DP::getElapsedTime(DP::time_iter_start, planning::TimeUnit::ms));
 }
 
-void sim_bringup::RealTimePlanningNode::taskReplanning()
+void sim_bringup::RealTimePlanningNode::taskReplanning(bool replanning_required_explicitly)
 {
+    if (replanning_required_explicitly)
+        DP::replanning_required = true;
+
     if (DP::whetherToReplan())
     {
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TASK 2: Replanning... ");
         if (Planner::isReady())
-            replan(DRGBTConfig::MAX_ITER_TIME - DP::getElapsedTime(DP::time_iter_start) - 2e-3);    // 2 [ms] is reserved for other lines
+            replan(DRGBTConfig::MAX_ITER_TIME - DP::getElapsedTime(DP::time_iter_start) - 1e-3);    // 1 [ms] is reserved for other lines
         else
             RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Planner is not ready! ");
     }
@@ -192,7 +195,6 @@ void sim_bringup::RealTimePlanningNode::taskReplanning()
 /// @param max_planning_time Maximal (re)planning time in [s].
 void sim_bringup::RealTimePlanningNode::replan(float max_planning_time)
 {
-    replanning_result = false;
     try
     {
         replanning_result = false;

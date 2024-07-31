@@ -24,7 +24,7 @@ namespace sim_bringup
         void baseCallback() override { planningCallback(); }
         void planningCallback();
         void taskComputingNextConfiguration();
-        void taskReplanning();
+        void taskReplanning(bool replanning_required_explicitly = false);
         void replan(float max_planning_time) override;
         virtual void computeTrajectory();
         void recordingTrajectoryCallback();
