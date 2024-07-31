@@ -10,7 +10,6 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
 {
     YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
 
-    AABB::setEnvironment(Planner::scenario->getEnvironment());
     if (AABB::getMinNumCaptures() == 1)
         AABB::subscription = this->create_subscription<sensor_msgs::msg::PointCloud2>
             ("/bounding_boxes", 10, std::bind(&AABB::callback, this, std::placeholders::_1));
@@ -57,7 +56,7 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "----------------------------------------------------------------------------");
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Iteration num. %ld", DP::planner_info->getNumIterations());
     DP::time_iter_start = std::chrono::steady_clock::now();     // Start the iteration clock
-    AABB::updateEnvironment();
+    AABB::updateEnvironment(DP::ss->env);
     planning_result = -1;
 
     if (replanning_result == 1)  // New path is found within the specified time limit, thus update predefined path to the goal
@@ -66,14 +65,14 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
         Planner::preprocessPath(Planner::getPath(), DP::predefined_path, DP::max_edge_length);
         DP::horizon.clear();
         DP::status = base::State::Status::Reached;
-        DP::replanning = false;
+        DP::replanning_required = false;
         DP::q_next = std::make_shared<planning::drbt::HorizonState>(DP::q_current, 0, DP::q_current);
         replanning_result = -1;
     }
     else if (replanning_result == 0)
     {
         RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Replanning is required. New path is not found! ");
-        DP::replanning = true;
+        DP::replanning_required = true;
     }
 
     switch (DP::planner_info->getNumIterations())
@@ -115,7 +114,7 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
             RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "********** Robot is stopping. Collision has been occurred!!! **********");
             DP::horizon.clear();
             DP::status = base::State::Status::Trapped;
-            DP::replanning = true;
+            DP::replanning_required = true;
             DP::q_next = std::make_shared<planning::drbt::HorizonState>(DP::q_current, -1, DP::q_current);            
             return;     // The algorithm will still continue its execution.
         }
@@ -147,8 +146,7 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
             q_start_init = DP::q_start;
             q_goal_init = DP::q_goal;
 
-            DP::replanning = true;
-            taskReplanning();
+            taskReplanning(true);
         }
         else
         {
@@ -197,6 +195,7 @@ void sim_bringup::RealTimePlanningNode::replan(float max_planning_time)
     replanning_result = false;
     try
     {
+        replanning_result = false;
         if (max_planning_time < 0)
             throw std::runtime_error("Not enough time for replanning! ");
 

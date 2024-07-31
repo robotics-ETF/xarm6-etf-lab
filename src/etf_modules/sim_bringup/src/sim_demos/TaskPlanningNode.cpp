@@ -112,7 +112,7 @@ void sim_bringup::TaskPlanningNode::planningCase()
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting...");
         if (Robot::isReady() && AABB::isReady() && Planner::isReady())
         {
-            AABB::updateEnvironment();
+            AABB::updateEnvironment(Planner::scenario->getEnvironment());
             std::thread planning_thread([this]() 
             {
                 planning_result = Planner::solve();

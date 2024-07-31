@@ -83,7 +83,7 @@ bool sim_bringup::AABB::whetherToRemove([[maybe_unused]] const Eigen::Vector3f &
     return false;
 }
 
-void sim_bringup::AABB::updateEnvironment()
+void sim_bringup::AABB::updateEnvironment(const std::shared_ptr<env::Environment> env)
 {
     if (!ready)
     {
@@ -91,7 +91,7 @@ void sim_bringup::AABB::updateEnvironment()
         return;
     }
     
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Updating environment..."); 
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Updating environment...");
     env->removeObjects("ground", false);
     
     for (size_t i = 0; i < positions.size(); i++)

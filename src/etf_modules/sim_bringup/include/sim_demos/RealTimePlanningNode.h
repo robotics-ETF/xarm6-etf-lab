@@ -36,6 +36,7 @@ namespace sim_bringup
         bool loop_execution;    // If true, after reaching the goal, start and goal will be switched, and algorithm will automatically continue its execution.
         std::shared_ptr<base::State> q_start_init;
         std::shared_ptr<base::State> q_goal_init;
+        
         rclcpp::TimerBase::SharedPtr recording_trajectory_timer;
         std::ofstream output_file;
         Eigen::VectorXf max_error;
