@@ -59,6 +59,25 @@ bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shar
 {
     ready = false;
     bool result { false };
+    std::shared_ptr<base::StateSpace> ss { nullptr };
+    std::shared_ptr<env::Environment> env { std::make_shared<env::Environment>(scenario->getEnvironment()) };
+    std::shared_ptr<base::State> q_start_new { nullptr };
+    std::shared_ptr<base::State> q_goal_new { nullptr };
+
+    switch (scenario->getStateSpaceType())
+    {
+    case base::StateSpaceType::RealVectorSpace:
+        ss = std::make_shared<base::RealVectorSpace>(scenario->getNumDimensions(), scenario->getRobot(), env);
+        break;
+
+    case base::StateSpaceType::RealVectorSpaceFCL:
+        ss = std::make_shared<base::RealVectorSpaceFCL>(scenario->getNumDimensions(), scenario->getRobot(), env);
+        break;
+    
+    default:
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "State space does not exist! Unable to make planning! ");
+        return false;
+    }
 
     if (q_start == nullptr)
         q_start = scenario->getStart();
@@ -70,11 +89,14 @@ bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shar
     else
         scenario->setGoal(q_goal);
 
+    q_start_new = ss->getNewState(q_start->getCoord());
+    q_goal_new = ss->getNewState(q_goal->getCoord());
+
     if (max_planning_time_ != -1)
         max_planning_time = max_planning_time_;
     
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Planning a path..."); 
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Number of collision objects: %ld", scenario->getEnvironment()->getNumObjects());
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Number of collision objects: %ld", env->getNumObjects());
     switch (scenario->getNumDimensions())
     {
     case 6:
@@ -94,22 +116,22 @@ bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shar
         {
         case planning::PlannerType::RGBMTStar:
             RGBMTStarConfig::MAX_PLANNING_TIME = max_planning_time;
-            planner = std::make_unique<planning::rbt_star::RGBMTStar>(scenario->getStateSpace(), q_start, q_goal);
+            planner = std::make_unique<planning::rbt_star::RGBMTStar>(ss, q_start_new, q_goal_new);
             break;
 
         case planning::PlannerType::RGBTConnect:
             RGBTConnectConfig::MAX_PLANNING_TIME = max_planning_time;
-            planner = std::make_unique<planning::rbt::RGBTConnect>(scenario->getStateSpace(), q_start, q_goal);
+            planner = std::make_unique<planning::rbt::RGBTConnect>(ss, q_start_new, q_goal_new);
             break;
         
         case planning::PlannerType::RBTConnect:
             RBTConnectConfig::MAX_PLANNING_TIME = max_planning_time;
-            planner = std::make_unique<planning::rbt::RBTConnect>(scenario->getStateSpace(), q_start, q_goal);
+            planner = std::make_unique<planning::rbt::RBTConnect>(ss, q_start_new, q_goal_new);
             break;
 
         case planning::PlannerType::RRTConnect:
             RRTConnectConfig::MAX_PLANNING_TIME = max_planning_time;
-            planner = std::make_unique<planning::rrt::RRTConnect>(scenario->getStateSpace(), q_start, q_goal);
+            planner = std::make_unique<planning::rrt::RRTConnect>(ss, q_start_new, q_goal_new);
             break;
 
         default:
@@ -125,7 +147,7 @@ bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shar
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Number of states in the path: %ld", planner->getPath().size());
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Planning time: %f [ms]", planner->getPlannerInfo()->getPlanningTime() * 1e3);
             if (planner_type == planning::PlannerType::RGBMTStar)
-                RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Path cost: %f", planner->getPlannerInfo()->getCostConvergence().back());
+                RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Path cost: %f", planner->getPlannerInfo()->getOptimalCost());
         }
 
         // Just for debugging (Not recommended to waste time!)
