@@ -18,5 +18,5 @@ perception:
 random_obstacles:
   num: 3	                        # Number of random obstacles to be added
   max_vel: 0.6 			              # Maximal velocity of each obstacle in [m/s]
-  dim: [0.2, 0.2, 0.2]         # Dimensions of each random obstacle in [m]
-  period: 0.050                   # Period in [s]
+  dim: [0.2, 0.2, 0.2]            # Dimensions of each random obstacle in [m]
+  period: 0.020                   # Period in [s]
