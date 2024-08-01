@@ -34,8 +34,8 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
     planning_result = -1;
     replanning_result = -1;
     loop_execution = loop_execution_;
-    q_start_init = Planner::scenario->getStart();
-    q_goal_init = Planner::scenario->getGoal();
+    q_start_init = DP::q_start;
+    q_goal_init = DP::q_goal;
     max_error = Eigen::VectorXf::Zero(Robot::getNumDOFs());
 
     if (!output_file_name.empty())

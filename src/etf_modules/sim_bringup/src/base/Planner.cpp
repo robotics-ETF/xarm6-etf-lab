@@ -39,6 +39,8 @@ sim_bringup::Planner::Planner(const std::string &config_file_path)
             max_edge_length = 0.1;
             RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Maximal edge length is not defined! Using default value of %f", max_edge_length);
         }
+
+        robot = std::make_shared<Robot>(config_file_path);
     }
     catch (std::exception &e)
     {
@@ -54,7 +56,8 @@ sim_bringup::Planner::Planner(const std::string &config_file_path)
 /// @param q_goal Goal configuration
 /// @param max_planning_time_ Maximal planning time
 /// @return Success of the planning, i.e., whether a feasible path from 'q_start' to 'q_goal' is found.
-/// @note Not specified input arguments will use a corresponding values from a configuration yaml file.
+/// @note Not specified input arguments will use a corresponding values from a configuration yaml file
+/// (e.g., q_start = scenario->getStart() and q_goal = scenario->getGoal()).
 bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shared_ptr<base::State> q_goal, float max_planning_time_)
 {
     ready = false;
@@ -67,11 +70,11 @@ bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shar
     switch (scenario->getStateSpaceType())
     {
     case base::StateSpaceType::RealVectorSpace:
-        ss = std::make_shared<base::RealVectorSpace>(scenario->getNumDimensions(), scenario->getRobot(), env);
+        ss = std::make_shared<base::RealVectorSpace>(scenario->getNumDimensions(), robot->getRobot(), env);
         break;
 
     case base::StateSpaceType::RealVectorSpaceFCL:
-        ss = std::make_shared<base::RealVectorSpaceFCL>(scenario->getNumDimensions(), scenario->getRobot(), env);
+        ss = std::make_shared<base::RealVectorSpaceFCL>(scenario->getNumDimensions(), robot->getRobot(), env);
         break;
     
     default:
@@ -81,19 +84,15 @@ bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shar
 
     if (q_start == nullptr)
         q_start = scenario->getStart();
-    else
-        scenario->setStart(q_start);
 
     if (q_goal == nullptr)
         q_goal = scenario->getGoal();
-    else
-        scenario->setGoal(q_goal);
 
     q_start_new = ss->getNewState(q_start->getCoord());
     q_goal_new = ss->getNewState(q_goal->getCoord());
 
-    if (max_planning_time_ != -1)
-        max_planning_time = max_planning_time_;
+    if (max_planning_time_ == -1)
+        max_planning_time_ = max_planning_time;
     
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Planning a path..."); 
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\t Number of collision objects: %ld", env->getNumObjects());
@@ -115,22 +114,22 @@ bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shar
         switch (planner_type)
         {
         case planning::PlannerType::RGBMTStar:
-            RGBMTStarConfig::MAX_PLANNING_TIME = max_planning_time;
+            RGBMTStarConfig::MAX_PLANNING_TIME = max_planning_time_;
             planner = std::make_unique<planning::rbt_star::RGBMTStar>(ss, q_start_new, q_goal_new);
             break;
 
         case planning::PlannerType::RGBTConnect:
-            RGBTConnectConfig::MAX_PLANNING_TIME = max_planning_time;
+            RGBTConnectConfig::MAX_PLANNING_TIME = max_planning_time_;
             planner = std::make_unique<planning::rbt::RGBTConnect>(ss, q_start_new, q_goal_new);
             break;
         
         case planning::PlannerType::RBTConnect:
-            RBTConnectConfig::MAX_PLANNING_TIME = max_planning_time;
+            RBTConnectConfig::MAX_PLANNING_TIME = max_planning_time_;
             planner = std::make_unique<planning::rbt::RBTConnect>(ss, q_start_new, q_goal_new);
             break;
 
         case planning::PlannerType::RRTConnect:
-            RRTConnectConfig::MAX_PLANNING_TIME = max_planning_time;
+            RRTConnectConfig::MAX_PLANNING_TIME = max_planning_time_;
             planner = std::make_unique<planning::rrt::RRTConnect>(ss, q_start_new, q_goal_new);
             break;
 
