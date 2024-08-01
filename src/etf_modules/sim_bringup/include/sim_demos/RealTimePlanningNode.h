@@ -6,7 +6,7 @@
 #include "environments/AABB.h"
 
 #include <DRGBT.h>
-#include <thread>
+#include <std_srvs/srv/empty.hpp>
 
 namespace sim_bringup
 {
@@ -25,7 +25,8 @@ namespace sim_bringup
         void planningCallback();
         void taskComputingNextConfiguration();
         void taskReplanning(bool replanning_required_explicitly = false);
-        void replan(float max_planning_time) override;
+        void replanningCallback(const std::shared_ptr<std_srvs::srv::Empty::Request> request,
+                                const std::shared_ptr<std_srvs::srv::Empty::Response> response);
         virtual void computeTrajectory();
         void recordingTrajectoryCallback();
 
@@ -36,6 +37,10 @@ namespace sim_bringup
         bool loop_execution;    // If true, after reaching the goal, start and goal will be switched, and algorithm will automatically continue its execution.
         std::shared_ptr<base::State> q_start_init;
         std::shared_ptr<base::State> q_goal_init;
+
+        rclcpp::CallbackGroup::SharedPtr callback_group;
+        rclcpp::Service<std_srvs::srv::Empty>::SharedPtr replanning_service;
+        rclcpp::Client<std_srvs::srv::Empty>::SharedPtr replanning_client;
         
         rclcpp::TimerBase::SharedPtr recording_trajectory_timer;
         std::ofstream output_file;

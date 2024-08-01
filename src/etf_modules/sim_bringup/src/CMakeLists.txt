@@ -34,6 +34,7 @@ ament_target_dependencies(sim_bringup PUBLIC
   visualization_msgs
   octomap_msgs 
   octomap 
+  std_srvs
   PCL
   pcl_conversions 
   fcl 

@@ -20,6 +20,7 @@
   <depend>visualization_msgs</depend>
   <depend>octomap_msgs</depend>
   <depend>octomap</depend>
+  <depend>std_srvs</depend>
   <depend>perception_pcl</depend>
   <depend>pcl_conversions</depend>
   <depend>rpmpl_library</depend>

@@ -20,6 +20,7 @@
   <depend>visualization_msgs</depend>
   <depend>octomap_msgs</depend>
   <depend>octomap</depend>
+  <depend>std_srvs</depend>
   <depend>librealsense2</depend>
   <depend>realsense2_camera</depend>
   <depend>perception_pcl</depend>

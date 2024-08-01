@@ -36,8 +36,14 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
     loop_execution = loop_execution_;
     q_start_init = DP::q_start;
     q_goal_init = DP::q_goal;
-    max_error = Eigen::VectorXf::Zero(Robot::getNumDOFs());
 
+    callback_group = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant); // Enable all callbacks to run concurrently
+    timer = this->create_wall_timer(std::chrono::microseconds(size_t(period * 1e6)), std::bind(&BaseNode::baseCallback, this), callback_group);
+    replanning_service = this->create_service<std_srvs::srv::Empty>("replanning_service",
+                         std::bind(&RealTimePlanningNode::replanningCallback, this, std::placeholders::_1, std::placeholders::_2), 
+                         rmw_qos_profile_services_default, callback_group);
+    replanning_client = this->create_client<std_srvs::srv::Empty>("replanning_service", rmw_qos_profile_services_default, callback_group);
+    
     if (!output_file_name.empty())
     {
         std::cout << "Recorded data will be saved to: " 
@@ -45,6 +51,7 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
         output_file.open(project_abs_path + config_file_path.substr(0, config_file_path.size()-5) + output_file_name, std::ofstream::out);
         recording_trajectory_timer = this->create_wall_timer(std::chrono::microseconds(size_t(Trajectory::getTrajectoryMaxTimeStep() * 1e6)), 
                                      std::bind(&RealTimePlanningNode::recordingTrajectoryCallback, this));
+        max_error = Eigen::VectorXf::Zero(Robot::getNumDOFs());
     }
 }
 
@@ -178,12 +185,15 @@ void sim_bringup::RealTimePlanningNode::taskReplanning(bool replanning_required_
 {
     if (replanning_required_explicitly)
         DP::replanning_required = true;
-
+    
     if (DP::whetherToReplan())
     {
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TASK 2: Replanning... ");
         if (Planner::isReady())
-            replan(DRGBTConfig::MAX_ITER_TIME - DP::getElapsedTime(DP::time_iter_start) - 1e-3);    // 1 [ms] is reserved for other lines
+        {
+            std::shared_ptr<std_srvs::srv::Empty::Request> request { std::make_shared<std_srvs::srv::Empty::Request>() };
+            replanning_client->async_send_request(request);
+        }
         else
             RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Planner is not ready! ");
     }
@@ -191,14 +201,16 @@ void sim_bringup::RealTimePlanningNode::taskReplanning(bool replanning_required_
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Replanning is not required! ");
 }
 
-/// @brief Try to replan the predefined path from 'q_current' to 'q_goal' during a specified time limit 'max_planning_time'.
-/// @param max_planning_time Maximal (re)planning time in [s].
-void sim_bringup::RealTimePlanningNode::replan(float max_planning_time)
+/// @brief Try to replan the predefined path from 'q_current' to 'q_goal' during a specified time limit 'max_replanning_time'.
+void sim_bringup::RealTimePlanningNode::replanningCallback([[maybe_unused]] const std::shared_ptr<std_srvs::srv::Empty::Request> request,
+                                                           [[maybe_unused]] const std::shared_ptr<std_srvs::srv::Empty::Response> response)
 {
     try
     {
         replanning_result = false;
-        if (max_planning_time < 0)
+        float max_replanning_time = DRGBTConfig::MAX_ITER_TIME - DP::getElapsedTime(DP::time_iter_start) - 1e-3;  // 1 [ms] is reserved for other lines
+        
+        if (max_replanning_time <= 0)
             throw std::runtime_error("Not enough time for replanning! ");
 
         switch (DRGBTConfig::REAL_TIME_SCHEDULING)
@@ -206,21 +218,16 @@ void sim_bringup::RealTimePlanningNode::replan(float max_planning_time)
         case planning::RealTimeScheduling::FPS:
         {
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Replanning with Fixed Priority Scheduling ");
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Trying to replan in %f [ms]...", max_planning_time * 1e3);
-            std::thread replanning_thread([this, &max_planning_time]() 
-            {
-                replanning_result = Planner::solve(DP::q_current, DP::q_goal, max_planning_time);
-            });
-            replanning_thread.detach();
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Trying to replan in %f [ms]...", max_replanning_time * 1e3);
+            replanning_result = Planner::solve(DP::q_current, DP::q_goal, max_replanning_time);
             break;
         }
         case planning::RealTimeScheduling::None:
             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Replanning without real-time scheduling ");
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Trying to replan in %f [ms]...", max_planning_time * 1e3);
-            replanning_result = Planner::solve(DP::q_current, DP::q_goal, max_planning_time);
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Trying to replan in %f [ms]...", max_replanning_time * 1e3);
+            replanning_result = Planner::solve(DP::q_current, DP::q_goal, max_replanning_time);
             break;
         }
-        
     }
     catch (std::exception &e)
     {
