@@ -14,7 +14,7 @@ real_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node
     xarm_client.clean_error();
     xarm_client.clean_warn();
     xarm_client.motion_enable(true);
-    xarm_client.set_mode(6);
+    xarm_client.set_mode(1);
     xarm_client.set_state(0);
     xarm_client.set_joint_maxacc(Robot::getMaxAcc(0));
     xarm_client.set_joint_jerk(Robot::getMaxJerk(0));
