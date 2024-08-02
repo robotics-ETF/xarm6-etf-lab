@@ -50,7 +50,7 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
                   << project_abs_path + config_file_path.substr(0, config_file_path.size()-5) + output_file_name << "\n";
         output_file.open(project_abs_path + config_file_path.substr(0, config_file_path.size()-5) + output_file_name, std::ofstream::out);
         recording_trajectory_timer = this->create_wall_timer(std::chrono::microseconds(size_t(Trajectory::getTrajectoryMaxTimeStep() * 1e6)), 
-                                     std::bind(&RealTimePlanningNode::recordingTrajectoryCallback, this));
+                                     std::bind(&RealTimePlanningNode::recordingTrajectoryCallback, this), callback_group);
         max_error = Eigen::VectorXf::Zero(Robot::getNumDOFs());
     }
 }
