@@ -14,7 +14,7 @@ real_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node
     xarm_client.clean_error();
     xarm_client.clean_warn();
     xarm_client.motion_enable(true);
-    xarm_client.set_mode(1);
+    xarm_client.set_mode(6);
     xarm_client.set_state(0);
     xarm_client.set_joint_maxacc(Robot::getMaxAcc(0));
     xarm_client.set_joint_jerk(Robot::getMaxJerk(0));
@@ -40,6 +40,6 @@ void real_bringup::RealTimePlanningNode::publishingTrajectoryCallback()
     for (size_t i = 0; i < Robot::getNumDOFs(); i++)
         position.emplace_back(pos(i));
     
-    xarm_client.set_servo_angle_j(position);                                    // When using mode 1
-    // xarm_client.set_servo_angle(position, Robot::getMaxVel(0), 0, 0, false);    // When using mode 6
+    // xarm_client.set_servo_angle_j(position);                                    // When using mode 1
+    xarm_client.set_servo_angle(position, Robot::getMaxVel(0), 0, 0, false);    // When using mode 6
 }
