@@ -7,7 +7,9 @@ robot:
   num_DOFs: 6
   q_home: [0, 0, 0, 3.1415, 1.5708, 0]
   max_lin_vel: 500                                      # In [mm/s]
+  max_lin_acc: 5000                                     # In [mm/s]
   max_vel: [1, 1, 1, 1, 1, 1]                           # Maximal velocity of each robot's joint in [rad/s]
+  max_acc: [10, 10, 10, 10, 10, 10]                     # Maximal acceleration of each robot's joint in [rad/s²]
   
 scenario:
   glass_angles_approach: [55, 35, -36, 180, 89, 0]      # In [deg]
