@@ -30,7 +30,9 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
     DRGBTConfig::STATIC_PLANNER_TYPE = Planner::getPlannerType();
     if (DRGBTConfig::STATIC_PLANNER_TYPE == planning::PlannerType::RGBMTStar)
         RGBMTStarConfig::TERMINATE_WHEN_PATH_IS_FOUND = true;
+    DRGBTConfig::GUARANTEED_SAFE_MOTION = node["planner"]["guaranteed_safe_motion"].as<bool>();
     
+    iteration_completed = true;
     planning_result = -1;
     replanning_result = -1;
     loop_execution = loop_execution_;
@@ -57,14 +59,21 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
 
 void sim_bringup::RealTimePlanningNode::planningCallback()
 {
-    if (DP::q_start == DP::q_goal)
+    if (!iteration_completed)
+    {
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "********** Real-time is broken!!! **********");
+        return;
+    }
+
+    if (DP::q_start == DP::q_goal)  // There is nothing to plan!
         return;
 
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "----------------------------------------------------------------------------");
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Iteration num. %ld", DP::planner_info->getNumIterations());
     DP::time_iter_start = std::chrono::steady_clock::now();     // Start the iteration clock
-    AABB::updateEnvironment(DP::ss->env);
+    iteration_completed = false;
     planning_result = -1;
+    AABB::updateEnvironment(DP::ss->env);
 
     if (replanning_result == 1)  // New path is found within the specified time limit, thus update predefined path to the goal
     {
@@ -88,11 +97,13 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
         if (!Robot::isReady())
         {
             RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Waiting to set up the robot...");
+            iteration_completed = true;
             return;
         }
         if (!AABB::isReady())
         {
             RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Waiting to set up the environment...");
+            iteration_completed = true;
             return;
         }
 
@@ -122,7 +133,8 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
             DP::horizon.clear();
             DP::status = base::State::Status::Trapped;
             DP::replanning_required = true;
-            DP::q_next = std::make_shared<planning::drbt::HorizonState>(DP::q_current, -1, DP::q_current);            
+            DP::q_next = std::make_shared<planning::drbt::HorizonState>(DP::q_current, -1, DP::q_current);
+            iteration_completed = true;
             return;     // The algorithm will still continue its execution.
         }
         
@@ -160,8 +172,9 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
             DP::q_start = DP::q_goal;   // Robot will automatically stop and wait until 'DP::q_goal' is changed
             planning_result = DP::planner_info->getSuccessState();
         }
-
     }
+    
+    iteration_completed = true;
 }
 
 void sim_bringup::RealTimePlanningNode::taskComputingNextConfiguration()
@@ -248,7 +261,6 @@ void sim_bringup::RealTimePlanningNode::computeTrajectory()
     Trajectory::addPoints(DP::splines->spline_next, 
                           DP::splines->spline_next->getTimeCurrent(), 
                           DP::splines->spline_next->getTimeEnd() + DRGBTConfig::MAX_TIME_TASK1);
-
     // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Elapsed time: %f [ms] for adding %ld points", 
     //             DP::getElapsedTime(time_start_) * 1e3, Trajectory::getNumPoints());
 

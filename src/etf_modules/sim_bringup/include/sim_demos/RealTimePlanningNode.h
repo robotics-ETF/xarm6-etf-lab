@@ -30,6 +30,7 @@ namespace sim_bringup
         virtual void computeTrajectory();
         void recordingTrajectoryCallback();
 
+        bool iteration_completed;
         int planning_result;
         int replanning_result;  //  0: replanning was not successful
                                 //  1: replanning was successful and predefined path needs to be updated
