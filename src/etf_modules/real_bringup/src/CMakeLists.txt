@@ -35,6 +35,7 @@ ament_target_dependencies(real_bringup PUBLIC
   visualization_msgs
   octomap_msgs 
   octomap 
+  std_srvs
   xarm_msgs 
   xarm_api 
   PCL

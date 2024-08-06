@@ -5,8 +5,8 @@ robot:
   num_DOFs: 6
   capsules_radius: [0.047, 0.12, 0.11, 0.09, 0.05, 0.1]     # When the gripper is attached
   gripper_length: 0.17                                      # In [m]
-  table_included: true                                      
-  table_radius: 0.67                                        # In [m]
+  ground_included: 2                                      
+  ground_radius: 0.67                                       # In [m]
   max_vel_first_joint: 3.1415                               # Maximal velocity of the first robot's joint in [rad/s]
   WS_center: [0.0, 0.0, 0.267]                              # Workspace center point in [m]
   WS_radius: 1.0                                            # Workspace radius in [m] assuming spherical workspace shape
@@ -18,5 +18,5 @@ perception:
 random_obstacles:
   num: 3	                        # Number of random obstacles to be added
   max_vel: 0.6 			              # Maximal velocity of each obstacle in [m/s]
-  dim: [0.2, 0.2, 0.2]         # Dimensions of each random obstacle in [m]
-  period: 0.050                   # Period in [s]
+  dim: [0.2, 0.2, 0.2]            # Dimensions of each random obstacle in [m]
+  period: 0.020                   # Period in [s]

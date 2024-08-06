@@ -26,11 +26,9 @@ namespace sim_bringup
         inline const std::vector<Eigen::Vector3f> &getPositions() const { return positions; }
         inline const Eigen::Vector3f &getPositions(size_t idx) const { return positions[idx]; }
         inline size_t getMinNumCaptures() const { return min_num_captures; }
-
-        inline void setEnvironment(const std::shared_ptr<env::Environment> &env_) { env = env_; }
         inline void setMinNumCaptures(size_t min_num_captures_) { min_num_captures = min_num_captures_; }
 
-        void updateEnvironment();
+        void updateEnvironment(const std::shared_ptr<env::Environment> env);
         void resetMeasurements();
         virtual int chooseObject() { return -1; }
         inline bool isReady() { return ready; }
@@ -46,7 +44,6 @@ namespace sim_bringup
         std::vector<Eigen::Vector3f> positions;
         std::vector<size_t> num_captures;
         size_t min_num_captures;
-        std::shared_ptr<env::Environment> env;
         bool ready;
     };
 }

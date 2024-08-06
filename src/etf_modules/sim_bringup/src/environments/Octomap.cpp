@@ -8,7 +8,7 @@ sim_bringup::Octomap::Octomap(const std::string config_file_path)
 
     YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
 
-    read_node = rclcpp::Node::make_shared("read_node");
+    read_node = std::make_shared<rclcpp::Node>("read_node");
     client = read_node->create_client<octomap_msgs::srv::GetOctomap>("/octomap_binary");
 }
 

@@ -10,9 +10,9 @@ robot:
   q_goal:  [-3.1415, 0, 0, 3.1415, 1.5708, 0]
   capsules_radius: [0.047, 0.12, 0.11, 0.09, 0.05, 0.1]       # When the gripper is attached
   gripper_length: 0.17                                        # In [m]
-  table_included: true                                        # Please check whether 'table' is added in 'environment'
+  ground_included: 2                                          # Please check whether 'ground' is added in 'environment'
   self_collision_checking: true                               # Whether self-collision should be checked
-  max_vel:  [2, 2, 2, 2, 2, 2]                                # Maximal velocity of each robot's joint in [rad/s]
+  max_vel:  [1.5, 1.5, 1.5, 1.5, 1.5, 1.5]                    # Maximal velocity of each robot's joint in [rad/s]
   max_acc:  [20, 20, 20, 20, 20, 20]                          # Maximal acceleration of each robot's joint in [rad/s²]
   max_jerk: [200, 200, 200, 200, 200, 200]                    # Maximal jerk of each robot's joint in [rad/s³]
 
@@ -23,12 +23,12 @@ planner:
   type: "RGBMT*"
   configurations: "/RPMPLv2"
   max_planning_time: 1.9                                      # In [s]
-  max_edge_length: 0.1                                        # In [rad]
+  max_edge_length: 0.2                                        # In [rad]
   trajectory_max_time_step: 0.004                             # In [s]
 
 environment:
   - box:
-      label: "table"
+      label: "ground"
       dim: [1.5, 1.5, 0.1]
       pos: [0, 0, -0.05]
 

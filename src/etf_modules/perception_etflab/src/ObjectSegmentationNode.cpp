@@ -80,10 +80,10 @@ void perception_etflab::ObjectSegmentationNode::realPointCloudCallback(const sen
   	
 	// Green color filtering
   	pcl::ConditionalRemoval<pcl::PointXYZRGB> color_filter;
-  	pcl::PackedRGBComparison<pcl::PointXYZRGB>::Ptr table_green_cond
+  	pcl::PackedRGBComparison<pcl::PointXYZRGB>::Ptr ground_green_cond
 		(new pcl::PackedRGBComparison<pcl::PointXYZRGB>("g", pcl::ComparisonOps::LT, 60));
  	pcl::ConditionAnd<pcl::PointXYZRGB>::Ptr color_cond(new pcl::ConditionAnd<pcl::PointXYZRGB>());
- 	color_cond->addComparison(table_green_cond);
+ 	color_cond->addComparison(ground_green_cond);
 	
  	// Build the filter
  	color_filter.setInputCloud(output_cloud_xyzrgb1);
@@ -194,8 +194,8 @@ void perception_etflab::ObjectSegmentationNode::removeOutliers(const pcl::PointC
     for (pcl::PointCloud<pcl::PointXYZRGB>::iterator pcl_point = pcl->end()-1; pcl_point >= pcl->begin(); pcl_point--)
 	{
         Eigen::Vector3f P(pcl_point->x, pcl_point->y, pcl_point->z);
-        if ((P.z() < 0 || P.head(2).norm() > Robot::getTableRadius()) ||				// All points under or outside the table
-			(P.x() > -0.2 && P.x() < 0 && std::abs(P.y()) < 0.05 && P.z() < 0.07)) 	// The robot cable from base through the table
+        if ((P.z() < 0 || P.head(2).norm() > Robot::getGroundRadius()) ||			// All points under or outside the ground (table)
+			(P.x() > -0.2 && P.x() < 0 && std::abs(P.y()) < 0.05 && P.z() < 0.07)) 	// The robot cable from base through the ground (table)
             	pcl->erase(pcl_point);
 	}
 

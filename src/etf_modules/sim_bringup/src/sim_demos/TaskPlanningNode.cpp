@@ -1,7 +1,7 @@
 #include "sim_demos/TaskPlanningNode.h"
 
 sim_bringup::TaskPlanningNode::TaskPlanningNode(const std::string &node_name, const std::string &config_file_path) : 
-    PlanningNode(node_name, config_file_path)
+    PlanningNode(node_name, config_file_path, false)
 {
     YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
     YAML::Node scenario_node { node["scenario"] };
@@ -60,6 +60,7 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
         Planner::preprocessPath({q_object_approach1, q_object_approach2, q_object_pick}, path);
         Trajectory::clear();
         Trajectory::addPath(path);
+        // Trajectory::addPath(path, false);
         Trajectory::publish();
         task = picking_object;
         break;
@@ -75,6 +76,7 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
         Planner::preprocessPath({q_object_pick, q_object_approach1}, path);
         Trajectory::clear();
         Trajectory::addPath(path);
+        // Trajectory::addPath(path, false);
         Trajectory::publish();
         task = moving_object_to_destination;
         break;
@@ -110,10 +112,7 @@ void sim_bringup::TaskPlanningNode::planningCase()
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting...");
         if (Robot::isReady() && AABB::isReady() && Planner::isReady())
         {
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Updating environment...");
-            AABB::updateEnvironment();
-
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Planning a path...");
+            AABB::updateEnvironment(Planner::scenario->getEnvironment());
             std::thread planning_thread([this]() 
             {
                 planning_result = Planner::solve();
@@ -260,7 +259,7 @@ int sim_bringup::TaskPlanningNode::chooseObject()
             i, dimensions[i].x(), dimensions[i].y(), dimensions[i].z(), 
                positions[i].x(), positions[i].y(), positions[i].z(), num_captures[i]);
         if (num_captures[i] >= min_num_captures && positions[i].z() > z_max && 
-            dimensions[i].z() < max_object_height && positions[i].z() < max_object_height / 2)  // Pick only "small" objects from the table
+            dimensions[i].z() < max_object_height && positions[i].z() < max_object_height / 2)  // Pick only "small" objects from the ground
         {
             z_max = positions[i].z();
             obj_idx_ = i;

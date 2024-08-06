@@ -16,8 +16,6 @@ namespace sim_bringup
         void planningCase() override;
 
         std::shared_ptr<sim_bringup::RealTimePlanningNode> real_time_planning_node;
-
-    private:
         std::string dynamic_planner_config_file_path;
         YAML::Node dynamic_node;
         std::ofstream file_out;

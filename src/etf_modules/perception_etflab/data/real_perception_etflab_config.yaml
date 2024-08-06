@@ -6,8 +6,8 @@ robot:
   capsules_radius: [0.047, 0.12, 0.11, 0.09, 0.05, 0.1]     # When the gripper is attached
   tolerance_radius: [0, 0.05, 0.05, 0.05, 0.05, 0.05]       # i-th capsule is enlarged for i-th tolerance radius in [m] when removing robot from the scene
   gripper_length: 0.17                                      # In [m]
-  table_included: true                                      
-  table_radius: 0.67                                        # In [m]
+  ground_included: 2                                      
+  ground_radius: 0.67                                       # In [m]
   
 perception:
   max_dim_subcluster: [0.1, 0.1, 0.1]                       # Max. dimensions of a subcluster

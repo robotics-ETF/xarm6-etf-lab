@@ -20,7 +20,7 @@ perception_etflab::Obstacles::Obstacles(const std::string &config_file_path)
     period = obs_node["period"].as<float>();
 
     YAML::Node robot_node { node["robot"] };
-    table_included = robot_node["table_included"].as<bool>();
+    ground_included = robot_node["ground_included"].as<size_t>();
     for (size_t i = 0; i < 3; i++)
         WS_center(i) = robot_node["WS_center"][i].as<float>();
 
@@ -97,7 +97,7 @@ void perception_etflab::Obstacles::move(std::vector<pcl::PointCloud<pcl::PointXY
     clusters = obstacles;
 }
 
-void perception_etflab::Obstacles::move(pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl)
+void perception_etflab::Obstacles::move([[maybe_unused]] pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl)
 {
 }
 
@@ -106,7 +106,7 @@ bool perception_etflab::Obstacles::isValid(const Eigen::Vector3f &pos, float vel
 {
     float tol_radius { std::max(vel / robot_max_vel, base_radius) };
 
-    if (table_included)
+    if (ground_included > 0)
     {
         if ((pos - WS_center).norm() > WS_radius || pos.z() < 0 ||              // Out of workspace
             (pos.head(2).norm() < tol_radius && pos.z() < WS_center.z()) ||     // Surrounding of robot base
