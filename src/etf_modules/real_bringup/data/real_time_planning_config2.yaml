@@ -18,9 +18,9 @@ robot:
   self_collision_checking: true                               # Whether self-collision should be checked
   WS_center: [0.0, 0.0, 0.267]                                # Workspace center point in [m]
   WS_radius: 1.5                                              # Workspace radius in [m] assuming spherical workspace shape
-  max_vel:  [2, 2, 2, 2, 2, 2]                                # Maximal velocity of each robot's joint in [rad/s]
-  max_acc:  [20, 20, 20, 20, 20, 20]                          # Maximal acceleration of each robot's joint in [rad/s²]
-  max_jerk: [500, 500, 500, 500, 500, 500]                    # Maximal jerk of each robot's joint in [rad/s³]
+  max_vel:  [1, 1, 1, 1, 1, 1]                                # Maximal velocity of each robot's joint in [rad/s]
+  max_acc:  [10, 10, 10, 10, 10, 10]                          # Maximal acceleration of each robot's joint in [rad/s²]
+  max_jerk: [100, 100, 100, 100, 100, 100]                    # Maximal jerk of each robot's joint in [rad/s³]
 
 planner:
   # type: "RRT-Connect"
@@ -29,6 +29,7 @@ planner:
   type: "RGBMT*"
   configurations: "/RPMPLv2"
   trajectory_max_time_step: 0.004                             # In [s]
+  guaranteed_safe_motion: false                               # Whether robot motion is surely safe for environment
 
 environment:
   - box:

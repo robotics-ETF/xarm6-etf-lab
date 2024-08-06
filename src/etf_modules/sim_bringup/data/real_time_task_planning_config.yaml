@@ -12,9 +12,9 @@ robot:
   gripper_length: 0.17                                        # In [m]
   ground_included: 2                                          # Please check whether 'ground' is added in 'environment'
   self_collision_checking: true                               # Whether self-collision should be checked
-  max_vel:  [3.14, 3.14, 3.14, 3.14, 3.14, 3.14]              # Maximal velocity of each robot's joint in [rad/s]
-  max_acc:  [20, 20, 20, 20, 20, 20]                          # Maximal acceleration of each robot's joint in [rad/s²]
-  max_jerk: [500, 500, 500, 500, 500, 500]                    # Maximal jerk of each robot's joint in [rad/s³]
+  max_vel:  [1, 1, 1, 1, 1, 1]                                # Maximal velocity of each robot's joint in [rad/s]
+  max_acc:  [10, 10, 10, 10, 10, 10]                          # Maximal acceleration of each robot's joint in [rad/s²]
+  max_jerk: [100, 100, 100, 100, 100, 100]                    # Maximal jerk of each robot's joint in [rad/s³]
 
 planner:
   # type: "RRT-Connect"
@@ -24,6 +24,7 @@ planner:
   configurations: "/RPMPLv2"
   max_edge_length: 0.2                                        # In [rad]
   trajectory_max_time_step: 0.004                             # In [s]
+  guaranteed_safe_motion: false                               # Whether robot motion is surely safe for environment
   dynamic_planner_config_file_path: "/sim_bringup/data/real_time_planning_config2.yaml"
 
 environment:

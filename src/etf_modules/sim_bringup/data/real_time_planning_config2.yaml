@@ -8,21 +8,22 @@ robot:
   space: RealVectorSpace
   num_DOFs: 6
   q_home: [0, 0, 0, 3.1415, 1.5708, 0]
-  q_start: [0.642387748, -0.291888952, -1.0074352, 7.62958462e-06, 1.29932415, -5.07985396e-06]
-  q_goal: [3.14159036, 0.0734278634, -1.33281457, 7.73865668e-06, 1.25938666, -4.61625086e-06]
+  q_start: [-1.27612734, -0.65692091, -0.589012444, 7.59413342e-06, 1.24593329, -5.7180423e-06]
+  q_goal: [-3.14159417, 0.097134985, -1.23156404, 8.12748567e-06, 1.1344291, -5.18374145e-06]
   capsules_radius: [0.047, 0.12, 0.11, 0.09, 0.05, 0.1]
   gripper_length: 0.17
   ground_included: 2
   self_collision_checking: true
   WS_center: [0.0, 0.0, 0.267]
   WS_radius: 1.5
-  max_vel: [3.14, 3.14, 3.14, 3.14, 3.14, 3.14]
-  max_acc: [20, 20, 20, 20, 20, 20]
-  max_jerk: [500, 500, 500, 500, 500, 500]
+  max_vel: [1, 1, 1, 1, 1, 1]
+  max_acc: [10, 10, 10, 10, 10, 10]
+  max_jerk: [100, 100, 100, 100, 100, 100]
 planner:
   type: RGBMT*
   configurations: /RPMPLv2
   trajectory_max_time_step: 0.004
+  guaranteed_safe_motion: false
 environment:
   - box:
       label: ground

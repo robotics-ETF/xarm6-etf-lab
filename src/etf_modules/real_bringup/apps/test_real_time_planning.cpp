@@ -16,8 +16,11 @@ int main(int argc, char *argv[])
 	};
 
 	rclcpp::init(argc, argv);
-	std::shared_ptr<real_bringup::RealTimePlanningNode> real_time_planning_node 
-		{ std::make_shared<real_bringup::RealTimePlanningNode>(node_name, config_file_path, true, "_test.log") };
+	std::shared_ptr<real_bringup::RealTimePlanningNode> real_time_planning_node
+	{
+		// std::make_shared<real_bringup::RealTimePlanningNode>(node_name, config_file_path, true)
+		std::make_shared<real_bringup::RealTimePlanningNode>(node_name, config_file_path, true, "_test.log")
+	};
 	
 	rclcpp::executors::MultiThreadedExecutor executor;
 	executor.add_node(real_time_planning_node);
