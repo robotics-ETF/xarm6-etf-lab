@@ -74,6 +74,16 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
     iteration_completed = false;
     planning_result = -1;
     AABB::updateEnvironment(DP::ss->env);
+    
+    // ------------------------------------------------------------------------------- //
+    // Current robot position and velocity (measured vs computed)
+    DP::q_current = DP::ss->getNewState(DP::splines->spline_next->getPosition(DP::splines->spline_next->getTimeCurrent(true)));
+    // DP::q_current = Robot::getJointsPositionPtr();
+    // std::cout << "Current position (measured): " << Robot::getJointsPositionPtr() << "\n";
+    // std::cout << "Current position (computed): " << DP::q_current << "\n";
+    // std::cout << "Current velocity (measured): " << Robot::getJointsVelocityPtr() << "\n";
+    // std::cout << "Current velocity (computed): " << DP::ss->getNewState(DP::splines->spline_next->getVelocity(DP::splines->spline_next->getTimeCurrent(true))) << "\n";
+    // ------------------------------------------------------------------------------- //
 
     if (replanning_result == 1)  // New path is found within the specified time limit, thus update predefined path to the goal
     {
@@ -117,14 +127,6 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
         break;
     
     default:
-        // ------------------------------------------------------------------------------- //
-        // Current robot position and velocity (measured vs computed)
-        DP::q_current = DP::ss->getNewState(DP::splines->spline_next->getPosition(DP::splines->spline_next->getTimeCurrent(true)));
-        // std::cout << "Current position (measured): " << Robot::getJointsPositionPtr() << "\n";
-        // std::cout << "Current position (computed): " << DP::q_current << "\n";
-        // std::cout << "Current velocity (measured): " << Robot::getJointsVelocityPtr() << "\n";
-        // std::cout << "Current velocity (computed): " << DP::ss->getNewState(DP::splines->spline_next->getVelocity(DP::splines->spline_next->getTimeCurrent(true))) << "\n";
-        
         // ------------------------------------------------------------------------------- //
         // Checking whether the collision occurs
         if (!DP::ss->isValid(DP::q_current))
