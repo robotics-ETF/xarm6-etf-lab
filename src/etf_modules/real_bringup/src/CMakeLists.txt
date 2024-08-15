@@ -38,6 +38,7 @@ ament_target_dependencies(real_bringup PUBLIC
   std_srvs
   xarm_msgs 
   xarm_api 
+  xarm_sdk
   PCL
   pcl_conversions 
   fcl 
