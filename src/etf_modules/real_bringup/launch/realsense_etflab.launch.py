@@ -123,8 +123,8 @@ def generate_launch_description():
         output='screen',
         parameters=[
             # {"point_cloud_topics": ["/camera_left/depth/color/points", "/camera_right/depth/color/points"]},
-            # {"point_cloud_topics": ["/camera_left/depth/color/points"]},
-            {"point_cloud_topics": ["/camera_right/depth/color/points"]},
+            {"point_cloud_topics": ["/camera_left/depth/color/points"]},
+            #{"point_cloud_topics": ["/camera_right/depth/color/points"]},
             {"output_topic": "pointcloud_combined"}
         ]
     )
@@ -159,9 +159,9 @@ def generate_launch_description():
         camera_right_node,
         tf_node_world_link_base,
         tf_node_link_base_aruco_marker,
-        # tf_node_aruco_marker_camera_left_link,
-        tf_node_aruco_marker_aruco_marker_from_right,
-        tf_node_aruco_marker_from_right_camera_right_link,
+        tf_node_aruco_marker_camera_left_link,
+        # tf_node_aruco_marker_aruco_marker_from_right,
+        # tf_node_aruco_marker_from_right_camera_right_link,
         
         # tf_node_aruco_marker_camera_left,
         # tf_node_camera_left_camera_left_link,
