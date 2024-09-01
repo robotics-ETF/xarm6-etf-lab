@@ -1,3 +1,11 @@
+/*
+
+    This .cpp file uses captured homogenous coordinates matrices, averages them, transforms them
+    to xyz_RPY format and writes them to camera_coordinates_final
+
+*/
+
+
 #include "rclcpp/rclcpp.hpp"
 #include "geometry_msgs/msg/transform_stamped.hpp"
 #include <yaml-cpp/yaml.h>
@@ -20,6 +28,43 @@ void printEigenMatrix(const Eigen::Matrix4d& matrix) {
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%s", matrixStr.c_str());
 }
 
+
+void writeMatrixToYaml(const Eigen::Matrix4d& matrix, const std::string& filename, std::string key_name) {
+    // Extract translation
+    double x = matrix(0, 3);
+    double y = matrix(1, 3);
+    double z = matrix(2, 3);
+
+    // Extract rotation matrix (upper 3x3 part)
+    Eigen::Matrix3d rotation_matrix = matrix.block<3, 3>(0, 0);
+
+    // Convert rotation matrix to Euler angles (roll, pitch, yaw)
+    Eigen::Vector3d euler_angles = rotation_matrix.eulerAngles(2, 1, 0); // ZYX order: yaw, pitch, roll
+
+    double yaw = euler_angles[0];
+    double pitch = euler_angles[1];
+    double roll = euler_angles[2];
+
+    // Prepare the YAML content
+    YAML::Emitter out;
+    out << YAML::BeginMap;
+    out << YAML::Key << key_name << YAML::Value << YAML::Flow << YAML::BeginSeq;
+    out << x << y << z << yaw << pitch << roll;
+    out << YAML::EndSeq;
+    out << YAML::EndMap;
+
+    // Open the file in append mode
+    std::ofstream fout(filename, std::ios::out | std::ios::app);
+    if (fout.is_open()) {
+        fout << out.c_str(); // Write the YAML content
+        fout.close();
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Transformed matrix appended to %s", filename.c_str());
+    } else {
+        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to open file %s for writing", filename.c_str());
+    }
+}
+
+/* writes as a 4d homogeneuos matrix 
 void writeMatrixToYaml(const Eigen::Matrix4d& matrix, const std::string& filename, std::string key_name) {
     // Prepare the YAML content
     YAML::Emitter out;
@@ -45,6 +90,7 @@ void writeMatrixToYaml(const Eigen::Matrix4d& matrix, const std::string& filenam
         RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to open file %s for writing", filename.c_str());
     }
 }
+*/
 
 Eigen::Matrix4d averageMatrix(const std::vector<Eigen::Matrix4d>& matrices) {
     // Check if the vector is empty
@@ -168,7 +214,7 @@ void processTransform() {
 
     Eigen::Matrix4d camera_cord_avg = averageMatrix(camera_cords);
 
-    writeMatrixToYaml(camera_cord_avg, camera_coordinates_file_path_final, "final_matrix");
+    writeMatrixToYaml(camera_cord_avg, camera_coordinates_file_path_final, "xyz_YPR");
 
 }
 

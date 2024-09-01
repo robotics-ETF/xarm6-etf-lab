@@ -98,18 +98,18 @@ target_include_directories(marker_publisher
 ament_target_dependencies(marker_publisher ${THIS_PACKAGE_INCLUDE_DEPENDS})
 target_link_libraries(marker_publisher ${OpenCV_LIBRARIES})
 
-add_executable(update_calib_points src/update_calib_points.cpp)
-target_include_directories(update_calib_points
+add_executable(update_calib_points_dir_kin src/update_calib_points_dir_kin.cpp)
+target_include_directories(update_calib_points_dir_kin
   PUBLIC
   include)
 
-target_include_directories(update_calib_points
+target_include_directories(update_calib_points_dir_kin
   SYSTEM PUBLIC
   ${OpenCV_INCLUDE_DIRS}
 )
 
-ament_target_dependencies(update_calib_points ${THIS_PACKAGE_INCLUDE_DEPENDS})
-target_link_libraries(update_calib_points ${RPMPL_LIBRARY} ${RPMPL_LIBRARIES})
+ament_target_dependencies(update_calib_points_dir_kin ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(update_calib_points_dir_kin ${RPMPL_LIBRARY} ${RPMPL_LIBRARIES})
 
 add_executable(update_calib_pts_cam src/update_calib_pts_cam.cpp)
 target_include_directories(update_calib_pts_cam
@@ -167,18 +167,18 @@ endif()
 
 # for tf2 broadcaster
 
-add_executable(turtle_tf2_broadcaster src/turtle_tf2_broadcaster.cpp)
+add_executable(marker_tf2_broadcaster src/marker_tf2_broadcaster.cpp)
 
-target_include_directories(turtle_tf2_broadcaster
+target_include_directories(marker_tf2_broadcaster
   PUBLIC
   include)
 
-target_include_directories(turtle_tf2_broadcaster
+target_include_directories(marker_tf2_broadcaster
   SYSTEM PUBLIC
   ${OpenCV_INCLUDE_DIRS}
 )
-ament_target_dependencies(turtle_tf2_broadcaster ${THIS_PACKAGE_INCLUDE_DEPENDS})
-target_link_libraries(turtle_tf2_broadcaster ${RPMPL_LIBRARY} ${RPMPL_LIBRARIES})
+ament_target_dependencies(marker_tf2_broadcaster ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(marker_tf2_broadcaster ${RPMPL_LIBRARY} ${RPMPL_LIBRARIES})
 
 #############
 ## Install ##
@@ -212,11 +212,11 @@ install(TARGETS
 
 # for tf broadcaster
 install(TARGETS
-  turtle_tf2_broadcaster
+  marker_tf2_broadcaster
   DESTINATION lib/${PROJECT_NAME})
 
 install(TARGETS 
-  update_calib_points
+  update_calib_points_dir_kin
   DESTINATION lib/${PROJECT_NAME})
 
 install(TARGETS 

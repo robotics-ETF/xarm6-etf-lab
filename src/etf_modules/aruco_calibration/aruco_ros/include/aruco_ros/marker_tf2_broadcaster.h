@@ -19,7 +19,7 @@
 class FramePublisher : public rclcpp::Node
 {
 public:
-	FramePublisher();
+	FramePublisher(const std::string config_file_path);
     void jointsStateCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg);
 	void handle_turtle_pose(const geometry_msgs::msg::TransformStamped::SharedPtr msg);
 	void DirKinArucoPosCallback();

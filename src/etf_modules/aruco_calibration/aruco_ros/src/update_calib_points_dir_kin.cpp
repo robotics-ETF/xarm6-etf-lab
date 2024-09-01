@@ -1,23 +1,22 @@
 /*
 
     Class does the following:
-    1. Subscribes to aruco_single/transform to get the coordinates of the marker in camera frame
-    2. Writes the coordinates to the data/calib_points.yaml file, in the array transforms_camera
+    1. Subscribes to dir_kin_aruco_pos to get the coordinates of the marker calculated by direct kinematics
+    2. Writes the coordinates to the data/calib_points.yaml file, in the array transforms_dir_kin
 
 */
 
-#include "./aruco_ros/update_calib_points_cam.h"
+#include "./aruco_ros/update_calib_points_dir_kin.h"
 
 TransformUpdateNode::TransformUpdateNode()
     : Node("transform_update_node")
 {
-    subscription_camera = this->create_subscription<geometry_msgs::msg::TransformStamped>(
-        "aruco_single/transform", 10,
-        std::bind(&TransformUpdateNode::camera_callback, this, std::placeholders::_1));
+    subscription_dir_kin = this->create_subscription<geometry_msgs::msg::TransformStamped>(
+        "dir_kin_aruco_pos", 10,
+        std::bind(&TransformUpdateNode::dir_kin_callback, this, std::placeholders::_1));
 }
 
-
-void TransformUpdateNode::camera_callback(const geometry_msgs::msg::TransformStamped::SharedPtr msg)
+void TransformUpdateNode::dir_kin_callback(const geometry_msgs::msg::TransformStamped::SharedPtr msg)
 
 {
     // Extract translation and rotation
@@ -47,12 +46,12 @@ void TransformUpdateNode::camera_callback(const geometry_msgs::msg::TransformSta
         }
         
         // Ensure 'transforms' key exists and is a sequence
-        if (!yaml_data["transforms_camera"]) {
-            yaml_data["transforms_camera"] = YAML::Node(YAML::NodeType::Sequence);
+        if (!yaml_data["transforms_dir_kin"]) {
+            yaml_data["transforms_dir_kin"] = YAML::Node(YAML::NodeType::Sequence);
         }
 
         // Append the new transform data to the list
-        yaml_data["transforms_camera"].push_back(transform_data);
+        yaml_data["transforms_dir_kin"].push_back(transform_data);
 
         // Write the updated data back to the YAML file
         std::ofstream yaml_out(yaml_file_path);
@@ -67,7 +66,6 @@ void TransformUpdateNode::camera_callback(const geometry_msgs::msg::TransformSta
     catch (...) {
         std::cout << "Problem accessing YAML file.\n";
     }
-
 }
 
 int main(int argc, char *argv[])

@@ -10,6 +10,7 @@
 # ros2 launch realsense2_camera rs_multi_camera_launch.py camera_name1:=D400 device_type2:=l5. device_type1:=d4..
 
 import copy
+import yaml
 from launch import LaunchDescription
 import launch_ros.actions
 from launch.actions import IncludeLaunchDescription, TimerAction
@@ -17,9 +18,16 @@ from launch.substitutions import LaunchConfiguration, ThisLaunchFileDir, PathJoi
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.actions import Node
+
+# Load coordinates from the YAML file
+def load_coordinates_from_yaml(file_path):
+    with open(file_path, 'r') as file:
+        data = yaml.safe_load(file)
+        return data['xyz_YPR']
     
 
 def generate_launch_description():
+    
     camera_left_node = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(PathJoinSubstitution([FindPackageShare('realsense2_camera'), 'launch', 'rs_launch.py'])),
         launch_arguments={
@@ -43,7 +51,16 @@ def generate_launch_description():
             'temporal_filter.enable': 'true',
         }.items(),
     )
+    
+    # Load coordinates from YAML
+    coordinates = load_coordinates_from_yaml('/home/roboticsetf/xarm6-etf-lab/src/etf_modules/aruco_calibration/aruco_ros/data/camera_coordinates_final.yaml')
 
+    # Extract the coordinates into variables
+    x, y, z, yaw, pitch, roll = coordinates
+
+    # Create the tf_node_link_base_camera_left_link Node
+   
+    
     ########################################################################
     # # Nermin (calibrated by hand):
     tf_node_world_link_base = Node(package = "tf2_ros", 
@@ -51,6 +68,11 @@ def generate_launch_description():
             arguments = ["0", "0", "0", "0", "0", "0", "world", "link_base"]
     )
 
+     tf_node_link_base_camera_left_link = Node(package="tf2_ros", 
+            executable="static_transform_publisher",
+            arguments=[str(x), str(y), str(z), str(yaw), str(pitch), str(roll), "link_base", "camera_left_link"])
+
+    '''
     tf_node_link_base_aruco_marker = Node(package = "tf2_ros", 
             executable = "static_transform_publisher",
             arguments = ["0.44", "0", "0", "1.57079", "0", "0", "link_base", "aruco_marker"]
@@ -62,7 +84,8 @@ def generate_launch_description():
             arguments = ["-1.11", "0", "0.92", "0.37", "0.67", "0.06", \
                         "aruco_marker", "camera_left_link"]     # (x,y,z, yaw(z), pich(y), roll(x))
 	)
-
+    '''
+    
     tf_node_aruco_marker_from_right_camera_right_link = Node(package = "tf2_ros", 
             name="right_transform",
             executable = "static_transform_publisher",
