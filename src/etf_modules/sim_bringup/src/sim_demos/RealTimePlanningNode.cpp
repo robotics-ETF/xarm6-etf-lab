@@ -31,6 +31,7 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
     if (DRGBTConfig::STATIC_PLANNER_TYPE == planning::PlannerType::RGBMTStar)
         RGBMTStarConfig::TERMINATE_WHEN_PATH_IS_FOUND = true;
     DRGBTConfig::GUARANTEED_SAFE_MOTION = node["planner"]["guaranteed_safe_motion"].as<bool>();
+    trajectory_advance_time = node["planner"]["trajectory_advance_time"].as<float>();
     
     iteration_completed = true;
     planning_result = -1;
@@ -261,8 +262,8 @@ void sim_bringup::RealTimePlanningNode::computeTrajectory()
     std::chrono::steady_clock::time_point time_start_ { std::chrono::steady_clock::now() };
     Trajectory::clear();
     Trajectory::addPoints(DP::splines->spline_next, 
-                          DP::splines->spline_next->getTimeCurrent(), 
-                          DP::splines->spline_next->getTimeEnd() + DRGBTConfig::MAX_TIME_TASK1);
+                          DP::splines->spline_next->getTimeCurrent() + trajectory_advance_time, 
+                          DP::splines->spline_next->getTimeEnd() + DRGBTConfig::MAX_TIME_TASK1 + trajectory_advance_time);
     // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Elapsed time: %f [ms] for adding %ld points", 
     //             DP::getElapsedTime(time_start_) * 1e3, Trajectory::getNumPoints());
 
@@ -299,6 +300,6 @@ void sim_bringup::RealTimePlanningNode::recordingTrajectoryCallback()
 
     Eigen::VectorXf error { (pos_ref - Robot::getJointsPosition()).cwiseAbs() };
     max_error = max_error.cwiseMax(error);
-    std::cout << "Curr. error: " << error.transpose() << "\n";
-    std::cout << "Max. error:  " << max_error.transpose() << "\n";
+    // std::cout << "Curr. error: " << error.transpose() << "\n";
+    // std::cout << "Max. error:  " << max_error.transpose() << "\n";
 }

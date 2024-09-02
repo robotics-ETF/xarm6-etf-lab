@@ -33,14 +33,14 @@ void real_bringup::RealTimePlanningNode::computeTrajectory()
 void real_bringup::RealTimePlanningNode::publishingTrajectoryCallback()
 {
     // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Inside publishingTrajectoryCallback...");
-    std::vector<float> position {};
-    float t { DP::splines->spline_next->getTimeCurrent(true) + Trajectory::getTrajectoryMaxTimeStep() };
+    std::vector<float> position(Robot::getNumDOFs());
+    float t { DP::splines->spline_next->getTimeCurrent(true) + Trajectory::getTrajectoryMaxTimeStep() + trajectory_advance_time };
     Eigen::VectorXf pos { DP::splines->spline_next->getPosition(t) };
-    if (Robot::getNumDOFs() == 6)
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Time: %f [s]\t Position: (%f, %f, %f, %f, %f, %f)",
-                                       pos(0), pos(1), pos(2), pos(3), pos(4), pos(5));
+    // if (Robot::getNumDOFs() == 6)
+    //     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Time: %f [s]\t Position: (%f, %f, %f, %f, %f, %f)",
+    //                                    t, pos(0), pos(1), pos(2), pos(3), pos(4), pos(5));
     for (size_t i = 0; i < Robot::getNumDOFs(); i++)
-        position.emplace_back(pos(i));
+        position[i] = pos(i);
     
     xarm_client.set_servo_angle_j(position);  // When using mode 1
     // xarm_client.set_servo_angle(position, Robot::getMaxVel(0), 0, 0, false);    // When using mode 6
