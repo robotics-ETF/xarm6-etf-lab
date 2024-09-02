@@ -15,6 +15,28 @@
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
 
+Eigen::Matrix4d rotatePointOpticalToLink(const Eigen::Matrix4d& point) {
+    // Define rotation matrix for -π/2 around the y-axis
+    Eigen::Matrix4d rotationY;
+    rotationY <<  0, 0, -1, 0,
+                  0, 1,  0, 0,
+                  1, 0,  0, 0,
+                  0, 0,  0, 1;
+
+    // Define rotation matrix for π/2 around the x-axis
+    Eigen::Matrix4d rotationX;
+    rotationX <<  1,  0,  0, 0,
+                  0,  0, -1, 0,
+                  0,  1,  0, 0,
+                  0,  0,  0, 1;
+
+    // Apply the rotations to the point
+    Eigen::Matrix4d rotatedPoint = point * rotationY; 
+
+    rotatedPoint = rotatedPoint * rotationX;
+
+    return rotatedPoint;
+}
 
 void printEigenMatrix(const Eigen::Matrix4d& matrix) {
     // Convert Eigen::Matrix4d to a string representation
@@ -26,6 +48,28 @@ void printEigenMatrix(const Eigen::Matrix4d& matrix) {
 
     // Print the matrix using rclcpp logging
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%s", matrixStr.c_str());
+}
+
+// Function to load matrices from a YAML file
+std::vector<Eigen::Matrix4d> loadMatricesFromYAML(const std::string& filename) {
+    std::vector<Eigen::Matrix4d> matrices;
+    YAML::Node config = YAML::LoadFile(filename);
+
+    for (const auto& entry : config) {
+        Eigen::Matrix4d matrix;
+        auto matrix_values = entry.second.as<std::vector<std::vector<double>>>();
+
+        // Load each element into the Eigen::Matrix4d
+        for (int i = 0; i < 4; ++i) {
+            for (int j = 0; j < 4; ++j) {
+                matrix(i, j) = matrix_values[i][j];
+            }
+        }
+
+        matrices.push_back(matrix);
+    }
+
+    return matrices;
 }
 
 
@@ -63,6 +107,7 @@ void writeMatrixToYaml(const Eigen::Matrix4d& matrix, const std::string& filenam
         RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed to open file %s for writing", filename.c_str());
     }
 }
+
 
 /* writes as a 4d homogeneuos matrix 
 void writeMatrixToYaml(const Eigen::Matrix4d& matrix, const std::string& filename, std::string key_name) {
@@ -205,14 +250,20 @@ void processTransform() {
     }
 
     std::vector<Eigen::Matrix4d> camera_cords;
-
+    
+    /*
     for (size_t i = 0; i < dir_kin_transforms.size(); i++){
         Eigen::Matrix4d camera_cord = dir_kin_transforms_homo[i] * camera_transforms_homo[i].inverse() ;
         writeMatrixToYaml(camera_cord, camera_coordinates_file_path_all, "matrix" + std::to_string(i));
         camera_cords.push_back(camera_cord);
     }
+    */
+
+    camera_cords = loadMatricesFromYAML(camera_coordinates_file_path_all); 
 
     Eigen::Matrix4d camera_cord_avg = averageMatrix(camera_cords);
+
+    camera_cord_avg = rotatePointOpticalToLink(camera_cord_avg);
 
     writeMatrixToYaml(camera_cord_avg, camera_coordinates_file_path_final, "xyz_YPR");
 

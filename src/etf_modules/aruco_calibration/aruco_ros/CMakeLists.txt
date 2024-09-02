@@ -180,6 +180,21 @@ target_include_directories(marker_tf2_broadcaster
 ament_target_dependencies(marker_tf2_broadcaster ${THIS_PACKAGE_INCLUDE_DEPENDS})
 target_link_libraries(marker_tf2_broadcaster ${RPMPL_LIBRARY} ${RPMPL_LIBRARIES})
 
+# for camera frame broadcaster
+
+add_executable(camera_tf2_broadcaster src/camera_tf2_broadcaster.cpp)
+
+target_include_directories(camera_tf2_broadcaster
+  PUBLIC
+  include)
+
+target_include_directories(camera_tf2_broadcaster
+  SYSTEM PUBLIC
+  ${OpenCV_INCLUDE_DIRS}
+)
+ament_target_dependencies(camera_tf2_broadcaster ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(camera_tf2_broadcaster ${RPMPL_LIBRARY} ${RPMPL_LIBRARIES})
+
 #############
 ## Install ##
 #############
@@ -214,6 +229,12 @@ install(TARGETS
 install(TARGETS
   marker_tf2_broadcaster
   DESTINATION lib/${PROJECT_NAME})
+
+# for camera frame broadcaster
+install(TARGETS
+  camera_tf2_broadcaster
+  DESTINATION lib/${PROJECT_NAME})
+
 
 install(TARGETS 
   update_calib_points_dir_kin

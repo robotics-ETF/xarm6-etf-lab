@@ -127,7 +127,7 @@ FramePublisher::FramePublisher(const std::string config_file_path)
     
   }
 
-// calculates coordaintes of the final link, adds bias, publishes marker frame
+// calculates coordiinates of the final link, adds bias, publishes marker frame
 void FramePublisher::jointsStateCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg)
 {
   for (size_t i = 0; i < robot->getNumDOFs(); i++)
@@ -147,7 +147,7 @@ void FramePublisher::jointsStateCallback(const control_msgs::msg::JointTrajector
   t.header.frame_id = "world";
   t.child_frame_id = "dir_kin_marker";
 
-  printKDLFrame(transformStampedToKDLFrame(t), this->get_logger());
+  // printKDLFrame(transformStampedToKDLFrame(t), this->get_logger());
   
   tf_broadcaster_->sendTransform(t);
 }
@@ -202,6 +202,8 @@ void FramePublisher::DirKinArucoPosCallback(){
   t.header.stamp = this->get_clock()->now();
   t.header.frame_id = "world";
   t.child_frame_id = "dir_kin_marker";
+
+  printKDLFrame(transformStampedToKDLFrame(t), this->get_logger());
 
   aruco_position_pub->publish(t);
 

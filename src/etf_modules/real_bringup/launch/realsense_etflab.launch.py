@@ -68,11 +68,12 @@ def generate_launch_description():
             arguments = ["0", "0", "0", "0", "0", "0", "world", "link_base"]
     )
 
-     tf_node_link_base_camera_left_link = Node(package="tf2_ros", 
+    
+    tf_node_link_base_camera_left_link = Node(package="tf2_ros", 
             executable="static_transform_publisher",
             arguments=[str(x), str(y), str(z), str(yaw), str(pitch), str(roll), "link_base", "camera_left_link"])
-
     '''
+    
     tf_node_link_base_aruco_marker = Node(package = "tf2_ros", 
             executable = "static_transform_publisher",
             arguments = ["0.44", "0", "0", "1.57079", "0", "0", "link_base", "aruco_marker"]
@@ -181,13 +182,15 @@ def generate_launch_description():
         camera_left_node,
         camera_right_node,
         tf_node_world_link_base,
-        tf_node_link_base_aruco_marker,
-        tf_node_aruco_marker_camera_left_link,
+        # tf_node_link_base_aruco_marker,
+        # tf_node_aruco_marker_camera_left_link,
         # tf_node_aruco_marker_aruco_marker_from_right,
         # tf_node_aruco_marker_from_right_camera_right_link,
         
         # tf_node_aruco_marker_camera_left,
         # tf_node_camera_left_camera_left_link,
+        
+        tf_node_link_base_camera_left_link,
         rviz_node,
         TimerAction(
             period=1.0,
