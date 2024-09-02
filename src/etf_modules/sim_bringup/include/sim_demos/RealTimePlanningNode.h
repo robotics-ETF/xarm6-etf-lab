@@ -17,9 +17,9 @@ namespace sim_bringup
     public:
         RealTimePlanningNode(const std::string &node_name, const std::string &config_file_path, bool loop_execution_,
                              const std::string &output_file_name = "");
-
-        int getPlanningResult() const { return planning_result; }
         
+        int getPlanningResult() const { return planning_result; }
+
     protected:
         void baseCallback() override { planningCallback(); }
         void planningCallback();
@@ -28,7 +28,6 @@ namespace sim_bringup
         void replanningCallback(const std::shared_ptr<std_srvs::srv::Empty::Request> request,
                                 const std::shared_ptr<std_srvs::srv::Empty::Response> response);
         virtual void computeTrajectory();
-        void recordingTrajectoryCallback();
 
         bool iteration_completed;
         int planning_result;
@@ -38,11 +37,15 @@ namespace sim_bringup
         bool loop_execution;    // If true, after reaching the goal, start and goal will be switched, and algorithm will automatically continue its execution.
         std::shared_ptr<base::State> q_start_init;
         std::shared_ptr<base::State> q_goal_init;
+        float trajectory_advance_time;
 
         rclcpp::CallbackGroup::SharedPtr callback_group;
         rclcpp::Service<std_srvs::srv::Empty>::SharedPtr replanning_service;
         rclcpp::Client<std_srvs::srv::Empty>::SharedPtr replanning_client;
-        
+    
+    private:
+        void recordingTrajectoryCallback();
+
         rclcpp::TimerBase::SharedPtr recording_trajectory_timer;
         std::ofstream output_file;
         Eigen::VectorXf max_error;

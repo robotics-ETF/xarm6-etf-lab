@@ -23,6 +23,7 @@ planner:
   type: RGBMT*
   configurations: /RPMPLv2
   trajectory_max_time_step: 0.004
+  trajectory_advance_time: 0.100
   guaranteed_safe_motion: false
 environment:
   - box:

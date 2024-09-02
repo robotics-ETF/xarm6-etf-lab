@@ -31,6 +31,7 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
     if (DRGBTConfig::STATIC_PLANNER_TYPE == planning::PlannerType::RGBMTStar)
         RGBMTStarConfig::TERMINATE_WHEN_PATH_IS_FOUND = true;
     DRGBTConfig::GUARANTEED_SAFE_MOTION = node["planner"]["guaranteed_safe_motion"].as<bool>();
+    trajectory_advance_time = node["planner"]["trajectory_advance_time"].as<float>();
     
     iteration_completed = true;
     planning_result = -1;
@@ -74,6 +75,16 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
     iteration_completed = false;
     planning_result = -1;
     AABB::updateEnvironment(DP::ss->env);
+    
+    // ------------------------------------------------------------------------------- //
+    // Current robot position and velocity (measured vs computed)
+    DP::q_current = DP::ss->getNewState(DP::splines->spline_next->getPosition(DP::splines->spline_next->getTimeCurrent(true)));
+    // DP::q_current = Robot::getJointsPositionPtr();
+    // std::cout << "Current position (measured): " << Robot::getJointsPositionPtr() << "\n";
+    // std::cout << "Current position (computed): " << DP::q_current << "\n";
+    // std::cout << "Current velocity (measured): " << Robot::getJointsVelocityPtr() << "\n";
+    // std::cout << "Current velocity (computed): " << DP::ss->getNewState(DP::splines->spline_next->getVelocity(DP::splines->spline_next->getTimeCurrent(true))) << "\n";
+    // ------------------------------------------------------------------------------- //
 
     if (replanning_result == 1)  // New path is found within the specified time limit, thus update predefined path to the goal
     {
@@ -117,14 +128,6 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
         break;
     
     default:
-        // ------------------------------------------------------------------------------- //
-        // Current robot position and velocity (measured vs computed)
-        DP::q_current = DP::ss->getNewState(DP::splines->spline_next->getPosition(DP::splines->spline_next->getTimeCurrent(true)));
-        // std::cout << "Current position (measured): " << Robot::getJointsPositionPtr() << "\n";
-        // std::cout << "Current position (computed): " << DP::q_current << "\n";
-        // std::cout << "Current velocity (measured): " << Robot::getJointsVelocityPtr() << "\n";
-        // std::cout << "Current velocity (computed): " << DP::ss->getNewState(DP::splines->spline_next->getVelocity(DP::splines->spline_next->getTimeCurrent(true))) << "\n";
-        
         // ------------------------------------------------------------------------------- //
         // Checking whether the collision occurs
         if (!DP::ss->isValid(DP::q_current))
@@ -259,8 +262,8 @@ void sim_bringup::RealTimePlanningNode::computeTrajectory()
     std::chrono::steady_clock::time_point time_start_ { std::chrono::steady_clock::now() };
     Trajectory::clear();
     Trajectory::addPoints(DP::splines->spline_next, 
-                          DP::splines->spline_next->getTimeCurrent(), 
-                          DP::splines->spline_next->getTimeEnd() + DRGBTConfig::MAX_TIME_TASK1);
+                          DP::splines->spline_next->getTimeCurrent() + trajectory_advance_time, 
+                          DP::splines->spline_next->getTimeEnd() + DRGBTConfig::MAX_TIME_TASK1 + trajectory_advance_time);
     // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Elapsed time: %f [ms] for adding %ld points", 
     //             DP::getElapsedTime(time_start_) * 1e3, Trajectory::getNumPoints());
 
@@ -297,6 +300,6 @@ void sim_bringup::RealTimePlanningNode::recordingTrajectoryCallback()
 
     Eigen::VectorXf error { (pos_ref - Robot::getJointsPosition()).cwiseAbs() };
     max_error = max_error.cwiseMax(error);
-    std::cout << "Curr. error: " << error.transpose() << "\n";
-    std::cout << "Max. error:  " << max_error.transpose() << "\n";
+    // std::cout << "Curr. error: " << error.transpose() << "\n";
+    // std::cout << "Max. error:  " << max_error.transpose() << "\n";
 }

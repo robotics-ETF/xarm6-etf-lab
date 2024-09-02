@@ -24,6 +24,7 @@ planner:
   configurations: "/RPMPLv2"
   max_edge_length: 0.2                                        # In [rad]
   trajectory_max_time_step: 0.004                             # In [s]
+  trajectory_advance_time: 0.100                              # How much time in [s] a desired trajectory will be published in advance
   guaranteed_safe_motion: false                               # Whether robot motion is surely safe for environment
   dynamic_planner_config_file_path: "/sim_bringup/data/real_time_planning_config2.yaml"
 

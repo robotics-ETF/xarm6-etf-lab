@@ -48,7 +48,7 @@ def generate_launch_description():
             'add_gripper': add_gripper,
             'add_vacuum_gripper': add_vacuum_gripper,
             'robot_type': robot_type,
-            'ros2_control_plugin': 'uf_robot_hardware/UFRobotSystemHardware',
+            'ros2_control_plugin': 'uf_robot_hardware/UFRobotSystemHardware'
         }.items(),
     )
 
@@ -67,6 +67,7 @@ def generate_launch_description():
             'baud_checkset': baud_checkset,
             'default_gripper_baud': default_gripper_baud,
             'robot_type': robot_type,
+            'show_rviz': 'true'
         }.items(),
     )
 
@@ -77,6 +78,6 @@ def generate_launch_description():
 
     return LaunchDescription([
         robot_moveit_servo_launch,
-        tf_node_world_base,
-        robot_driver_launch
+        # robot_driver_launch,
+        tf_node_world_base
     ])

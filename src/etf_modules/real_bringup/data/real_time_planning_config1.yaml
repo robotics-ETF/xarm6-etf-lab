@@ -30,7 +30,8 @@ planner:
   # type: "RGBT-Connect"
   type: "RGBMT*"
   configurations: "/RPMPLv2"
-  trajectory_max_time_step: 0.004                             # In [s]
+  trajectory_max_time_step: 0.010                             # In [s]
+  trajectory_advance_time: 0.100                              # How much time in [s] a desired trajectory will be published in advance
   guaranteed_safe_motion: false                               # Whether robot motion is surely safe for environment
 
 environment:
