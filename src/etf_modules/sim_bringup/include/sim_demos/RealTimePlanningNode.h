@@ -18,6 +18,8 @@ namespace sim_bringup
         RealTimePlanningNode(const std::string &node_name, const std::string &config_file_path, bool loop_execution_,
                              const std::string &output_file_name = "");
         
+        int getPlanningResult() const { return planning_result; }
+
     protected:
         void baseCallback() override { planningCallback(); }
         void planningCallback();
