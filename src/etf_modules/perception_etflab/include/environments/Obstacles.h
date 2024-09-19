@@ -29,7 +29,7 @@ namespace perception_etflab
         Eigen::Vector3f WS_center;								        // Workspace center point in [m]
         float WS_radius; 										        // Workspace radius in [m]
 		float base_radius;
-		bool table_included;
+		size_t ground_included;
         float period; 						                            // Period in [s]
         float max_vel;                                                  // Maximal velocity of each obstacle in [m/s]
 		std::vector<Eigen::Vector3f> velocities; 		                // Velocity vector for each obstacle

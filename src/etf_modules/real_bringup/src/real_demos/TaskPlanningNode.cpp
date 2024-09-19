@@ -65,6 +65,7 @@ void real_bringup::TaskPlanningNode::taskPlanningCallback()
         Planner::preprocessPath({q_object_approach1, q_object_approach2, q_object_pick}, path);
         Trajectory::clear();
         Trajectory::addPath(path);
+        // Trajectory::addPath(path, false);
         Trajectory::publish();
         task = picking_object;
         break;
@@ -86,6 +87,7 @@ void real_bringup::TaskPlanningNode::taskPlanningCallback()
         Planner::preprocessPath({q_object_pick, q_object_approach1}, path);
         Trajectory::clear();
         Trajectory::addPath(path);
+        // Trajectory::addPath(path, false);
         Trajectory::publish();
         task = moving_object_to_destination;
         break;

@@ -2,6 +2,7 @@
 
 #include <xarm_api/xarm_ros_client.h>
 #include <xarm_msgs/srv/move_cartesian.hpp>
+#include <xarm/wrapper/xarm_api.h>
 
 #define deg2rad (M_PI / 180)
 
@@ -27,6 +28,7 @@ namespace real_bringup
 
         std::shared_ptr<rclcpp::Node> xarm_client_node;
         xarm_api::XArmROSClient xarm_client;
+        std::shared_ptr<XArmAPI> xarm_api;
 
         std::shared_ptr<rclcpp::Node> set_position_node;
         rclcpp::Client<xarm_msgs::srv::MoveCartesian>::SharedPtr set_position_client;

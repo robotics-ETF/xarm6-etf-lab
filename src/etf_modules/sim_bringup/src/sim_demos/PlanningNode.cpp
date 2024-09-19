@@ -1,12 +1,11 @@
 #include "sim_demos/PlanningNode.h"
 
-sim_bringup::PlanningNode::PlanningNode(const std::string &node_name, const std::string &config_file_path) : 
+sim_bringup::PlanningNode::PlanningNode(const std::string &node_name, const std::string &config_file_path, bool loop_execution_) : 
     BaseNode(node_name, config_file_path),
     AABB(config_file_path),
     Octomap(config_file_path),
     ConvexHulls(config_file_path)
 {
-    AABB::setEnvironment(Planner::scenario->getEnvironment());
     if (AABB::getMinNumCaptures() == 1)
         AABB::subscription = this->create_subscription<sensor_msgs::msg::PointCloud2>
             ("/bounding_boxes", 10, std::bind(&AABB::callback, this, std::placeholders::_1));
@@ -27,6 +26,7 @@ sim_bringup::PlanningNode::PlanningNode(const std::string &node_name, const std:
     q_goal = Planner::scenario->getGoal();
     path = {};
     planning_result = -1;
+    loop_execution = loop_execution_;
 }
 
 void sim_bringup::PlanningNode::planningCallback()
@@ -37,10 +37,7 @@ void sim_bringup::PlanningNode::planningCallback()
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting...");
         if (Robot::isReady() && AABB::isReady() && Planner::isReady())
         {
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Updating environment...");
-            AABB::updateEnvironment();
-
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Planning a path...");
+            AABB::updateEnvironment(Planner::scenario->getEnvironment());
             Planner::scenario->setStart(Robot::getJointsPositionPtr());
             std::thread planning_thread([this]() 
             {
@@ -74,12 +71,20 @@ void sim_bringup::PlanningNode::planningCallback()
         break;
 
     case executing_trajectory:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Executing trajectory...");
         if (Robot::isReached(Planner::scenario->getGoal()))
         {
-            rclcpp::shutdown();
-            return;
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Goal configuration has been successfully reached!");
+            if (loop_execution)
+            {
+                Planner::scenario->setStart(q_goal);
+                Planner::scenario->setGoal(q_start);
+                q_start = Planner::scenario->getStart();
+                q_goal = Planner::scenario->getGoal();
+                state = waiting;
+            }
         }
+        else
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Executing trajectory...");
         break;
     }
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "----------------------------------------------------------------\n");

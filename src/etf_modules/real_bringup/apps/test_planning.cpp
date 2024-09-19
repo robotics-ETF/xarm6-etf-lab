@@ -8,22 +8,12 @@ int main(int argc, char *argv[])
 	FLAGS_logtostderr = true;
 	LOG(INFO) << "GLOG successfully initialized!";
 
-	const std::string node_name = "planning_node";
-	const std::string config_file_path1 = "/real_bringup/data/planning_config1.yaml";
-	const std::string config_file_path2 = "/real_bringup/data/planning_config2.yaml";
+	const std::string node_name { "planning_node" };
+	const std::string config_file_path { "/real_bringup/data/planning_config.yaml" };
 
-	while (true)
-	{
-		rclcpp::init(argc, argv);
-		rclcpp::spin(std::make_shared<sim_bringup::PlanningNode>(node_name, config_file_path1));
-		rclcpp::shutdown();
-		rclcpp::sleep_for(std::chrono::milliseconds(100));
-
-		rclcpp::init(argc, argv);
-		rclcpp::spin(std::make_shared<sim_bringup::PlanningNode>(node_name, config_file_path2));
-		rclcpp::shutdown();
-		rclcpp::sleep_for(std::chrono::milliseconds(100));
-	}
+	rclcpp::init(argc, argv);
+	rclcpp::spin(std::make_shared<sim_bringup::PlanningNode>(node_name, config_file_path, true));
+	rclcpp::shutdown();
 	
 	google::ShutDownCommandLineFlags();
     return 0;

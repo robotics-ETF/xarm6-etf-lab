@@ -14,6 +14,8 @@
 #include <rclcpp/rclcpp.hpp>
 #include <yaml-cpp/yaml.h>
 
+#include "base/Robot.h"
+
 namespace sim_bringup
 {
     class Planner
@@ -37,9 +39,11 @@ namespace sim_bringup
     private:
         std::unique_ptr<planning::AbstractPlanner> planner;
         planning::PlannerType planner_type;
-        float max_planning_time;                                        // In [s]
-        float max_edge_length;                                          // In [rad]
-        bool ready;
+        float max_planning_time;                                // In [s]
+        float max_edge_length;                                  // In [rad]
+        bool ready;                                             // Whether planner is ready to take a new planning
+        std::shared_ptr<Robot> robot;   // "Another" robot is used when 'solve' function is called, just because this function can be executed
+                                        // concurrently with other routines (e.g., those ones for real-time planning in dynamic environments)
     };
 }
 

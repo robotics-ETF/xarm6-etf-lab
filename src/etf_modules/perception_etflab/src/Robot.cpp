@@ -16,7 +16,7 @@ perception_etflab::Robot::Robot(const std::string &config_file_path)
 
     robot = std::make_shared<robots::xArm6>(project_abs_path + robot_node["urdf"].as<std::string>(),
                                             robot_node["gripper_length"].as<float>(),
-                                            robot_node["table_included"].as<bool>());
+                                            robot_node["ground_included"].as<size_t>());
     robot->setCapsulesRadius(capsules_radius);
                                             
     Eigen::VectorXf q_start(num_DOFs);
@@ -26,7 +26,7 @@ perception_etflab::Robot::Robot(const std::string &config_file_path)
     robot->setConfiguration(joints_state);
     skeleton = robot->computeSkeleton(joints_state);
 
-    table_radius = robot_node["table_radius"].as<float>();
+    ground_radius = robot_node["ground_radius"].as<float>();
     YAML::Node tolerance_radius_node { robot_node["tolerance_radius"] };
     if (tolerance_radius_node.IsDefined())
     {
@@ -56,7 +56,9 @@ void perception_etflab::Robot::jointsStateCallback(const control_msgs::msg::Join
 void perception_etflab::Robot::removeFromScene(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters)
 {
     if (clusters.empty())
+    {
         return;
+    }
 
 	// Compute robot skeleton only if the robot changed its configuration
 	if ((joints_state->getCoord() - robot->getConfiguration()->getCoord()).norm() > 1e-3)
@@ -106,8 +108,10 @@ void perception_etflab::Robot::removeFromScene(std::vector<pcl::PointCloud<pcl::
 void perception_etflab::Robot::removeFromScene2(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl)
 {
     if (pcl->empty())
+    {
         return;
-
+    }
+    
 	// Compute robot skeleton only if the robot changed its configuration
 	if ((joints_state->getCoord() - robot->getConfiguration()->getCoord()).norm() > 1e-3)
 	{
