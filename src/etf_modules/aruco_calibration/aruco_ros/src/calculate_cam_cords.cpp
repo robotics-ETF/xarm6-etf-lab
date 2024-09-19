@@ -144,17 +144,41 @@ Eigen::Matrix4d averageMatrix(const std::vector<Eigen::Matrix4d>& matrices) {
     }
 
     int numMatrices = matrices.size();
-    Eigen::Matrix4d average = Eigen::Matrix4d::Zero();
-
-    // Sum all matrices
+    
+    // Variables to store the sum of positions and Euler angles
+    Eigen::Vector3d positionSum = Eigen::Vector3d::Zero();
+    Eigen::Vector3d eulerSum = Eigen::Vector3d::Zero();
+    
+    // Decompose each matrix into translation and rotation (Euler angles)
     for (const auto& matrix : matrices) {
-        average += matrix;
+        // Extract position vector (translation part)
+        Eigen::Vector3d position = matrix.block<3, 1>(0, 3);
+        
+        // Extract rotation matrix and convert to Euler angles (ZYX order)
+        Eigen::Matrix3d rotationMatrix = matrix.block<3, 3>(0, 0);
+        Eigen::Vector3d eulerAngles = rotationMatrix.eulerAngles(2, 1, 0);  // ZYX convention
+
+        // Accumulate positions and Euler angles
+        positionSum += position;
+        eulerSum += eulerAngles;
     }
 
-    // Calculate average
-    average /= static_cast<double>(numMatrices);
+    // Calculate the average of positions and Euler angles
+    Eigen::Vector3d avgPosition = positionSum / static_cast<double>(numMatrices);
+    Eigen::Vector3d avgEulerAngles = eulerSum / static_cast<double>(numMatrices);
 
-    return average;
+    // Convert averaged Euler angles back to a rotation matrix
+    Eigen::Matrix3d avgRotationMatrix;
+    avgRotationMatrix = Eigen::AngleAxisd(avgEulerAngles[0], Eigen::Vector3d::UnitZ()) *
+                        Eigen::AngleAxisd(avgEulerAngles[1], Eigen::Vector3d::UnitY()) *
+                        Eigen::AngleAxisd(avgEulerAngles[2], Eigen::Vector3d::UnitX());
+
+    // Construct the averaged homogeneous matrix
+    Eigen::Matrix4d avgMatrix = Eigen::Matrix4d::Identity();
+    avgMatrix.block<3, 3>(0, 0) = avgRotationMatrix;
+    avgMatrix.block<3, 1>(0, 3) = avgPosition;
+
+    return avgMatrix;
 }
 
 std::vector<geometry_msgs::msg::Transform> readTransformsFromYAML(const std::string &file_path, const std::string &key) {
@@ -229,6 +253,7 @@ void processTransform() {
     std::string project_abs_path(__FILE__);
     for (size_t i = 0; i < 4; i++)
         project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
+
     const std::string calib_pts_file_path = project_abs_path + "/aruco_calibration/aruco_ros/data/calib_points.yaml";
     const std::string camera_coordinates_file_path_final = project_abs_path + "/aruco_calibration/aruco_ros/data/camera_coordinates_final.yaml";
     const std::string camera_coordinates_file_path_all = project_abs_path + "/aruco_calibration/aruco_ros/data/camera_coordinates_all.yaml";
