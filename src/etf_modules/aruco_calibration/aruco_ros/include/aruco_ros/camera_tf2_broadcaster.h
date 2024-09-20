@@ -35,4 +35,5 @@ private:
   	std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 	rclcpp::Publisher<geometry_msgs::msg::TransformStamped>::SharedPtr camera_position_pub;
 	rclcpp::TimerBase::SharedPtr timer_;
+	std::string camera_side;
 };

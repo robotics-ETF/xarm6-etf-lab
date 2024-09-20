@@ -121,8 +121,11 @@ FramePublisher::FramePublisher(const std::string config_file_path)
     // Initialize the transform broadcaster
     tf_broadcaster_ =
       std::make_unique<tf2_ros::TransformBroadcaster>(*this);
+
+    this->declare_parameter<std::string>("camera_side", "left");
+    camera_side = this->get_parameter("camera_side").get_value<std::string>();
     
-    camera_position_pub = this->create_publisher<geometry_msgs::msg::TransformStamped>("camera_left_in_world", 10);
+    camera_position_pub = this->create_publisher<geometry_msgs::msg::TransformStamped>("camera_" + camera_side + "_in_world", 10);
     timer_ = this->create_wall_timer(
     500ms, std::bind(&FramePublisher::DirKinArucoPosCallback, this));
     
@@ -135,7 +138,7 @@ void FramePublisher::jointsStateCallback(const control_msgs::msg::JointTrajector
     for (size_t i = 0; i < 4; i++)
 		project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
 
-    const std::string camera_coordinates_file_path_final = project_abs_path + "/aruco_calibration/aruco_ros/data/camera_coordinates_final.yaml";
+    const std::string camera_coordinates_file_path_final = project_abs_path + "/aruco_calibration/aruco_ros/data/" + camera_side + "_camera/camera_coordinates_final.yaml";
     
 
     try {
@@ -143,7 +146,7 @@ void FramePublisher::jointsStateCallback(const control_msgs::msg::JointTrajector
 
         t.header.stamp = this->get_clock()->now();
         t.header.frame_id = "world";
-        t.child_frame_id = "camera_calculated";    
+        t.child_frame_id = "camera_" + camera_side + "_calculated";    
 
         tf_broadcaster_->sendTransform(t);    
     } catch (const std::exception& e) {
@@ -161,7 +164,7 @@ void FramePublisher::DirKinArucoPosCallback(){
     for (size_t i = 0; i < 4; i++)
 		project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
 
-    const std::string camera_coordinates_file_path_final = project_abs_path + "/aruco_calibration/aruco_ros/data/camera_coordinates_final.yaml";
+    const std::string camera_coordinates_file_path_final = project_abs_path + "/aruco_calibration/aruco_ros/data/" + camera_side + "_camera/camera_coordinates_final.yaml";
     
 
     try {
@@ -175,7 +178,7 @@ void FramePublisher::DirKinArucoPosCallback(){
        
         t.header.stamp = this->get_clock()->now();
         t.header.frame_id = "world";
-        t.child_frame_id = "camera_calculated"; 
+        t.child_frame_id = "camera_" + camera_side + "_calculated";    
 
         printKDLFrame(transformStampedToKDLFrame(t), this->get_logger());
 

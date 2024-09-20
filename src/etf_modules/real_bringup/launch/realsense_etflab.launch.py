@@ -56,7 +56,7 @@ def generate_launch_description():
     coordinates_l = load_coordinates_from_yaml('/home/roboticsetf/xarm6-etf-lab/src/etf_modules/aruco_calibration/aruco_ros/data/left_camera/camera_coordinates_final.yaml')
     
     # Load coordinates for right camera from YAML
-    coordinates_l = load_coordinates_from_yaml('/home/roboticsetf/xarm6-etf-lab/src/etf_modules/aruco_calibration/aruco_ros/data/right_camera/camera_coordinates_final.yaml')
+    coordinates_r = load_coordinates_from_yaml('/home/roboticsetf/xarm6-etf-lab/src/etf_modules/aruco_calibration/aruco_ros/data/right_camera/camera_coordinates_final.yaml')
 
     # Extract the coordinates into variables for left camera
     x_l, y_l, z_l, yaw_l, pitch_l, roll_l = coordinates_l
