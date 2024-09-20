@@ -254,9 +254,9 @@ void processTransform() {
     for (size_t i = 0; i < 4; i++)
         project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
 
-    const std::string calib_pts_file_path = project_abs_path + "/aruco_calibration/aruco_ros/data/calib_points.yaml";
-    const std::string camera_coordinates_file_path_final = project_abs_path + "/aruco_calibration/aruco_ros/data/camera_coordinates_final.yaml";
-    const std::string camera_coordinates_file_path_all = project_abs_path + "/aruco_calibration/aruco_ros/data/camera_coordinates_all.yaml";
+    const std::string calib_pts_file_path = project_abs_path + "/aruco_calibration/aruco_ros/data/left_camera/calib_points.yaml";
+    const std::string camera_coordinates_file_path_final = project_abs_path + "/aruco_calibration/aruco_ros/data/left_camera/camera_coordinates_final.yaml";
+    const std::string camera_coordinates_file_path_all = project_abs_path + "/aruco_calibration/aruco_ros/data/left_camera/camera_coordinates_all.yaml";
 
     // Read transforms from the YAML file
     auto dir_kin_transforms = readTransformsFromYAML(calib_pts_file_path, "transforms_dir_kin");

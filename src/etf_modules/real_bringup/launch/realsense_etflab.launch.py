@@ -52,11 +52,17 @@ def generate_launch_description():
         }.items(),
     )
     
-    # Load coordinates from YAML
-    coordinates = load_coordinates_from_yaml('/home/roboticsetf/xarm6-etf-lab/src/etf_modules/aruco_calibration/aruco_ros/data/camera_coordinates_final.yaml')
+    # Load coordinates for left camera from YAML
+    coordinates_l = load_coordinates_from_yaml('/home/roboticsetf/xarm6-etf-lab/src/etf_modules/aruco_calibration/aruco_ros/data/left_camera/camera_coordinates_final.yaml')
+    
+    # Load coordinates for right camera from YAML
+    coordinates_l = load_coordinates_from_yaml('/home/roboticsetf/xarm6-etf-lab/src/etf_modules/aruco_calibration/aruco_ros/data/right_camera/camera_coordinates_final.yaml')
 
-    # Extract the coordinates into variables
-    x, y, z, yaw, pitch, roll = coordinates
+    # Extract the coordinates into variables for left camera
+    x_l, y_l, z_l, yaw_l, pitch_l, roll_l = coordinates_l
+    
+    # Extract the coordinates into variables for left camera
+    x_r, y_r, z_r, yaw_r, pitch_r, roll_r = coordinates_r
 
     # Create the tf_node_link_base_camera_left_link Node
    
@@ -71,7 +77,7 @@ def generate_launch_description():
     
     tf_node_link_base_camera_left_link = Node(package="tf2_ros", 
             executable="static_transform_publisher",
-            arguments=[str(x), str(y), str(z), str(yaw), str(pitch), str(roll), "link_base", "camera_left_link"])
+            arguments=[str(x_l), str(y_l), str(z_l), str(yaw_l), str(pitch_l), str(roll_l), "link_base", "camera_left_link"])
     '''
     
     tf_node_link_base_aruco_marker = Node(package = "tf2_ros", 
@@ -86,6 +92,11 @@ def generate_launch_description():
                         "aruco_marker", "camera_left_link"]     # (x,y,z, yaw(z), pich(y), roll(x))
 	)
     '''
+    
+    tf_node_link_base_camera_right_link = Node(package="tf2_ros", 
+            executable="static_transform_publisher",
+            arguments=[str(x_r), str(y_r), str(z_r), str(yaw_r), str(pitch_r), str(roll_r), "link_base", "camera_left_link"])
+   
     
     tf_node_aruco_marker_from_right_camera_right_link = Node(package = "tf2_ros", 
             name="right_transform",
