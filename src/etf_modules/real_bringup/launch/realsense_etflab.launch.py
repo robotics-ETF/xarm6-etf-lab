@@ -78,8 +78,8 @@ def generate_launch_description():
     tf_node_link_base_camera_left_link = Node(package="tf2_ros", 
             executable="static_transform_publisher",
             arguments=[str(x_l), str(y_l), str(z_l), str(yaw_l), str(pitch_l), str(roll_l), "link_base", "camera_left_link"])
+   
     '''
-    
     tf_node_link_base_aruco_marker = Node(package = "tf2_ros", 
             executable = "static_transform_publisher",
             arguments = ["0.44", "0", "0", "1.57079", "0", "0", "link_base", "aruco_marker"]
@@ -93,6 +93,7 @@ def generate_launch_description():
 	)
     '''
     
+   
     tf_node_link_base_camera_right_link = Node(package="tf2_ros", 
             executable="static_transform_publisher",
             arguments=[str(x_r), str(y_r), str(z_r), str(yaw_r), str(pitch_r), str(roll_r), "link_base", "camera_right_link"])
@@ -110,7 +111,7 @@ def generate_launch_description():
             arguments = ["0", "-0.06", "0", "3.14159", "-1.57079", "0", \
                         "aruco_marker", "aruco_marker_from_right"]
 	)
-    '''
+     '''
     ########################################################################
     
     # Nermin (calibrated using aruco_calibration package):
@@ -158,9 +159,9 @@ def generate_launch_description():
         name='pointcloud_combiner',
         output='screen',
         parameters=[
-            {"point_cloud_topics": ["/camera_left/depth/color/points", "/camera_right/depth/color/points"]},
-            # {"point_cloud_topics": ["/camera_left/depth/color/points"]},
-            #{"point_cloud_topics": ["/camera_right/depth/color/points"]},
+            #{"point_cloud_topics": ["/camera_left/depth/color/points", "/camera_right/depth/color/points"]},
+            {"point_cloud_topics": ["/camera_left/depth/color/points"]},
+            # {"point_cloud_topics": ["/camera_right/depth/color/points"]},
             {"output_topic": "pointcloud_combined"}
         ]
     )
@@ -203,7 +204,7 @@ def generate_launch_description():
         # tf_node_camera_left_camera_left_link,
         
         tf_node_link_base_camera_left_link,
-        tf_node_link_base_camera_right_link,
+        # tf_node_link_base_camera_right_link,
         rviz_node,
         TimerAction(
             period=1.0,

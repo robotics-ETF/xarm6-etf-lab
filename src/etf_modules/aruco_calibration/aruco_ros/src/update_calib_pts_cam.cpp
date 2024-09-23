@@ -8,9 +8,14 @@
 
 #include "./aruco_ros/update_calib_points_cam.h"
 
+std::string camera_side;
+
 TransformUpdateNode::TransformUpdateNode()
     : Node("transform_update_node")
 {
+    this->declare_parameter<std::string>("camera_side", "left");
+    camera_side = this->get_parameter("camera_side").get_value<std::string>();
+
     subscription_camera = this->create_subscription<geometry_msgs::msg::TransformStamped>(
         "aruco_single/transform", 10,
         std::bind(&TransformUpdateNode::camera_callback, this, std::placeholders::_1));
@@ -34,7 +39,7 @@ void TransformUpdateNode::camera_callback(const geometry_msgs::msg::TransformSta
     for (size_t i = 0; i < 4; i++)
         project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
     
-    const std::string config_file_path = "/aruco_calibration/aruco_ros/data/calib_points.yaml";
+    const std::string config_file_path = "/aruco_calibration/aruco_ros/data/" + camera_side + "_camera/calib_points.yaml";
     
     YAML::Node yaml_data;
     std::string yaml_file_path = project_abs_path + config_file_path;

@@ -24,4 +24,5 @@ public:
 
 private:
   	rclcpp::Subscription<geometry_msgs::msg::TransformStamped>::SharedPtr subscription_camera;
+    // std::string camera_side;
 };

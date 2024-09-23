@@ -8,9 +8,16 @@
 
 #include "./aruco_ros/update_calib_points_dir_kin.h"
 
+std::string camera_side;
+
 TransformUpdateNode::TransformUpdateNode()
     : Node("transform_update_node")
 {
+    this->declare_parameter<std::string>("camera_side", "left");
+    camera_side = this->get_parameter("camera_side").get_value<std::string>();
+
+    RCLCPP_INFO(this->get_logger(), "SMT");
+
     subscription_dir_kin = this->create_subscription<geometry_msgs::msg::TransformStamped>(
         "dir_kin_aruco_pos", 10,
         std::bind(&TransformUpdateNode::dir_kin_callback, this, std::placeholders::_1));
@@ -33,7 +40,7 @@ void TransformUpdateNode::dir_kin_callback(const geometry_msgs::msg::TransformSt
     for (size_t i = 0; i < 4; i++)
         project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
     
-    const std::string config_file_path = "/aruco_calibration/aruco_ros/data/calib_points.yaml";
+    const std::string config_file_path = "/aruco_calibration/aruco_ros/data/" + camera_side + "_camera/calib_points.yaml";
     
     YAML::Node yaml_data;
     std::string yaml_file_path = project_abs_path + config_file_path;
@@ -57,6 +64,7 @@ void TransformUpdateNode::dir_kin_callback(const geometry_msgs::msg::TransformSt
         std::ofstream yaml_out(yaml_file_path);
         yaml_out << yaml_data;
 
+        RCLCPP_INFO(this->get_logger(), "\nCamera side: %s\n", camera_side.c_str());
         RCLCPP_INFO(this->get_logger(), "YAML file updated with new transform data.");
 
         // Shutdown the node after the first update
@@ -72,6 +80,7 @@ int main(int argc, char *argv[])
 {
     rclcpp::init(argc, argv);
     auto node = std::make_shared<TransformUpdateNode>();
+
     rclcpp::spin(node);
     rclcpp::shutdown();
     return 0;
