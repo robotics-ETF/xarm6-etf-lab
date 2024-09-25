@@ -10,6 +10,7 @@
 # ros2 launch realsense2_camera rs_multi_camera_launch.py camera_name1:=D400 device_type2:=l5. device_type1:=d4..
 
 import copy
+import yaml
 from launch import LaunchDescription
 import launch_ros.actions
 from launch.actions import IncludeLaunchDescription, TimerAction
@@ -17,9 +18,16 @@ from launch.substitutions import LaunchConfiguration, ThisLaunchFileDir, PathJoi
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_ros.substitutions import FindPackageShare
 from launch_ros.actions import Node
+
+# Load coordinates from the YAML file
+def load_coordinates_from_yaml(file_path):
+    with open(file_path, 'r') as file:
+        data = yaml.safe_load(file)
+        return data['xyz_YPR']
     
 
 def generate_launch_description():
+    
     camera_left_node = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(PathJoinSubstitution([FindPackageShare('realsense2_camera'), 'launch', 'rs_launch.py'])),
         launch_arguments={
@@ -43,7 +51,22 @@ def generate_launch_description():
             'temporal_filter.enable': 'true',
         }.items(),
     )
+    
+    # Load coordinates for left camera from YAML
+    coordinates_l = load_coordinates_from_yaml('/home/roboticsetf/xarm6-etf-lab/src/etf_modules/aruco_calibration/aruco_ros/data/left_camera/camera_coordinates_final.yaml')
+    
+    # Load coordinates for right camera from YAML
+    coordinates_r = load_coordinates_from_yaml('/home/roboticsetf/xarm6-etf-lab/src/etf_modules/aruco_calibration/aruco_ros/data/right_camera/camera_coordinates_final.yaml')
 
+    # Extract the coordinates into variables for left camera
+    x_l, y_l, z_l, yaw_l, pitch_l, roll_l = coordinates_l
+    
+    # Extract the coordinates into variables for left camera
+    x_r, y_r, z_r, yaw_r, pitch_r, roll_r = coordinates_r
+
+    # Create the tf_node_link_base_camera_left_link Node
+   
+    
     ########################################################################
     # # Nermin (calibrated by hand):
     tf_node_world_link_base = Node(package = "tf2_ros", 
@@ -51,6 +74,12 @@ def generate_launch_description():
             arguments = ["0", "0", "0", "0", "0", "0", "world", "link_base"]
     )
 
+    
+    tf_node_link_base_camera_left_link = Node(package="tf2_ros", 
+            executable="static_transform_publisher",
+            arguments=[str(x_l), str(y_l), str(z_l), str(yaw_l), str(pitch_l), str(roll_l), "link_base", "camera_left_link"])
+   
+    
     tf_node_link_base_aruco_marker = Node(package = "tf2_ros", 
             executable = "static_transform_publisher",
             arguments = ["0.44", "0", "0", "1.57079", "0", "0", "link_base", "aruco_marker"]
@@ -62,7 +91,14 @@ def generate_launch_description():
             arguments = ["-1.11", "0", "0.92", "0.37", "0.67", "0.06", \
                         "aruco_marker", "camera_left_link"]     # (x,y,z, yaw(z), pich(y), roll(x))
 	)
-
+    
+    
+   
+    tf_node_link_base_camera_right_link = Node(package="tf2_ros", 
+            executable="static_transform_publisher",
+            arguments=[str(x_r), str(y_r), str(z_r), str(yaw_r), str(pitch_r), str(roll_r), "link_base", "camera_right_link"])
+   
+    
     tf_node_aruco_marker_from_right_camera_right_link = Node(package = "tf2_ros", 
             name="right_transform",
             executable = "static_transform_publisher",
@@ -75,8 +111,9 @@ def generate_launch_description():
             arguments = ["0", "-0.06", "0", "3.14159", "-1.57079", "0", \
                         "aruco_marker", "aruco_marker_from_right"]
 	)
+    
     ########################################################################
-
+    
     # Nermin (calibrated using aruco_calibration package):
     # tf_node_world_link_base = Node(package = "tf2_ros", 
     #         executable = "static_transform_publisher",
@@ -122,8 +159,8 @@ def generate_launch_description():
         name='pointcloud_combiner',
         output='screen',
         parameters=[
-            # {"point_cloud_topics": ["/camera_left/depth/color/points", "/camera_right/depth/color/points"]},
-            {"point_cloud_topics": ["/camera_left/depth/color/points"]},
+            {"point_cloud_topics": ["/camera_left/depth/color/points", "/camera_right/depth/color/points"]},
+            # {"point_cloud_topics": ["/camera_left/depth/color/points"]},
             # {"point_cloud_topics": ["/camera_right/depth/color/points"]},
             {"output_topic": "pointcloud_combined"}
         ]
@@ -158,13 +195,17 @@ def generate_launch_description():
         camera_left_node,
         camera_right_node,
         tf_node_world_link_base,
-        tf_node_link_base_aruco_marker,
-        tf_node_aruco_marker_camera_left_link,
+        
+        # tf_node_link_base_aruco_marker,
         # tf_node_aruco_marker_aruco_marker_from_right,
         # tf_node_aruco_marker_from_right_camera_right_link,
         
+        # tf_node_aruco_marker_camera_left_link,
         # tf_node_aruco_marker_camera_left,
         # tf_node_camera_left_camera_left_link,
+        
+        tf_node_link_base_camera_left_link,
+        tf_node_link_base_camera_right_link,
         rviz_node,
         TimerAction(
             period=1.0,
