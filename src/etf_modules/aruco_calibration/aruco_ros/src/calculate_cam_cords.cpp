@@ -276,16 +276,13 @@ void processTransform(std::string camera_side) {
 
     std::vector<Eigen::Matrix4d> camera_cords;
     
-    /*
+    
     for (size_t i = 0; i < dir_kin_transforms.size(); i++){
         Eigen::Matrix4d camera_cord = dir_kin_transforms_homo[i] * camera_transforms_homo[i].inverse() ;
         writeMatrixToYaml(camera_cord, camera_coordinates_file_path_all, "matrix" + std::to_string(i));
         camera_cords.push_back(camera_cord);
     }
-    */
-
-    camera_cords = loadMatricesFromYAML(camera_coordinates_file_path_all); 
-
+    
     Eigen::Matrix4d camera_cord_avg = averageMatrix(camera_cords);
 
     camera_cord_avg = rotatePointOpticalToLink(camera_cord_avg);

@@ -125,7 +125,7 @@ public:
     RCLCPP_INFO_STREAM(this->get_logger(), "Threshold method: " << thresh_method);
 
     // Declare node parameters
-    this->declare_parameter<double>("marker_size", 0.05);
+    this->declare_parameter<double>("marker_size", 0.20);
     this->declare_parameter<int>("marker_id", 300);
     this->declare_parameter<std::string>("reference_frame", "");
     this->declare_parameter<std::string>("camera_frame", "");
@@ -167,7 +167,7 @@ public:
     marker_pub = subNode->create_publisher<visualization_msgs::msg::Marker>("marker", 10);
     pixel_pub = subNode->create_publisher<geometry_msgs::msg::PointStamped>("pixel", 10);
 
-    this->get_parameter_or<double>("marker_size", marker_size, 0.05);
+    this->get_parameter_or<double>("marker_size", marker_size, 0.20);
     this->get_parameter_or<int>("marker_id", marker_id, 300);
     this->get_parameter_or<std::string>("reference_frame", reference_frame, "");
     this->get_parameter_or<std::string>("camera_frame", camera_frame, "");
