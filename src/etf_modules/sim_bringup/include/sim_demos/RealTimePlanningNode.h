@@ -38,6 +38,7 @@ namespace sim_bringup
         std::shared_ptr<base::State> q_start_init;
         std::shared_ptr<base::State> q_goal_init;
         float trajectory_advance_time;
+        float max_obs_vel;
 
         rclcpp::CallbackGroup::SharedPtr callback_group;
         rclcpp::Service<std_srvs::srv::Empty>::SharedPtr replanning_service;
