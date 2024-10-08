@@ -19,7 +19,6 @@ namespace sim_bringup
         std::string dynamic_planner_config_file_path;
         YAML::Node dynamic_node;
         std::ofstream file_out;
-        rclcpp::executors::MultiThreadedExecutor executor;
         std::thread dynamic_planner_thread;
     };
 }

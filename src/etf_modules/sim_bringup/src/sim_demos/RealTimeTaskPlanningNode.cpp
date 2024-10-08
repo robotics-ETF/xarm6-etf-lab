@@ -29,8 +29,7 @@ void sim_bringup::RealTimeTaskPlanningNode::planningCase()
         {
             real_time_planning_node = std::make_shared<sim_bringup::RealTimePlanningNode>
                                       ("real_time_planning_node", dynamic_planner_config_file_path, false);
-            executor.add_node(real_time_planning_node);
-            executor.spin();
+            rclcpp::spin(real_time_planning_node);
         });
         dynamic_planner_thread.detach();
         state = State::planning;
@@ -39,8 +38,6 @@ void sim_bringup::RealTimeTaskPlanningNode::planningCase()
     case State::planning:
         if (real_time_planning_node->getPlanningResult() == 1)
         {
-            executor.cancel();
-            executor.remove_node(real_time_planning_node);
             real_time_planning_node = nullptr;
             state = State::waiting;
             task = task_next;
