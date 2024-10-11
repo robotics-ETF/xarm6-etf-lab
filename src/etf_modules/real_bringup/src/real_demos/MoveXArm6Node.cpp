@@ -31,7 +31,7 @@ real_bringup::MoveXArm6Node::MoveXArm6Node(const std::string &node_name, const s
 
     // Using 'XArmAPI' from SDK interface
     xarm_api = std::make_shared<XArmAPI>("192.168.1.236");
-    xarm_api->set_linear_spd_limit_factor(1.5);
+    xarm_api->set_linear_spd_limit_factor(2);
     xarm_api->save_conf();
 
     set_position_node = std::make_shared<rclcpp::Node>("set_position_node");

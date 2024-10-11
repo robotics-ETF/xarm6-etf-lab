@@ -1,6 +1,6 @@
-#include "sim_demos/RealTimeTaskPlanningNode.h"
+#include "real_demos/RealTimeTaskPlanningNode.h"
 
-sim_bringup::RealTimeTaskPlanningNode::RealTimeTaskPlanningNode(const std::string &node_name, const std::string &config_file_path) : 
+real_bringup::RealTimeTaskPlanningNode::RealTimeTaskPlanningNode(const std::string &node_name, const std::string &config_file_path) : 
     TaskPlanningNode(node_name, config_file_path) 
 {
     YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
@@ -9,7 +9,7 @@ sim_bringup::RealTimeTaskPlanningNode::RealTimeTaskPlanningNode(const std::strin
     state = State::waiting;
 }
 
-void sim_bringup::RealTimeTaskPlanningNode::planningCase()
+void real_bringup::RealTimeTaskPlanningNode::planningCase()
 {
     switch (state)
     {

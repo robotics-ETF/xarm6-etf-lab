@@ -56,7 +56,7 @@ namespace sim_bringup
 
         void jointsStateCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg);
         inline bool isReady() { return ready; }
-        bool isReached(std::shared_ptr<base::State> q, float tol = 0.01);
+        bool isReached(std::shared_ptr<base::State> q, float tol = 0.1);
         void moveGripper(float position, float max_effort = 5.0);
         
         rclcpp::Subscription<control_msgs::msg::JointTrajectoryControllerState>::SharedPtr joints_state_subscription;

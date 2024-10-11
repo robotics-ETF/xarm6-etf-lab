@@ -28,7 +28,7 @@ namespace sim_bringup
         inline size_t getMinNumCaptures() const { return min_num_captures; }
         inline void setMinNumCaptures(size_t min_num_captures_) { min_num_captures = min_num_captures_; }
 
-        void updateEnvironment(const std::shared_ptr<env::Environment> env);
+        void updateEnvironment(const std::shared_ptr<env::Environment> env, float max_obs_vel = 0);
         void resetMeasurements();
         virtual int chooseObject() { return -1; }
         inline bool isReady() { return ready; }

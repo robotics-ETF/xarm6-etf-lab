@@ -6,15 +6,13 @@ robot:
   space: "RealVectorSpace"
   num_DOFs: 6
   q_home:  [0, 0, 0, 3.1415, 1.5708, 0]
-  q_start: [0, 0, 0, 3.1415, 1.5708, 0]
-  q_goal:  [1.5708, 0, 0, 3.1415, 1.5708, 0]
   capsules_radius: [0.047, 0.12, 0.11, 0.09, 0.05, 0.1]       # When the gripper is attached
   gripper_length: 0.17                                        # In [m]
   ground_included: 2                                          # Please check whether 'ground' is added in 'environment'
   self_collision_checking: true                               # Whether self-collision should be checked
   max_vel:  [1.5, 1.5, 1.5, 1.5, 1.5, 1.5]                    # Maximal velocity of each robot's joint in [rad/s]
-  max_acc:  [20, 20, 20, 20, 20, 20]                          # Maximal acceleration of each robot's joint in [rad/s²]
-  max_jerk: [200, 200, 200, 200, 200, 200]                    # Maximal jerk of each robot's joint in [rad/s³]
+  max_acc:  [10, 10, 10, 10, 10, 10]                          # Maximal acceleration of each robot's joint in [rad/s²]
+  max_jerk: [50, 50, 50, 50, 50, 50]                          # Maximal jerk of each robot's joint in [rad/s³]
 
 planner:
   # type: "RRT-Connect"
@@ -22,8 +20,8 @@ planner:
   # type: "RGBT-Connect"
   type: "RGBMT*"
   configurations: "/RPMPLv2"
-  max_planning_time: 1.9                                      # In [s]
-  max_edge_length: 0.2                                        # In [rad]
+  max_planning_time: 0.9                                      # In [s]
+  max_edge_length: 0.5                                        # In [rad]
   trajectory_max_time_step: 0.010                             # In [s]
 
 environment:
@@ -36,7 +34,7 @@ cameras:
   min_num_captures: 3                                         # Minimal number of captures/frames of a single STATIC obstacle to become valid
   
 scenario:
-  max_object_height: 0.05                                     # Maximal height of an object that can be picked up
+  max_object_height: 0.11                                     # Maximal height of an object that can be picked up
   picking_object_wait_max: 4                                  # Number of periods 'period' to wait in [s]
   destination: [-0.5, 0, 0.2]                                 # Coordinates of a destination box
   max_gripper_speed: 5000                                     # Range: [0, 5000] [mm/s]

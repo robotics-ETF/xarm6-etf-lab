@@ -32,6 +32,7 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
         RGBMTStarConfig::TERMINATE_WHEN_PATH_IS_FOUND = true;
     DRGBTConfig::GUARANTEED_SAFE_MOTION = node["planner"]["guaranteed_safe_motion"].as<bool>();
     trajectory_advance_time = node["planner"]["trajectory_advance_time"].as<float>();
+    max_obs_vel = node["planner"]["max_obs_vel"].as<float>();
     
     iteration_completed = true;
     planning_result = -1;
@@ -74,7 +75,7 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
     DP::time_iter_start = std::chrono::steady_clock::now();     // Start the iteration clock
     iteration_completed = false;
     planning_result = -1;
-    AABB::updateEnvironment(DP::ss->env);
+    AABB::updateEnvironment(DP::ss->env, max_obs_vel);
     
     // ------------------------------------------------------------------------------- //
     // Current robot position and velocity (measured vs computed)

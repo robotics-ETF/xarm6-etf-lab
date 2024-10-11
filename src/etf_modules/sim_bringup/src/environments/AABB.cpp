@@ -83,7 +83,7 @@ bool sim_bringup::AABB::whetherToRemove([[maybe_unused]] const Eigen::Vector3f &
     return false;
 }
 
-void sim_bringup::AABB::updateEnvironment(const std::shared_ptr<env::Environment> env)
+void sim_bringup::AABB::updateEnvironment(const std::shared_ptr<env::Environment> env, float max_obs_vel)
 {
     if (!ready)
     {
@@ -93,18 +93,20 @@ void sim_bringup::AABB::updateEnvironment(const std::shared_ptr<env::Environment
     
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Updating environment...");
     env->removeObjects("ground", false);
+    std::string label { max_obs_vel > 0 ? "dynamic_obstacle" : "static_obstacle" };
     
     for (size_t i = 0; i < positions.size(); i++)
     {
         if (num_captures[i] >= min_num_captures)
         {
 		    std::shared_ptr<env::Object> object = 
-                std::make_shared<env::Box>(dimensions[i], positions[i], fcl::Quaternionf::Identity(), "dynamic_obstacle");
+                std::make_shared<env::Box>(dimensions[i], positions[i], fcl::Quaternionf::Identity(), label);
+            object->setMaxVel(max_obs_vel);
             env->addObject(object);
 
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "AABB %ld: dim = (%f, %f, %f), pos = (%f, %f, %f), num. captures = %ld",
-                i, dimensions[i].x(), dimensions[i].y(), dimensions[i].z(),                 // (x, y, z) in [m]
-                positions[i].x(), positions[i].y(), positions[i].z(), num_captures[i]);     // (x, y, z) in [m]
+            // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "AABB %ld: dim = (%f, %f, %f), pos = (%f, %f, %f), num. captures = %ld",
+            //     i, dimensions[i].x(), dimensions[i].y(), dimensions[i].z(),                 // (x, y, z) in [m]
+            //     positions[i].x(), positions[i].y(), positions[i].z(), num_captures[i]);     // (x, y, z) in [m]
         }
     }
 

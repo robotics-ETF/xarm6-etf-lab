@@ -2,7 +2,7 @@ period: 0.050                                                 # Maximal runtime 
 
 real_time:
   scheduling: "FPS"                                           # "FPS" - Fixed Priority Scheduling
-  max_time_task1: 0.025                                       # Maximal time in [s] which Task 1 can take from the processor
+  max_time_task1: 0.050                                       # Maximal time in [s] which Task 1 can take from the processor
 
 robot:
   type: "xarm6"
@@ -11,18 +11,20 @@ robot:
   num_DOFs: 6
   q_home:  [0, 0, 0, 3.1415, 1.5708, 0]
   q_start: [0, 0, 0, 3.1415, 1.5708, 0]
-  q_goal:  [-3.1415, 0, 0, 3.1415, 1.5708, 0]
-  # q_goal:  [-3.1415, 0, -0.7854, 0, 0.7854, 0]
-  # q_goal:  [-3.1415, 0.3491, -2.0944, 0, 0.1745, 0]
+  q_goal:  [-3.1415, 0.3491, -2.0944, 0, 0.1745, 0]
+  # q_start: [-3.1415, 0, -1.5708, 0, 0, 0]
+  # q_goal:  [3.1415, 0, 0, 3.1415, 1.5708, 0]
+  # q_start: [-3.1415, 0, -0.7853, 0, 0.7853, 0]
+  # q_goal:  [3.1415, 0, -0.7853, 0, 0.7853, 0]
   capsules_radius: [0.047, 0.12, 0.11, 0.09, 0.05, 0.1]       # When the gripper is attached
   gripper_length: 0.17                                        # In [m]
   ground_included: 2                                          # Please check whether 'ground' is added in 'environment'
   self_collision_checking: true                               # Whether self-collision should be checked
   WS_center: [0.0, 0.0, 0.267]                                # Workspace center point in [m]
   WS_radius: 1.5                                              # Workspace radius in [m] assuming spherical workspace shape
-  max_vel:  [1, 1, 1, 1, 1, 1]                                # Maximal velocity of each robot's joint in [rad/s]
+  max_vel:  [1.5, 1.5, 1.5, 1.5, 1.5, 1.5]                    # Maximal velocity of each robot's joint in [rad/s]
   max_acc:  [10, 10, 10, 10, 10, 10]                          # Maximal acceleration of each robot's joint in [rad/s²]
-  max_jerk: [100, 100, 100, 100, 100, 100]                    # Maximal jerk of each robot's joint in [rad/s³]
+  max_jerk: [50, 50, 50, 50, 50, 50]                          # Maximal jerk of each robot's joint in [rad/s³]
 
 planner:
   # type: "RRT-Connect"
@@ -31,8 +33,9 @@ planner:
   type: "RGBMT*"
   configurations: "/RPMPLv2"
   trajectory_max_time_step: 0.010                             # In [s]
-  trajectory_advance_time: 0.100                              # How much time in [s] a desired trajectory will be published in advance
+  trajectory_advance_time: 0.090                              # How much time in [s] a desired trajectory will be published in advance
   guaranteed_safe_motion: false                               # Whether robot motion is surely safe for environment
+  max_obs_vel: 1.0                                            # Maximal velocity of dynamic obstacles used to generate dynamic bubbles. Only available when 'guaranteed_safe_motion' is true.
 
 environment:
   - box:
