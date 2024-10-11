@@ -125,11 +125,18 @@ cd ~/xarm6-etf-lab
 ros2 run sim_bringup test_task_planning
 ```
 
-## 3.4 Test demo 4 (real-time planning using planners from RPMPLv2 library and using cameras)
+## 3.4 Test demo 4 (real-time planning using DRGBT planner from RPMPLv2 library and using cameras)
 ```
 # In the new tab type:
 cd ~/xarm6-etf-lab
 ros2 run sim_bringup test_real_time_planning
+```
+
+## 3.5 Test demo 5 (real-time task planning using DRGBT planner from RPMPLv2 library and using cameras)
+```
+# In the new tab type:
+cd ~/xarm6-etf-lab
+ros2 run sim_bringup test_real_time_task_planning
 ```
 
 # 4. Run the realsense cameras using RViz2
@@ -203,9 +210,26 @@ cd ~/xarm6-etf-lab
 ros2 run real_bringup test_task_planning
 ```
 
-## 5.7 Test demo 7 (real-time planning using planners from RPMPLv2 library and using cameras)
+## 5.7 Test demo 7 (real-time planning using DRGBT planner from RPMPLv2 library and using cameras)
 ```
 # In the new tab type:
 cd ~/xarm6-etf-lab
 ros2 run real_bringup test_real_time_planning
 ```
+
+https://github.com/user-attachments/assets/9c582143-1d74-496e-a4a0-dde80655efac
+
+https://github.com/user-attachments/assets/1f5303ce-745e-4067-83e6-dcaecc1907e6
+
+## 5.8 Test demo 8 (real-time task planning using DRGBT planner from RPMPLv2 library and using cameras)
+```
+# In the new tab type:
+cd ~/xarm6-etf-lab
+ros2 run real_bringup test_real_time_task_planning
+```
+
+https://github.com/user-attachments/assets/08de02dd-e1c8-4726-b6c3-f6f8295470d8
+
+https://github.com/user-attachments/assets/68841cae-02b0-4555-a79d-39a97862ca06
+
+https://github.com/user-attachments/assets/f47aad66-ca05-42e0-9328-9a03e8dceee1
