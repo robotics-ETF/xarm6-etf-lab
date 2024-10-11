@@ -118,6 +118,8 @@ cd ~/xarm6-etf-lab
 ros2 run sim_bringup test_planners
 ```
 
+https://github.com/user-attachments/assets/d47a7aae-8bd0-4d07-8e0b-74627740194f
+
 ## 3.3 Test demo 3 (task planning using planners from RPMPLv2 library and using cameras)
 ```
 # In the new tab type:
@@ -131,6 +133,10 @@ ros2 run sim_bringup test_task_planning
 cd ~/xarm6-etf-lab
 ros2 run sim_bringup test_real_time_planning
 ```
+
+https://github.com/user-attachments/assets/bbbb9d0d-48d0-4280-9f06-73b950a28b6c
+
+https://github.com/user-attachments/assets/1dbe400c-6fd7-4ac3-8c03-2cfc0e70e3fa
 
 ## 3.5 Test demo 5 (real-time task planning using DRGBT planner from RPMPLv2 library and using cameras)
 ```
@@ -175,12 +181,16 @@ ros2 run real_bringup test_move_xarm6
 ros2 run real_bringup test_move_xarm6.py
 ```
 
+https://github.com/user-attachments/assets/70666ac8-b1af-4938-9666-510000e30901
+
 ## 5.2 Test demo 2 (bottle-and-glass operations)
 ```
 # In the new tab type:
 cd ~/xarm6-etf-lab
 ros2 run real_bringup test_bottle_and_glass
 ```
+
+https://github.com/user-attachments/assets/9540c4eb-da71-41bb-b4e8-047dc8c5b141
 
 ## 5.3 Test demo 3 (pick-and-place operations)
 ```
@@ -189,12 +199,16 @@ cd ~/xarm6-etf-lab
 ros2 run real_bringup test_pick_and_place
 ```
 
+https://github.com/user-attachments/assets/405f5b25-d6c9-4efc-bc87-a82252d1d834
+
 ## 5.4 Test demo 4 (pick-and-place operations using cameras)
 ```
 # In the new tab type:
 cd ~/xarm6-etf-lab
 ros2 run real_bringup test_pick_and_place_using_cameras
 ```
+
+https://github.com/user-attachments/assets/71545070-5da2-4dde-bb79-0009f89c78ba
 
 ## 5.5 Test demo 5 (planners from RPMPLv2 library using cameras)
 ```
@@ -203,12 +217,16 @@ cd ~/xarm6-etf-lab
 ros2 run real_bringup test_planners
 ```
 
+https://github.com/user-attachments/assets/31c04b23-9b33-44bb-94c2-37a41180de98
+
 ## 5.6 Test demo 6 (task planning using planners from RPMPLv2 library and using cameras)
 ```
 # In the new tab type:
 cd ~/xarm6-etf-lab
 ros2 run real_bringup test_task_planning
 ```
+
+https://github.com/user-attachments/assets/6d78350e-9e64-4400-be94-df87fc070c46
 
 ## 5.7 Test demo 7 (real-time planning using DRGBT planner from RPMPLv2 library and using cameras)
 ```
