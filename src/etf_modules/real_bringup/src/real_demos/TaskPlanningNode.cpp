@@ -73,7 +73,7 @@ void real_bringup::TaskPlanningNode::taskPlanningCallback()
     case picking_object:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Picking the object...");
         picking_object_wait--;
-        if (picking_object_wait == 2)
+        if (picking_object_wait == 1)
             xarm_client.set_gripper_position(closed_gripper_pos);
         else if (picking_object_wait == 0)
         {

@@ -18,8 +18,8 @@ int main(int argc, char *argv[])
 	rclcpp::init(argc, argv);
 	std::shared_ptr<real_bringup::RealTimePlanningNode> real_time_planning_node
 	{
-		// std::make_shared<real_bringup::RealTimePlanningNode>(node_name, config_file_path, true)
-		std::make_shared<real_bringup::RealTimePlanningNode>(node_name, config_file_path, true, "_test.log")
+		std::make_shared<real_bringup::RealTimePlanningNode>(node_name, config_file_path, true)
+		// std::make_shared<real_bringup::RealTimePlanningNode>(node_name, config_file_path, true, "_test.log")
 	};
 	
 	// Works with a corresponding modification of the files 'xarm_ros_client.h' and 'xarm_ros_client.cpp' 
