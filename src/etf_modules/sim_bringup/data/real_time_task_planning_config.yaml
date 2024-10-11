@@ -20,7 +20,7 @@ planner:
   # type: "RGBT-Connect"
   type: "RGBMT*"
   configurations: "/RPMPLv2"
-  max_edge_length: 0.2                                        # In [rad]
+  max_edge_length: 0.5                                        # In [rad]
   trajectory_max_time_step: 0.004                             # In [s]
   trajectory_advance_time: 0.090                              # How much time in [s] a desired trajectory will be published in advance
   dynamic_planner_config_file_path: "/sim_bringup/data/real_time_planning_config2.yaml"
