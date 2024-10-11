@@ -1,43 +1,36 @@
-period: 0.050                                                 # Maximal runtime of a single iteration in [s]
-
+period: 0.050
 real_time:
-  scheduling: "FPS"                                           # "FPS" - Fixed Priority Scheduling
-  max_time_task1: 0.025                                       # Maximal time in [s] which Task 1 can take from the processor
-
+  scheduling: FPS
+  max_time_task1: 0.050
 robot:
-  type: "xarm6"
-  urdf: "/RPMPLv2/data/xarm6/xarm6.urdf"
-  space: "RealVectorSpace"
+  type: xarm6
+  urdf: /RPMPLv2/data/xarm6/xarm6.urdf
+  space: RealVectorSpace
   num_DOFs: 6
-  q_home:  [0, 0, 0, 3.1415, 1.5708, 0]
-  q_start: [-3.1415, 0, -1.5708, 0, 1.5708, 0]
-  q_goal:  [0, 0, -0.5236, 3.1415, 1.04719, 0]
-  capsules_radius: [0.047, 0.12, 0.11, 0.09, 0.05, 0.1]       # When the gripper is attached
-  gripper_length: 0.17                                        # In [m]
-  ground_included: 2                                          # Please check whether 'ground' is added in 'environment'
-  self_collision_checking: true                               # Whether self-collision should be checked
-  WS_center: [0.0, 0.0, 0.267]                                # Workspace center point in [m]
-  WS_radius: 1.5                                              # Workspace radius in [m] assuming spherical workspace shape
-  max_vel:  [1, 1, 1, 1, 1, 1]                                # Maximal velocity of each robot's joint in [rad/s]
-  max_acc:  [10, 10, 10, 10, 10, 10]                          # Maximal acceleration of each robot's joint in [rad/s²]
-  max_jerk: [100, 100, 100, 100, 100, 100]                    # Maximal jerk of each robot's joint in [rad/s³]
-
+  q_home: [0, 0, 0, 3.1415, 1.5708, 0]
+  q_start: [0.597318709, 0.558322966, -1.33340132, 9.58738019e-06, 0.775076389, -7.66990433e-06]
+  q_goal: [-0.978016913, 0.127813965, -1.37515903, 7.93138588e-06, 1.24734497, -4.59352623e-06]
+  capsules_radius: [0.047, 0.12, 0.11, 0.09, 0.05, 0.1]
+  gripper_length: 0.17
+  ground_included: 2
+  self_collision_checking: true
+  WS_center: [0.0, 0.0, 0.267]
+  WS_radius: 1.5
+  max_vel: [1.5, 1.5, 1.5, 1.5, 1.5, 1.5]
+  max_acc: [10, 10, 10, 10, 10, 10]
+  max_jerk: [50, 50, 50, 50, 50, 50]
 planner:
-  # type: "RRT-Connect"
-  # type: "RBT-Connect"
-  # type: "RGBT-Connect"
-  type: "RGBMT*"
-  configurations: "/RPMPLv2"
-  trajectory_max_time_step: 0.010                             # In [s]
-  trajectory_advance_time: 0.100                              # How much time in [s] a desired trajectory will be published in advance
-  guaranteed_safe_motion: false                               # Whether robot motion is surely safe for environment
-
+  type: RGBMT*
+  configurations: /RPMPLv2
+  trajectory_max_time_step: 0.004
+  trajectory_advance_time: 0.090
+  guaranteed_safe_motion: false
+  max_obs_vel: 1.0
 environment:
   - box:
-      label: "ground"
+      label: ground
       dim: [1.5, 1.5, 0.1]
       pos: [0, 0, -0.05]
-      min_dist_tol: 0.05                                      # Minimal distance tolerance for a static obstacle to not be included into a dynamic scene
-
+      min_dist_tol: 0.05
 cameras:
-  min_num_captures: 1                                         # Minimal number of captures/frames of a single obstacle to become valid
+  min_num_captures: 1
