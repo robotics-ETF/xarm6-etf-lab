@@ -64,12 +64,12 @@ void perception_etflab::ObjectSegmentationNode::realPointCloudCallback(const sen
 	pcl::moveFromROSMsg(*msg, *cloud_xyzrgb);
 	pcl::toPCLPointCloud2(*cloud_xyzrgb, *input_pcl_cloud);	
 	
-  	// Create the filtering object: Downsample the dataset using a leaf size of 1 [cm]
+  	// Create the filtering object: Downsample the dataset using a leaf size of 2 [cm]
   	pcl::VoxelGrid<pcl::PCLPointCloud2> donwnsampler;
   	donwnsampler.setInputCloud(input_pcl_cloud);
-  	donwnsampler.setLeafSize(0.01f, 0.01f, 0.01f);
+  	donwnsampler.setLeafSize(0.02f, 0.02f, 0.02f);
   	donwnsampler.filter(*output_cloud);
-  	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Downsampled the dataset using a leaf size of 1 [cm].");
+  	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Downsampled the dataset using a leaf size of 2 [cm].");
   	
   	pcl::PointCloud<pcl::PointXYZRGB>::Ptr output_cloud_xyzrgb1(new pcl::PointCloud<pcl::PointXYZRGB>), 
 										   output_cloud_xyzrgb2(new pcl::PointCloud<pcl::PointXYZRGB>),
@@ -130,6 +130,9 @@ void perception_etflab::ObjectSegmentationNode::realPointCloudCallback(const sen
   	publishObjectsPointCloud(pcl_clusters);
 
     Clusters::computeSubclusters(pcl_clusters, pcl_subclusters);
+
+	// Robot::visualizeCapsules();
+    // Robot::visualizeSkeleton();
 
     AABB::make(pcl_subclusters);
     AABB::publish();
