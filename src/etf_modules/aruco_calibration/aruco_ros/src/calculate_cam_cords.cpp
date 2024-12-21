@@ -11,9 +11,33 @@
 #include <yaml-cpp/yaml.h>
 #include <fstream>
 #include <iostream>
+
 #include <Eigen/Dense>
+#include <Eigen/Geometry> 
+
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Matrix3x3.h>
+
+
+// used for transformation between camera_left_color_frame and camera_left_link
+Eigen::Matrix4d createTransformationMatrix() {
+    // Translation vector
+    Eigen::Vector3d translation(-0.000113211, 0.0149592, -7.0428e-05);
+
+    // Quaternion (X, Y, Z, W)
+    Eigen::Quaterniond quaternion(0.999957, 0.00910854, 0.000204578, 0.0016516);
+    quaternion.normalize();  // Ensure the quaternion is normalized
+
+    // Convert quaternion to rotation matrix
+    Eigen::Matrix3d rotationMatrix = quaternion.toRotationMatrix();
+
+    // Create the 4x4 transformation matrix
+    Eigen::Matrix4d transformationMatrix = Eigen::Matrix4d::Identity();
+    transformationMatrix.block<3, 3>(0, 0) = rotationMatrix;  // Set rotation
+    transformationMatrix.block<3, 1>(0, 3) = translation;     // Set translation
+
+    return transformationMatrix;
+}
 
 Eigen::Matrix4d rotatePointOpticalToLink(const Eigen::Matrix4d& point) {
     // Define rotation matrix for -π/2 around the y-axis
@@ -276,9 +300,22 @@ void processTransform(std::string camera_side) {
 
     std::vector<Eigen::Matrix4d> camera_cords;
     
+    /*
+    X: -0.000113211
+    Y: 0.0149592
+    Z: -7.0428e-05
+
+    X: 0.00910854
+    Y: 0.000204578
+    Z: 0.0016516
+    W: 0.999957
+    
+    */
+    
+   Eigen::Matrix4d color_to_link_transform = createTransformationMatrix();
     
     for (size_t i = 0; i < dir_kin_transforms.size(); i++){
-        Eigen::Matrix4d camera_cord = dir_kin_transforms_homo[i] * camera_transforms_homo[i].inverse() ;
+        Eigen::Matrix4d camera_cord = dir_kin_transforms_homo[i] * camera_transforms_homo[i].inverse() * color_to_link_transform.inverse() ;
         writeMatrixToYaml(camera_cord, camera_coordinates_file_path_all, "matrix" + std::to_string(i));
         camera_cords.push_back(camera_cord);
     }
@@ -300,6 +337,8 @@ int main(int argc, char *argv[])
     node->declare_parameter<std::string>("camera_side", "left");
 
     std::string camera_side = node->get_parameter("camera_side").get_value<std::string>();
+
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "\n \n Camera side: %s \n \n", camera_side.c_str());
 
     processTransform(camera_side);
 

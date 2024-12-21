@@ -48,4 +48,12 @@ update_calib_points:
 calculate_camera_cords:
 	ros2 run aruco_ros calculate_cam_cords 	
 
+single:
+	ros2 launch aruco_ros single.launch.py
+
+marker:
+	ros2 run aruco_ros marker_tf2_broadcaster
+
+
+
 	
