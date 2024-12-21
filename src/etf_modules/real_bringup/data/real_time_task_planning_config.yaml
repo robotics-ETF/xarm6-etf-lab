@@ -1,8 +1,4 @@
-period: 0.050                                                 # Maximal runtime of a single iteration in [s]
-
-real_time:
-  scheduling: "FPS"                                           # "FPS" - Fixed Priority Scheduling
-  max_time_task1: 0.050                                       # Maximal time in [s] which Task 1 can take from the processor
+period: 1.0                                                   # In [s]
 
 robot:
   type: "xarm6"
@@ -10,15 +6,10 @@ robot:
   space: "RealVectorSpace"
   num_DOFs: 6
   q_home:  [0, 0, 0, 3.1415, 1.5708, 0]
-  q_start: [0, 0, 0, 3.1415, 1.5708, 0]
-  q_goal:  [-3.1415, 0, -1.5708, 0, 1.5708, 0]
-  # q_goal:  [-3.1415, 0, -1.5708, 0, 0, 0]
   capsules_radius: [0.047, 0.12, 0.11, 0.09, 0.05, 0.1]       # When the gripper is attached
   gripper_length: 0.17                                        # In [m]
   ground_included: 2                                          # Please check whether 'ground' is added in 'environment'
   self_collision_checking: true                               # Whether self-collision should be checked
-  WS_center: [0.0, 0.0, 0.267]                                # Workspace center point in [m]
-  WS_radius: 1.5                                              # Workspace radius in [m] assuming spherical workspace shape
   max_vel:  [1.5, 1.5, 1.5, 1.5, 1.5, 1.5]                    # Maximal velocity of each robot's joint in [rad/s]
   max_acc:  [10, 10, 10, 10, 10, 10]                          # Maximal acceleration of each robot's joint in [rad/s²]
   max_jerk: [50, 50, 50, 50, 50, 50]                          # Maximal jerk of each robot's joint in [rad/s³]
@@ -29,17 +20,24 @@ planner:
   # type: "RGBT-Connect"
   type: "RGBMT*"
   configurations: "/RPMPLv2"
+  max_edge_length: 0.5                                        # In [rad]
   trajectory_max_time_step: 0.004                             # In [s]
   trajectory_advance_time: 0.090                              # How much time in [s] a desired trajectory will be published in advance
-  guaranteed_safe_motion: false                               # Whether robot motion is surely safe for environment
-  max_obs_vel: 1.0                                            # Maximal velocity of dynamic obstacles used to generate dynamic bubbles. Only available when 'guaranteed_safe_motion' is true.
+  dynamic_planner_config_file_path: "/real_bringup/data/real_time_planning_config2.yaml"
 
 environment:
   - box:
       label: "ground"
       dim: [1.5, 1.5, 0.1]
       pos: [0, 0, -0.05]
-      min_dist_tol: 0.05                                      # Minimal distance tolerance for a static obstacle to not be included into a dynamic scene
 
 cameras:
-  min_num_captures: 1                                         # Minimal number of captures/frames of a single obstacle to become valid
+  min_num_captures: 3                                         # Minimal number of captures/frames of a single STATIC obstacle to become valid
+  
+scenario:
+  max_object_height: 0.11                                     # Maximal height of an object that can be picked up
+  picking_object_wait_max: 4                                  # Number of periods 'period' to wait in [s]
+  destination: [-0.5, 0, 0.2]                                 # Coordinates of a destination box
+  max_gripper_speed: 5000                                     # Range: [0, 5000] [mm/s]
+  opened_gripper_pos: 850                                     # Range: [0, 850] corresponding to [0, 85] [mm]
+  closed_gripper_pos: 10                                      # Range: [0, 850] corresponding to [0, 85] [mm]

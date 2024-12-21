@@ -1,13 +1,13 @@
 //
-// Created by nermin on 12.05.24.
+// Created by nermin on 01.10.24.
 //
 
-#include "sim_demos/TaskPlanningNode.h"
-#include "sim_demos/RealTimePlanningNode.h"
+#include "real_demos/TaskPlanningNode.h"
+#include "real_demos/RealTimePlanningNode.h"
 
-namespace sim_bringup
+namespace real_bringup
 {
-    class RealTimeTaskPlanningNode : public sim_bringup::TaskPlanningNode
+    class RealTimeTaskPlanningNode : public real_bringup::TaskPlanningNode
     {
     public:
         RealTimeTaskPlanningNode(const std::string &node_name, const std::string &config_file_path);
