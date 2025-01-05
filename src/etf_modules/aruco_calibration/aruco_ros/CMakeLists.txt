@@ -127,7 +127,6 @@ target_link_libraries(update_calib_pts_cam ${RPMPL_LIBRARY} ${RPMPL_LIBRARIES})
 
 # calculate camera coordinates
 
-
 add_executable(calculate_cam_cords src/calculate_cam_cords.cpp)
 target_include_directories(calculate_cam_cords
   PUBLIC
@@ -195,6 +194,21 @@ target_include_directories(camera_tf2_broadcaster
 ament_target_dependencies(camera_tf2_broadcaster ${THIS_PACKAGE_INCLUDE_DEPENDS})
 target_link_libraries(camera_tf2_broadcaster ${RPMPL_LIBRARY} ${RPMPL_LIBRARIES})
 
+# for calculate_stats
+
+add_executable(calculate_stats src/calculate_stats.cpp)
+target_include_directories(calculate_stats
+  PUBLIC
+  include)
+
+target_include_directories(calculate_stats
+  SYSTEM PUBLIC
+  ${OpenCV_INCLUDE_DIRS}
+)
+
+ament_target_dependencies(calculate_stats ${THIS_PACKAGE_INCLUDE_DEPENDS})
+target_link_libraries(calculate_stats ${RPMPL_LIBRARY} ${RPMPL_LIBRARIES})
+
 #############
 ## Install ##
 #############
@@ -233,6 +247,11 @@ install(TARGETS
 # for camera frame broadcaster
 install(TARGETS
   camera_tf2_broadcaster
+  DESTINATION lib/${PROJECT_NAME})
+
+# calculate_stats
+install(TARGETS
+  calculate_stats
   DESTINATION lib/${PROJECT_NAME})
 
 
