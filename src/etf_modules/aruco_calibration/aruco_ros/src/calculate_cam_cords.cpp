@@ -34,6 +34,8 @@ Eigen::Matrix4d createTransformationMatrix() {
   transformationMatrix.block<3, 3>(0, 0) = rotationMatrix;  // Set rotation
   transformationMatrix.block<3, 1>(0, 3) = translation;     // Set translation
 
+  std::cout << "Matrix optical:\n" << transformationMatrix << "\n\n";
+
   return transformationMatrix;
 }
 
@@ -126,35 +128,6 @@ void writeMatrixToYaml(const Eigen::Matrix4d& matrix,
                  "Failed to open file %s for writing", filename.c_str());
   }
 }
-
-/* writes as a 4d homogeneuos matrix
-void writeMatrixToYaml(const Eigen::Matrix4d& matrix, const std::string&
-filename, std::string key_name) {
-    // Prepare the YAML content
-    YAML::Emitter out;
-    out << YAML::BeginMap;
-    out << YAML::Key << key_name << YAML::Value << YAML::BeginSeq;
-    for (int i = 0; i < matrix.rows(); ++i) {
-        out << YAML::Flow << YAML::BeginSeq;
-        for (int j = 0; j < matrix.cols(); ++j) {
-            out << matrix(i, j);
-        }
-        out << YAML::EndSeq;
-    }
-    out << YAML::EndSeq;
-    out << YAML::EndMap;
-
-    // Open the file in append mode
-    std::ofstream fout(filename, std::ios::out | std::ios::app);
-    if (fout.is_open()) {
-        fout << out.c_str(); // Write the YAML content
-        fout.close();
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Matrix appended to %s",
-filename.c_str()); } else { RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Failed
-to open file %s for writing", filename.c_str());
-    }
-}
-*/
 
 Eigen::Matrix4d averageMatrix(const std::vector<Eigen::Matrix4d>& matrices) {
   // Check if the vector is empty
@@ -270,14 +243,95 @@ Eigen::Matrix4d transformToHomogeneousMatrix(
   return matrix;
 }
 
-// Eigen::Vector3d extractPosition(const Eigen::Matrix4d& homogeneousMatrix) {
-//   if (homogeneousMatrix.rows() != 4 || homogeneousMatrix.cols() != 4) {
-//     throw std::invalid_argument("The input matrix must be 4x4.");
-//   }
+Eigen::VectorXd computeLSE(const Eigen::MatrixXd& A, const Eigen::VectorXd& b) {
+  // Check if A and b dimensions are compatible
+  if (A.rows() != b.size()) {
+    throw std::invalid_argument(
+        "Matrix A and vector b have incompatible dimensions.");
+  }
 
-//   Eigen::Vector4d position = homogeneousMatrix.block<4, 1>(0, 3);
-//   return position;
-// }
+  // Compute the Least Squares Estimate
+  Eigen::VectorXd x = (A.transpose() * A).ldlt().solve(A.transpose() * b);
+
+  return x;
+}
+
+// Function to read data from YAML file and construct A and b
+std::pair<Eigen::MatrixXd, Eigen::VectorXd> constructLSEData(
+    const std::string& yamlFilePath, const std::string& coord) {
+  // Load YAML file
+  YAML::Node yamlData = YAML::LoadFile(yamlFilePath);
+
+  // Extract transforms from YAML file
+  const auto& transforms_dir_kin = yamlData["transforms_dir_kin"];
+  const auto& transforms_camera = yamlData["transforms_camera"];
+
+  // Check data validity
+  if (!transforms_dir_kin || !transforms_camera ||
+      transforms_dir_kin.size() != transforms_camera.size()) {
+    throw std::runtime_error(
+        "Invalid or mismatched transforms data in YAML file.");
+  }
+
+  // Number of captures
+  size_t numCaptures = transforms_dir_kin.size();
+
+  // Initialize A (numCaptures x 4) and b (numCaptures x 1)
+  Eigen::MatrixXd A(numCaptures, 4);
+  Eigen::VectorXd b(numCaptures);
+
+  // Populate A and b
+  for (size_t i = 0; i < numCaptures; ++i) {
+    // Extract translation components from transforms_camera
+    double X = transforms_camera[i]["translation"]["x"].as<double>();
+    double Y = transforms_camera[i]["translation"]["y"].as<double>();
+    double Z = transforms_camera[i]["translation"]["z"].as<double>();
+
+    Eigen::VectorXd tmp_row(4);
+    tmp_row << X, Y, Z, 1.0;
+
+    Eigen::Matrix4d color_to_link_transform = createTransformationMatrix();
+
+    tmp_row = color_to_link_transform * tmp_row;
+
+    // Fill A matrix row
+    A.row(i) = tmp_row.transpose();
+
+    // Extract the specified coordinate for b from transforms_dir_kin
+    if (coord == "x") {
+      b(i) = transforms_dir_kin[i]["translation"]["x"].as<double>();
+    } else if (coord == "y") {
+      b(i) = transforms_dir_kin[i]["translation"]["y"].as<double>();
+    } else if (coord == "z") {
+      b(i) = transforms_dir_kin[i]["translation"]["z"].as<double>();
+    } else {
+      throw std::invalid_argument("Invalid coordinate specified for b: " +
+                                  coord);
+    }
+  }
+
+  return {A, b};
+}
+
+Eigen::Matrix4d createHomogeneousMatrix(const Eigen::VectorXd& x,
+                                        const Eigen::VectorXd& y,
+                                        const Eigen::VectorXd& z) {
+  // Ensure that input vectors have 4 components
+  assert(x.size() == 4 && y.size() == 4 && z.size() == 4 &&
+         "Input vectors must have 4 components each.");
+
+  Eigen::Matrix4d matrix;
+
+  // Assign rows from the vectors
+  matrix.row(0) = x.transpose();
+  matrix.row(1) = y.transpose();
+  matrix.row(2) = z.transpose();
+
+  // Add the last row for homogeneous coordinates
+  matrix.row(3) << 0, 0, 0, 1;
+
+  return matrix;
+}
 
 void processTransform(std::string camera_side) {
   std::string project_abs_path(__FILE__);
@@ -295,7 +349,10 @@ void processTransform(std::string camera_side) {
       project_abs_path + "/aruco_calibration/aruco_ros/data/" + camera_side +
       "_camera/camera_coordinates_all.yaml";
 
-  // Read transforms from the YAML file
+  /*###############
+ CALCULATION USING AVERAGING
+ #################*/
+
   auto dir_kin_transforms =
       readTransformsFromYAML(calib_pts_file_path, "transforms_dir_kin");
   auto camera_transforms =
@@ -313,66 +370,6 @@ void processTransform(std::string camera_side) {
     camera_transforms_homo.push_back(
         transformToHomogeneousMatrix(transform_node));
   }
-
-  //   // extract Xm,c
-
-  //   std::vector<Eigen::Vector4d> marker_in_camera_positions;
-
-  //   for (const Eigen::Matrix4d marker_in_camera_homo :
-  //   camera_transforms_homo) {
-  //     Eigen::Vector3d marker_in_camera_position =
-  //         extractPosition(marker_in_camera_homo);
-  //     marker_in_camera_positions.push_back(marker_in_camera_position)
-  //   }
-
-  //   // multiply with Ct
-
-  //   for (size_t i = 0; i < marker_in_camera_positions.size(); i++) {
-  //     marker_in_camera_positions =
-  //         color_to_link_transform.inverse() * marker_in_camera_positions[i];
-  //   }
-
-  //   // multiply with Ck
-
-  //   for (size_t i = 0; i < marker_in_camera_positions.size(); i++) {
-  //     marker_in_camera_positions =
-  //         dir_kin_transforms_homo[i] * marker_in_camera_positions[i];
-  //   }
-
-  //   // create matrix P (known coeficients)
-
-  //   std::vector<Eigen::Vector4d> marker_in_world_positions;
-
-  //   for (const Eigen::Matrix4d marker_in_world_homo :
-  //   dir_kin_transforms_homo) {
-  //     Eigen::Vector3d marker_in_world_position =
-  //         extractPosition(marker_in_world_homo);
-  //     marker_in_world_positions.push_back(marker_in_world_position)
-  //   }
-
-  //   // creating matrix LSE for optimization
-  //   Eigen::Matrix4d P =
-  //       createMatrixA(marker_in_camera_positions, marker_in_world_positions)
-
-  // calculate P'*P
-
-  // find smalles eigenvalue and corresponding eigen vector
-
-  // transfrom from vector to matrix
-
-  // test with calculated value using averaging
-
-  /*
-  X: -0.000113211
-  Y: 0.0149592
-  Z: -7.0428e-05
-
-  X: 0.00910854
-  Y: 0.000204578
-  Z: 0.0016516
-  W: 0.999957
-
-  */
 
   Eigen::Matrix4d color_to_link_transform = createTransformationMatrix();
 
@@ -393,6 +390,35 @@ void processTransform(std::string camera_side) {
 
   writeMatrixToYaml(camera_cord_avg, camera_coordinates_file_path_final,
                     "xyz_YPR");
+
+  /*###############
+  CALCULATION USING LSE
+  #################*/
+
+  try {
+    std::string yamlFilePath =
+        calib_pts_file_path;  // Replace with your YAML file path
+    std::string coord =
+        "y";  // Coordinate to use for b (e.g., "x", "y", or "z")
+
+    auto [Ax, bx] = constructLSEData(yamlFilePath, "x");
+    auto [Ay, by] = constructLSEData(yamlFilePath, "y");
+    auto [Az, bz] = constructLSEData(yamlFilePath, "z");
+
+    Eigen::VectorXd x = computeLSE(Ax, bx);
+    Eigen::VectorXd y = computeLSE(Ay, by);
+    Eigen::VectorXd z = computeLSE(Az, bz);
+
+    Eigen::Matrix4d camera_in_world = createHomogeneousMatrix(x, y, z);
+
+    camera_in_world = rotatePointOpticalToLink(camera_in_world);
+
+    writeMatrixToYaml(camera_in_world, camera_coordinates_file_path_final,
+                      "xyz_YPR_lse");
+
+  } catch (const std::exception& e) {
+    std::cerr << "Error: " << e.what() << "\n";
+  }
 }
 
 int main(int argc, char* argv[]) {
