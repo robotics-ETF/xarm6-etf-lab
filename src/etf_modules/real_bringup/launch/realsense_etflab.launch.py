@@ -76,7 +76,7 @@ def generate_launch_description():
     
     tf_node_link_base_camera_left_link = Node(package="tf2_ros", 
             executable="static_transform_publisher",
-            arguments=[str(x_l), str(y_l), str(z_l), str(yaw_l), str(pitch_l), str(roll_l), "link_base", "camera_left_link"])
+            arguments=[str(x_l+0.03), str(y_l-0.01), str(z_l+0.05), str(yaw_l), str(pitch_l), str(roll_l), "link_base", "camera_left_link"])
    
     
     tf_node_link_base_aruco_marker = Node(package = "tf2_ros", 

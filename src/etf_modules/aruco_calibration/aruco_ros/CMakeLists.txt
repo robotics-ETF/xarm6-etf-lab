@@ -98,6 +98,8 @@ target_include_directories(marker_publisher
 ament_target_dependencies(marker_publisher ${THIS_PACKAGE_INCLUDE_DEPENDS})
 target_link_libraries(marker_publisher ${OpenCV_LIBRARIES})
 
+# update_points_dir_kin
+
 add_executable(update_calib_points_dir_kin src/update_calib_points_dir_kin.cpp)
 target_include_directories(update_calib_points_dir_kin
   PUBLIC
@@ -110,6 +112,8 @@ target_include_directories(update_calib_points_dir_kin
 
 ament_target_dependencies(update_calib_points_dir_kin ${THIS_PACKAGE_INCLUDE_DEPENDS})
 target_link_libraries(update_calib_points_dir_kin ${RPMPL_LIBRARY} ${RPMPL_LIBRARIES})
+
+# update_calib_pts_cam
 
 add_executable(update_calib_pts_cam src/update_calib_pts_cam.cpp)
 target_include_directories(update_calib_pts_cam

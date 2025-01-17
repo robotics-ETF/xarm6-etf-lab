@@ -42,7 +42,7 @@ make full_build_container:
 	make build
 
 update_calib_points:
-	ros2 run aruco_ros update_calib_points 
+	ros2 run aruco_ros update_calib_points_dir_kin
 	ros2 run aruco_ros update_calib_pts_cam
 
 calculate_camera_cords:
