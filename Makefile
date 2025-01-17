@@ -40,4 +40,20 @@ make full_build_container:
 	cd src/external_modules/xarm_ros2/xarm_sdk/cxx && git checkout master && cd ../../../../..
 	make dependencies
 	make build
+
+update_calib_points:
+	ros2 run aruco_ros update_calib_points_dir_kin
+	ros2 run aruco_ros update_calib_pts_cam
+
+calculate_camera_cords:
+	ros2 run aruco_ros calculate_cam_cords 	
+
+single:
+	ros2 launch aruco_ros single.launch.py
+
+marker:
+	ros2 run aruco_ros marker_tf2_broadcaster
+
+
+
 	

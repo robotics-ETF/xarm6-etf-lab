@@ -29,7 +29,7 @@ def launch_setup(context, *args, **kwargs):
     tf_node_arucos_tf = Node(package = "tf2_ros", 
             name="arucos_tf",
             executable = "static_transform_publisher",
-            arguments = ["0.4", "0", "0", "0", "0", "0", \
+            arguments = ["0.4", "0", "0", "0", "0", "0", 
                         "link_base", "aruco_marker_frame"]
 	)
 
@@ -44,7 +44,7 @@ def generate_launch_description():
     )
 
     marker_size_arg = DeclareLaunchArgument(
-        'marker_size', default_value='0.189',
+        'marker_size', default_value='0.163',
         description='Marker size in m. '
     )
 

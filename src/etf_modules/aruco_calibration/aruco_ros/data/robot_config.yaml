@@ -1,0 +1,6 @@
+robot:
+  type: "xarm6"
+  urdf: "/RPMPLv2/data/xarm6/xarm6.urdf"
+
+aruco:
+  bias: [-0.074, 0, 0.163]     # [z, y, x]Treba odrediti eksperimentalno. To znaci koliko treba frames->back().p pomjeriti tako da dodjemo na "centar" markera.rotation_z

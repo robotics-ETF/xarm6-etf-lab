@@ -1,11 +1,12 @@
-message("Current source directory: ${CMAKE_CURRENT_SOURCE_DIR}")
+# message("Current source directory: ${CMAKE_CURRENT_SOURCE_DIR}")
 
 set(XARM6_ETF_LAB_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 get_filename_component(XARM6_ETF_LAB_PATH ${XARM6_ETF_LAB_PATH} DIRECTORY)
 get_filename_component(XARM6_ETF_LAB_PATH ${XARM6_ETF_LAB_PATH} DIRECTORY)
 get_filename_component(XARM6_ETF_LAB_PATH ${XARM6_ETF_LAB_PATH} DIRECTORY)
+get_filename_component(XARM6_ETF_LAB_PATH ${XARM6_ETF_LAB_PATH} DIRECTORY)
 
-message("xarm6-etf-lab path: ${XARM6_ETF_LAB_PATH}")
+# message("xarm6-etf-lab path: ${XARM6_ETF_LAB_PATH}")
 find_library(RPMPL_LIBRARY
   NAMES rpmpl_library
   PATHS ${XARM6_ETF_LAB_PATH}/build/rpmpl_library/src
@@ -13,7 +14,7 @@ find_library(RPMPL_LIBRARY
 
 set(RPMPL_PATH "${XARM6_ETF_LAB_PATH}/src/etf_modules/RPMPLv2")
 
-message("RPMPLv2 path: ${RPMPL_PATH}")
+# message("RPMPLv2 path: ${RPMPL_PATH}")
 set(RPMPL_LIBRARY_INCLUDE_DIRS
   ${RPMPL_PATH}/include
   ${RPMPL_PATH}/include/state_spaces

@@ -1,36 +1,38 @@
 /*****************************
  Copyright 2011 Rafael Muñoz Salinas. All rights reserved.
 
- Redistribution and use in source and binary forms, with or without modification, are
- permitted provided that the following conditions are met:
+ Redistribution and use in source and binary forms, with or without
+ modification, are permitted provided that the following conditions are met:
 
- 1. Redistributions of source code must retain the above copyright notice, this list of
- conditions and the following disclaimer.
+ 1. Redistributions of source code must retain the above copyright notice, this
+ list of conditions and the following disclaimer.
 
- 2. Redistributions in binary form must reproduce the above copyright notice, this list
- of conditions and the following disclaimer in the documentation and/or other materials
- provided with the distribution.
+ 2. Redistributions in binary form must reproduce the above copyright notice,
+ this list of conditions and the following disclaimer in the documentation
+ and/or other materials provided with the distribution.
 
- THIS SOFTWARE IS PROVIDED BY Rafael Muñoz Salinas ''AS IS'' AND ANY EXPRESS OR IMPLIED
- WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND
- FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL Rafael Muñoz Salinas OR
- CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
- NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ THIS SOFTWARE IS PROVIDED BY Rafael Muñoz Salinas ''AS IS'' AND ANY EXPRESS OR
+ IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ EVENT SHALL Rafael Muñoz Salinas OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+ INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+ BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
- The views and conclusions contained in the software and documentation are those of the
- authors and should not be interpreted as representing official policies, either expressed
- or implied, of Rafael Muñoz Salinas.
+ The views and conclusions contained in the software and documentation are those
+ of the authors and should not be interpreted as representing official policies,
+ either expressed or implied, of Rafael Muñoz Salinas.
  ********************************/
 /**
  * @file simple_single.cpp
  * @author Bence Magyar
  * @date June 2012
  * @version 0.1
- * @brief ROS version of the example named "simple" in the ArUco software package.
+ * @brief ROS version of the example named "simple" in the ArUco software
+ * package.
  */
 
 #include <iostream>
@@ -38,7 +40,6 @@
 #include "aruco/aruco.h"
 #include "aruco/cvdrawingutils.h"
 #include "aruco_ros/aruco_ros_utils.hpp"
-
 #include "cv_bridge/cv_bridge.h"
 #include "geometry_msgs/msg/point_stamped.hpp"
 #include "geometry_msgs/msg/vector3_stamped.hpp"
@@ -46,15 +47,14 @@
 #include "rclcpp/rclcpp.hpp"
 #include "rcpputils/asserts.hpp"
 #include "sensor_msgs/image_encodings.hpp"
-#include "tf2_ros/transform_broadcaster.h"
-#include "tf2_ros/buffer.h"
-#include "tf2_ros/transform_listener.h"
 #include "tf2_geometry_msgs/tf2_geometry_msgs.hpp"
+#include "tf2_ros/buffer.h"
+#include "tf2_ros/transform_broadcaster.h"
+#include "tf2_ros/transform_listener.h"
 #include "visualization_msgs/msg/marker.hpp"
 
-class ArucoSimple : public rclcpp::Node
-{
-private:
+class ArucoSimple : public rclcpp::Node {
+ private:
   rclcpp::Node::SharedPtr subNode;
   cv::Mat inImage;
   aruco::CameraParameters camParam;
@@ -67,7 +67,8 @@ private:
   image_transport::Publisher image_pub;
   image_transport::Publisher debug_pub;
   rclcpp::Publisher<geometry_msgs::msg::PoseStamped>::SharedPtr pose_pub;
-  rclcpp::Publisher<geometry_msgs::msg::TransformStamped>::SharedPtr transform_pub;
+  rclcpp::Publisher<geometry_msgs::msg::TransformStamped>::SharedPtr
+      transform_pub;
   rclcpp::Publisher<geometry_msgs::msg::Vector3Stamped>::SharedPtr position_pub;
   // rviz visualization marker
   rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr marker_pub;
@@ -86,14 +87,10 @@ private:
   std::unique_ptr<tf2_ros::Buffer> tf_buffer_;
   std::unique_ptr<tf2_ros::TransformBroadcaster> tf_broadcaster_;
 
-public:
-  ArucoSimple()
-  : Node("aruco_single"), cam_info_received(false)
-  {
-  }
+ public:
+  ArucoSimple() : Node("aruco_single"), cam_info_received(false) {}
 
-  bool setup()
-  {
+  bool setup() {
     tf_buffer_ = std::make_unique<tf2_ros::Buffer>(this->get_clock());
     tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_);
     subNode = this->create_sub_node(this->get_name());
@@ -101,10 +98,9 @@ public:
     it_ = std::make_unique<image_transport::ImageTransport>(shared_from_this());
     tf_broadcaster_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
     if (this->has_parameter("corner_refinement")) {
-      RCLCPP_WARN(
-        this->get_logger(),
-        "Corner refinement options have been removed in ArUco 3.0.0, "
-        "corner_refinement ROS parameter is deprecated");
+      RCLCPP_WARN(this->get_logger(),
+                  "Corner refinement options have been removed in ArUco 3.0.0, "
+                  "corner_refinement ROS parameter is deprecated");
     }
 
     aruco::MarkerDetector::Params params = mDetector.getParameters();
@@ -122,23 +118,25 @@ public:
     }
 
     // Print parameters of ArUco marker detector:
-    RCLCPP_INFO_STREAM(this->get_logger(), "Threshold method: " << thresh_method);
+    RCLCPP_INFO_STREAM(this->get_logger(),
+                       "Threshold method: " << thresh_method);
 
     // Declare node parameters
-    this->declare_parameter<double>("marker_size", 0.05);
+    this->declare_parameter<double>("marker_size", 0.08);
     this->declare_parameter<int>("marker_id", 300);
     this->declare_parameter<std::string>("reference_frame", "");
     this->declare_parameter<std::string>("camera_frame", "");
     this->declare_parameter<std::string>("marker_frame", "");
     this->declare_parameter<bool>("image_is_rectified", true);
-    this->declare_parameter<float>("min_marker_size", 0.02);
+    this->declare_parameter<float>("min_marker_size", 0.05);
     this->declare_parameter<std::string>("detection_mode", "");
 
     float min_marker_size;  // percentage of image area
-    this->get_parameter_or<float>("min_marker_size", min_marker_size, 0.02);
+    this->get_parameter_or<float>("min_marker_size", min_marker_size, 0.05);
 
     std::string detection_mode;
-    this->get_parameter_or<std::string>("detection_mode", detection_mode, "DM_FAST");
+    this->get_parameter_or<std::string>("detection_mode", detection_mode,
+                                        "DM_FAST");
     if (detection_mode == "DM_FAST") {
       mDetector.setDetectionMode(aruco::DM_FAST, min_marker_size);
     } else if (detection_mode == "DM_VIDEO_FAST") {
@@ -149,90 +147,101 @@ public:
     }
 
     RCLCPP_INFO_STREAM(
-      this->get_logger(), "Marker size min: " << min_marker_size << " of image area");
-    RCLCPP_INFO_STREAM(this->get_logger(), "Detection mode: " << detection_mode);
+        this->get_logger(),
+        "Marker size min: " << min_marker_size << " of image area");
+    RCLCPP_INFO_STREAM(this->get_logger(),
+                       "Detection mode: " << detection_mode);
 
     image_sub = it_->subscribe("/image", 1, &ArucoSimple::image_callback, this);
     cam_info_sub = this->create_subscription<sensor_msgs::msg::CameraInfo>(
-      "/camera_info", 1, std::bind(
-        &ArucoSimple::cam_info_callback, this,
-        std::placeholders::_1));
+        "/camera_info", 1,
+        std::bind(&ArucoSimple::cam_info_callback, this,
+                  std::placeholders::_1));
 
     image_pub = it_->advertise(this->get_name() + std::string("/result"), 1);
     debug_pub = it_->advertise(this->get_name() + std::string("/debug"), 1);
-    pose_pub = subNode->create_publisher<geometry_msgs::msg::PoseStamped>("pose", 100);
+    pose_pub =
+        subNode->create_publisher<geometry_msgs::msg::PoseStamped>("pose", 100);
     transform_pub =
-      subNode->create_publisher<geometry_msgs::msg::TransformStamped>("transform", 100);
-    position_pub = subNode->create_publisher<geometry_msgs::msg::Vector3Stamped>("position", 100);
-    marker_pub = subNode->create_publisher<visualization_msgs::msg::Marker>("marker", 10);
-    pixel_pub = subNode->create_publisher<geometry_msgs::msg::PointStamped>("pixel", 10);
+        subNode->create_publisher<geometry_msgs::msg::TransformStamped>(
+            "transform", 100);
+    position_pub =
+        subNode->create_publisher<geometry_msgs::msg::Vector3Stamped>(
+            "position", 100);
+    marker_pub = subNode->create_publisher<visualization_msgs::msg::Marker>(
+        "marker", 10);
+    pixel_pub = subNode->create_publisher<geometry_msgs::msg::PointStamped>(
+        "pixel", 10);
 
-    this->get_parameter_or<double>("marker_size", marker_size, 0.05);
+    this->get_parameter_or<double>("marker_size", marker_size, 0.08);
     this->get_parameter_or<int>("marker_id", marker_id, 300);
     this->get_parameter_or<std::string>("reference_frame", reference_frame, "");
     this->get_parameter_or<std::string>("camera_frame", camera_frame, "");
     this->get_parameter_or<std::string>("marker_frame", marker_frame, "");
-    this->get_parameter_or<bool>("image_is_rectified", useRectifiedImages, true);
+    this->get_parameter_or<bool>("image_is_rectified", useRectifiedImages,
+                                 true);
 
-    rcpputils::assert_true(
-      camera_frame != "" && marker_frame != "",
-      "Found the camera frame or the marker_frame to be empty!. camera_frame : " +
-      camera_frame + " and marker_frame : " + marker_frame);
+    rcpputils::assert_true(camera_frame != "" && marker_frame != "",
+                           "Found the camera frame or the marker_frame to be "
+                           "empty!. camera_frame : " +
+                               camera_frame +
+                               " and marker_frame : " + marker_frame);
 
     if (reference_frame.empty()) {
       reference_frame = camera_frame;
     }
 
+    RCLCPP_INFO(this->get_logger(),
+                "ArUco node started with marker size of %f m and marker id to "
+                "track: %d",
+                marker_size, marker_id);
     RCLCPP_INFO(
-      this->get_logger(), "ArUco node started with marker size of %f m and marker id to track: %d",
-      marker_size, marker_id);
-    RCLCPP_INFO(
-      this->get_logger(), "ArUco node will publish pose to TF with %s as parent and %s as child.",
-      reference_frame.c_str(), marker_frame.c_str());
+        this->get_logger(),
+        "ArUco node will publish pose to TF with %s as parent and %s as child.",
+        reference_frame.c_str(), marker_frame.c_str());
 
-    // dyn_rec_server.setCallback(boost::bind(&ArucoSimple::reconf_callback, this, _1, _2));
-    RCLCPP_INFO(this->get_logger(), "Setup of aruco_simple node is successful!");
+    // dyn_rec_server.setCallback(boost::bind(&ArucoSimple::reconf_callback,
+    // this, _1, _2));
+    RCLCPP_INFO(this->get_logger(),
+                "Setup of aruco_simple node is successful!");
     return true;
   }
 
-  bool getTransform(
-    const std::string & refFrame, const std::string & childFrame,
-    geometry_msgs::msg::TransformStamped & transform)
-  {
+  bool getTransform(const std::string& refFrame, const std::string& childFrame,
+                    geometry_msgs::msg::TransformStamped& transform) {
     std::string errMsg;
 
-    if (!tf_buffer_->canTransform(
-        refFrame, childFrame, tf2::TimePointZero,
-        tf2::durationFromSec(0.5), &errMsg))
-    {
-      RCLCPP_ERROR_STREAM(this->get_logger(), "Unable to get pose from TF: " << errMsg);
+    if (!tf_buffer_->canTransform(refFrame, childFrame, tf2::TimePointZero,
+                                  tf2::durationFromSec(0.5), &errMsg)) {
+      RCLCPP_ERROR_STREAM(this->get_logger(),
+                          "Unable to get pose from TF: " << errMsg);
       return false;
     } else {
       try {
-        transform = tf_buffer_->lookupTransform(
-          refFrame, childFrame, tf2::TimePointZero, tf2::durationFromSec(
-            0.5));
-      } catch (const tf2::TransformException & e) {
-        RCLCPP_ERROR_STREAM(
-          this->get_logger(),
-          "Error in lookupTransform of " << childFrame << " in " << refFrame << " : " << e.what());
+        transform = tf_buffer_->lookupTransform(refFrame, childFrame,
+                                                tf2::TimePointZero,
+                                                tf2::durationFromSec(0.5));
+      } catch (const tf2::TransformException& e) {
+        RCLCPP_ERROR_STREAM(this->get_logger(), "Error in lookupTransform of "
+                                                    << childFrame << " in "
+                                                    << refFrame << " : "
+                                                    << e.what());
         return false;
       }
     }
     return true;
   }
 
-  void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr & msg)
-  {
+  void image_callback(const sensor_msgs::msg::Image::ConstSharedPtr& msg) {
     if ((image_pub.getNumSubscribers() == 0) &&
-      (debug_pub.getNumSubscribers() == 0) &&
-      (pose_pub->get_subscription_count() == 0) &&
-      (transform_pub->get_subscription_count() == 0) &&
-      (position_pub->get_subscription_count() == 0) &&
-      (marker_pub->get_subscription_count() == 0) &&
-      (pixel_pub->get_subscription_count() == 0))
-    {
-      RCLCPP_DEBUG(this->get_logger(), "No subscribers, not looking for ArUco markers");
+        (debug_pub.getNumSubscribers() == 0) &&
+        (pose_pub->get_subscription_count() == 0) &&
+        (transform_pub->get_subscription_count() == 0) &&
+        (position_pub->get_subscription_count() == 0) &&
+        (marker_pub->get_subscription_count() == 0) &&
+        (pixel_pub->get_subscription_count() == 0)) {
+      RCLCPP_DEBUG(this->get_logger(),
+                   "No subscribers, not looking for ArUco markers");
       return;
     }
 
@@ -262,8 +271,7 @@ public:
             }
 
             transform = static_cast<tf2::Transform>(cameraToReference) *
-              static_cast<tf2::Transform>(rightToLeft) *
-              transform;
+                        static_cast<tf2::Transform>(rightToLeft) * transform;
 
             geometry_msgs::msg::TransformStamped stampedTransform;
             stampedTransform.header.frame_id = reference_frame;
@@ -338,7 +346,7 @@ public:
           debug_msg.image = mDetector.getThresholdedImage();
           debug_pub.publish(debug_msg.toImageMsg());
         }
-      } catch (cv_bridge::Exception & e) {
+      } catch (cv_bridge::Exception& e) {
         RCLCPP_ERROR(this->get_logger(), "cv_bridge exception: %s", e.what());
         return;
       }
@@ -346,33 +354,34 @@ public:
   }
 
   // wait for one camerainfo, then shut down that subscriber
-  void cam_info_callback(const sensor_msgs::msg::CameraInfo & msg)
-  {
+  void cam_info_callback(const sensor_msgs::msg::CameraInfo& msg) {
     if (!cam_info_received) {
-      camParam = aruco_ros::rosCameraInfo2ArucoCamParams(msg, useRectifiedImages);
+      camParam =
+          aruco_ros::rosCameraInfo2ArucoCamParams(msg, useRectifiedImages);
 
       // handle cartesian offset between stereo pairs
       // see the sensor_msgs/CameraInfo documentation for details
       rightToLeft.setIdentity();
-      rightToLeft.setOrigin(tf2::Vector3(-msg.p[3] / msg.p[0], -msg.p[7] / msg.p[5], 0.0));
+      rightToLeft.setOrigin(
+          tf2::Vector3(-msg.p[3] / msg.p[0], -msg.p[7] / msg.p[5], 0.0));
 
       cam_info_received = true;
     }
   }
 
-//  void reconf_callback(aruco_ros::ArucoThresholdConfig & config, uint32_t level)
-//  {
-//    mDetector.setDetectionMode(
-//      aruco::DetectionMode(config.detection_mode),
-//      config.min_image_size);
-//    if (config.normalizeImage) {
-//      RCLCPP_WARN("normalizeImageIllumination is unimplemented!");
-//    }
-//  }
+  //  void reconf_callback(aruco_ros::ArucoThresholdConfig & config, uint32_t
+  //  level)
+  //  {
+  //    mDetector.setDetectionMode(
+  //      aruco::DetectionMode(config.detection_mode),
+  //      config.min_image_size);
+  //    if (config.normalizeImage) {
+  //      RCLCPP_WARN("normalizeImageIllumination is unimplemented!");
+  //    }
+  //  }
 };
 
-int main(int argc, char ** argv)
-{
+int main(int argc, char** argv) {
   rclcpp::init(argc, argv);
   std::shared_ptr<ArucoSimple> aruco_simple = std::make_shared<ArucoSimple>();
   aruco_simple->setup();
