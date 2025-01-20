@@ -8,6 +8,8 @@ This repository contains simulation models, and corresponding motion planning an
 
 The development and test environment are tested on Ubuntu 22.04 + ROS2 Humble.
 
+The paper describing the implementation details of the proposed real-time DRGBT algorithm is available at https://arxiv.org/abs/2501.00507.
+
 # 2. How to use
 ## 2.1 Obtain source code of "xarm6-etf-lab" repository
 Choose a location for a target workspace, e.g.:
