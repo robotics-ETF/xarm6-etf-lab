@@ -62,37 +62,86 @@ perception_etflab::Obstacles::Obstacles(const std::string &config_file_path)
     }
 }
 
+// Reflect obstacles in random directions
+// void perception_etflab::Obstacles::move(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters)
+// {
+//     std::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cluster { nullptr };
+//     Eigen::Vector3f pos {}, vel {};
+//     float vel_intensity {};
+
+//     for (size_t i = 0; i < num_obstacles; i++)
+//     {
+//         cluster = obstacles[i];
+//         pos = Eigen::Vector3f(cluster->points.front().x, cluster->points.front().y, cluster->points.front().z);
+//         pos += velocities[i] * period;
+//         vel_intensity = velocities[i].norm();
+
+//         if (!isValid(pos, vel_intensity))
+//         {
+//             // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Invalid object position. Computing new velocity. ");
+//             vel = Eigen::Vector3f::Random(3);
+//             vel.normalize();
+//             velocities[i] = vel_intensity * vel;
+//             i--;
+//         }
+//         else
+//         {
+//             for (pcl::PointCloud<pcl::PointXYZRGB>::iterator point = cluster->begin(); point < cluster->end(); point++)
+//             {
+//                 point->x += velocities[i].x() * period;
+//                 point->y += velocities[i].y() * period;
+//                 point->z += velocities[i].z() * period;
+//             }
+//             RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%ld. Obstacle pos: (%f, %f, %f)", i, pos.x(), pos.y(), pos.z());
+//         }
+//     }
+//     clusters = obstacles;
+// }
+
+// Reflect obstacles according to the principle of light reflecting
 void perception_etflab::Obstacles::move(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters)
 {
     std::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cluster { nullptr };
-    Eigen::Vector3f pos {}, vel {};
-    float vel_intensity {};
+    float tol_radius {}, t_param {};
+    Eigen::Vector3f pos {}, pos_next {}, vec_normal {};
+    bool change { true };
 
     for (size_t i = 0; i < num_obstacles; i++)
     {
         cluster = obstacles[i];
+        tol_radius = std::max(velocities[i].norm() / robot_max_vel, base_radius);
         pos = Eigen::Vector3f(cluster->points.front().x, cluster->points.front().y, cluster->points.front().z);
-        pos += velocities[i] * period;
-        vel_intensity = velocities[i].norm();
-
-        if (!isValid(pos, vel_intensity))
-        {
-            // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Invalid object position. Computing new velocity. ");
-            vel = Eigen::Vector3f::Random(3);
-            vel.normalize();
-            velocities[i] = vel_intensity * vel;
-            i--;
-        }
+        pos_next = pos + velocities[i] * period;
+        change = true;
+        
+        if (pos_next.z() < 0)
+            vec_normal << 0, 0, 1;
+        else if ((pos_next - WS_center).norm() > WS_radius)
+            vec_normal << -pos_next.x(), -pos_next.y(), -(pos_next.z() - WS_center.z());
+        else if (pos_next.head(2).norm() < tol_radius && pos_next.z() < WS_center.z())
+            vec_normal << pos_next.x(), pos_next.y(), 0;
+        else if ((pos_next - WS_center).norm() < tol_radius)
+            vec_normal << pos_next.x(), pos_next.y(), pos_next.z() - WS_center.z();
         else
         {
-            for (pcl::PointCloud<pcl::PointXYZRGB>::iterator point = cluster->begin(); point < cluster->end(); point++)
-            {
-                point->x += velocities[i].x() * period;
-                point->y += velocities[i].y() * period;
-                point->z += velocities[i].z() * period;
-            }
-            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%ld. Obstacle pos: (%f, %f, %f)", i, pos.x(), pos.y(), pos.z());
+            pos = pos_next;
+            change = false;
         }
+
+        if (change)
+        {
+            t_param = (pos_next - pos).dot(vec_normal) / vec_normal.squaredNorm();
+            pos = 2*pos_next - pos - 2*t_param * vec_normal;
+            velocities[i] = (pos - pos_next) / period;
+        }
+        
+        for (pcl::PointCloud<pcl::PointXYZRGB>::iterator point = cluster->begin(); point < cluster->end(); point++)
+        {
+            point->x += velocities[i].x() * period;
+            point->y += velocities[i].y() * period;
+            point->z += velocities[i].z() * period;
+        }
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%ld. Obstacle pos: (%f, %f, %f)", i, pos.x(), pos.y(), pos.z());
     }
     clusters = obstacles;
 }
