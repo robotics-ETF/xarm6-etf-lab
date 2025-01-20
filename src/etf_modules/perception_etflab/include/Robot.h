@@ -32,6 +32,7 @@ namespace perception_etflab
 		void removeFromScene3(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters);
 		void visualizeCapsules();
 		void visualizeSkeleton();
+		void visualizeWorkspace();
 
 		rclcpp::Subscription<control_msgs::msg::JointTrajectoryControllerState>::SharedPtr joints_state_subscription;
 		rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_publisher;
@@ -45,5 +46,7 @@ namespace perception_etflab
         std::vector<float> tolerance_radius;
 		float ground_radius;
         size_t num_DOFs;
+		Eigen::Vector3f WS_center;
+		float WS_radius;
     };
 }
