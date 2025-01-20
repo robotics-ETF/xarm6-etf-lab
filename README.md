@@ -254,4 +254,5 @@ https://github.com/user-attachments/assets/68841cae-02b0-4555-a79d-39a97862ca06
 
 https://github.com/user-attachments/assets/f47aad66-ca05-42e0-9328-9a03e8dceee1
 
-For more interesting senarios see https://www.youtube.com/watch?v=61IVFRC0eWw.
+
+For more details about these senarios see https://www.youtube.com/watch?v=61IVFRC0eWw.
