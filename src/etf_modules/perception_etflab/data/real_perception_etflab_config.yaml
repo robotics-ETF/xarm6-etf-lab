@@ -8,6 +8,8 @@ robot:
   gripper_length: 0.17                                      # In [m]
   ground_included: 2                                      
   ground_radius: 0.67                                       # In [m]
+  WS_center: [0.0, 0.0, 0.267]                              # Workspace center point in [m]
+  WS_radius: 1.0                                            # Workspace radius in [m] assuming spherical workspace shape
   
 perception:
   max_dim_subcluster: [0.1, 0.1, 0.1]                       # Max. dimensions of a subcluster

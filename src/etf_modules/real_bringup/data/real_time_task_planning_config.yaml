@@ -35,7 +35,7 @@ cameras:
   min_num_captures: 3                                         # Minimal number of captures/frames of a single STATIC obstacle to become valid
   
 scenario:
-  max_object_height: 0.11                                     # Maximal height of an object that can be picked up
+  max_object_height: 0.12                                     # Maximal height of an object that can be picked up
   picking_object_wait_max: 4                                  # Number of periods 'period' to wait in [s]
   destination: [-0.5, 0, 0.2]                                 # Coordinates of a destination box
   max_gripper_speed: 5000                                     # Range: [0, 5000] [mm/s]

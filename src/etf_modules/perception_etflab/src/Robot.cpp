@@ -34,6 +34,11 @@ perception_etflab::Robot::Robot(const std::string &config_file_path)
             tolerance_radius.emplace_back(tolerance_radius_node[i].as<float>());
     }
 
+    for (size_t i = 0; i < 3; i++)
+        WS_center(i) = robot_node["WS_center"][i].as<float>();
+
+    WS_radius = robot_node["WS_radius"].as<float>();
+
     // Uncomment if you are using 'removeFromScene3' function
     // xarm_client_node = std::make_shared<rclcpp::Node>("xarm_client_node");
     // xarm_client.init(xarm_client_node, "xarm");
@@ -301,4 +306,52 @@ void perception_etflab::Robot::visualizeSkeleton()
 
     marker_array_publisher->publish(marker_array_msg);
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Visualizing robot skeleton...");
+}
+
+void perception_etflab::Robot::visualizeWorkspace()
+{
+    visualization_msgs::msg::MarkerArray marker_array_msg;
+    visualization_msgs::msg::Marker marker;
+    marker.action = visualization_msgs::msg::Marker::ADD;
+    marker.ns = "robot_workspace";
+    marker.header.frame_id = "world";
+    // marker.header.stamp = now();
+    marker.type = visualization_msgs::msg::Marker::CYLINDER;
+    marker.id = 0;
+    marker.pose.position.x = 0.0;
+    marker.pose.position.y = 0.0;
+    marker.pose.position.z = -0.05;
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+    marker.scale.x = 2 * ground_radius;
+    marker.scale.y = 2 * ground_radius;
+    marker.scale.z = 0.1;
+    marker.color.r = 0.0;
+    marker.color.g = 1.0;
+    marker.color.b = 0.0;
+    marker.color.a = 1.0;
+    marker_array_msg.markers.emplace_back(marker);
+
+    marker.type = visualization_msgs::msg::Marker::SPHERE;
+    marker.id = 1;
+    marker.pose.position.x = WS_center.x();
+    marker.pose.position.y = WS_center.y();
+    marker.pose.position.z = WS_center.z();
+    marker.pose.orientation.x = 0.0;
+    marker.pose.orientation.y = 0.0;
+    marker.pose.orientation.z = 0.0;
+    marker.pose.orientation.w = 1.0;
+    marker.scale.x = 2 * WS_radius;
+    marker.scale.y = 2 * WS_radius;
+    marker.scale.z = 2 * WS_radius;
+    marker.color.r = 0.0;
+    marker.color.g = 1.0;
+    marker.color.b = 0.0;
+    marker.color.a = 0.2;
+    marker_array_msg.markers.emplace_back(marker);
+
+    marker_array_publisher->publish(marker_array_msg);
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Visualizing robot workspace...");
 }

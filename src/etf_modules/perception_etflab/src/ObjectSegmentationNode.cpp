@@ -133,6 +133,7 @@ void perception_etflab::ObjectSegmentationNode::realPointCloudCallback(const sen
 
 	// Robot::visualizeCapsules();
     // Robot::visualizeSkeleton();
+	// Robot::visualizeWorkspace();
 
     AABB::make(pcl_subclusters);
     AABB::publish();
@@ -150,7 +151,8 @@ void perception_etflab::ObjectSegmentationNode::simPointCloudCallback()
     std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> pcl_subclusters;
 
 	// Robot::visualizeCapsules();
-    Robot::visualizeSkeleton();
+    // Robot::visualizeSkeleton();
+	// Robot::visualizeWorkspace();
 
 	Obstacles::move(pcl_clusters);
 
