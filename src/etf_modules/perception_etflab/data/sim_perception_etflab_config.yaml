@@ -42,8 +42,8 @@ environment:
 #       pos: [0, -0.8, 0.05]
 
 random_obstacles:
-  num: 5	                          # Number of random obstacles to be added
-  max_vel: 0.5 			                # Maximal velocity of each obstacle in [m/s]
+  num: 5	                        # Number of random obstacles to be added
+  max_vel: 0.5 			            # Maximal velocity of each obstacle in [m/s]
   dim: [0.1, 0.1, 0.1]              # Dimensions of each random obstacle in [m]
   period: 0.020                     # Period in [s]
 
