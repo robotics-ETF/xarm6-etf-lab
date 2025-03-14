@@ -11,12 +11,36 @@ perception_etflab::Obstacles::Obstacles(const std::string &config_file_path)
 		project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
     
     YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
+    Eigen::Vector3f pos {}, vel {}, dim {};
+    num_obstacles = node["environment"].size();
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Adding %ld obstacles...", num_obstacles);
+
+    for (size_t i = 0; i < num_obstacles; i++)
+    {
+        YAML::Node obstacle = node["environment"][i];
+        YAML::Node d = obstacle["box"]["dim"];
+        YAML::Node p = obstacle["box"]["pos"];
+        YAML::Node r = obstacle["box"]["rot"];
+        YAML::Node min_dist_tol = obstacle["box"]["min_dist_tol"];
+        
+        dim << d[0].as<float>(), d[1].as<float>(), d[2].as<float>();
+        pos << p[0].as<float>(), p[1].as<float>(), p[2].as<float>();
+
+        std::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cluster = std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
+        cluster->emplace_back(pcl::PointXYZRGB(pos.x(), pos.y(), pos.z()));
+        cluster->emplace_back(pcl::PointXYZRGB(pos.x() - dim.x()/2, pos.y() - dim.y()/2, pos.z() - dim.z()/2));
+        cluster->emplace_back(pcl::PointXYZRGB(pos.x() + dim.x()/2, pos.y() + dim.y()/2, pos.z() + dim.z()/2));
+        obstacles.emplace_back(cluster);
+        velocities.emplace_back(vel);
+
+        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%ld. Obstacle pos: (%f, %f, %f)", i, pos.x(), pos.y(), pos.z());
+    }
 
     YAML::Node obs_node { node["random_obstacles"] };
-    num_obstacles = obs_node["num"].as<size_t>();
+    num_rand_obstacles = obs_node["num"].as<size_t>();
 	max_vel = obs_node["max_vel"].as<float>();
 	for (size_t i = 0; i < 3; i++)
-		dim(i) = obs_node["dim"][i].as<float>();
+		dim_rand(i) = obs_node["dim"][i].as<float>();
     period = obs_node["period"].as<float>();
 
     YAML::Node robot_node { node["robot"] };
@@ -25,16 +49,15 @@ perception_etflab::Obstacles::Obstacles(const std::string &config_file_path)
         WS_center(i) = robot_node["WS_center"][i].as<float>();
 
     WS_radius = robot_node["WS_radius"].as<float>();
-    base_radius = std::max(robot_node["capsules_radius"][0].as<float>(), robot_node["capsules_radius"][1].as<float>()) + dim.norm();
+    base_radius = std::max(robot_node["capsules_radius"][0].as<float>(), robot_node["capsules_radius"][1].as<float>()) + dim_rand.norm();
     robot_max_vel = robot_node["max_vel_first_joint"].as<float>();
 
-    // Initial settings for each obstacle
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Adding %ld random obstacles...", num_obstacles);
-    Eigen::Vector3f pos {}, vel {};
     float r {}, fi {}, theta {};
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Adding %ld random obstacles...", num_rand_obstacles);
 
-    for (size_t i = 0; i < num_obstacles; i++)
+    for (size_t i = 0; i < num_rand_obstacles; i++)
     {
+        // Initial settings for each random obstacle
         r = float(rand()) / RAND_MAX * WS_radius;
         fi = float(rand()) / RAND_MAX * 2 * M_PI;
         theta = float(rand()) / RAND_MAX * M_PI;
@@ -52,8 +75,8 @@ perception_etflab::Obstacles::Obstacles(const std::string &config_file_path)
         {
             std::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cluster = std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
             cluster->emplace_back(pcl::PointXYZRGB(pos.x(), pos.y(), pos.z()));
-            cluster->emplace_back(pcl::PointXYZRGB(pos.x() - dim.x()/2, pos.y() - dim.y()/2, pos.z() - dim.z()/2));
-            cluster->emplace_back(pcl::PointXYZRGB(pos.x() + dim.x()/2, pos.y() + dim.y()/2, pos.z() + dim.z()/2));
+            cluster->emplace_back(pcl::PointXYZRGB(pos.x() - dim_rand.x()/2, pos.y() - dim_rand.y()/2, pos.z() - dim_rand.z()/2));
+            cluster->emplace_back(pcl::PointXYZRGB(pos.x() + dim_rand.x()/2, pos.y() + dim_rand.y()/2, pos.z() + dim_rand.z()/2));
             obstacles.emplace_back(cluster);
             velocities.emplace_back(vel);
 
@@ -62,6 +85,67 @@ perception_etflab::Obstacles::Obstacles(const std::string &config_file_path)
     }
 }
 
+// Circular motion 
+// void perception_etflab::Obstacles::move(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters)
+// {
+//     std::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cluster { nullptr };
+//     Eigen::Vector3f pos {};
+//     float phi {};
+
+//     for (size_t i = 0; i < num_obstacles; i++)
+//     {
+//         cluster = obstacles[i];
+//         pos = Eigen::Vector3f(cluster->points.front().x, cluster->points.front().y, cluster->points.front().z);
+//         phi = std::atan2(pos.y(), pos.x());
+//         velocities[i] = Eigen::Vector3f(-std::sin(phi), std::cos(phi), 0.0) * max_vel;
+        
+//         for (pcl::PointCloud<pcl::PointXYZRGB>::iterator point = cluster->begin(); point < cluster->end(); point++)
+//         {
+//             point->x += velocities[i].x() * period;
+//             point->y += velocities[i].y() * period;
+//             point->z += velocities[i].z() * period;
+//         }
+//         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%ld. Obstacle pos: (%f, %f, %f)", i, pos.x(), pos.y(), pos.z());
+//     }
+//     clusters = obstacles;
+// }
+
+// Specific motion 
+// void perception_etflab::Obstacles::move(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters)
+// {
+//     std::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cluster { nullptr };
+//     Eigen::Vector3f pos {};
+//     const float path_len_max { 1 };
+
+//     for (size_t i = 0; i < num_obstacles; i++)
+//     {
+//         cluster = obstacles[i];
+//         pos = Eigen::Vector3f(cluster->points.front().x, cluster->points.front().y, cluster->points.front().z);
+        
+//         if (path_len > path_len_max)
+//         {
+//             sign *= -1;
+//             path_len = -path_len_max;
+//         }
+        
+//         if (pos.y() > 0)
+//             velocities[i] = Eigen::Vector3f::UnitX() * sign * max_vel;     // Move along x-axis
+//         else
+//             velocities[i] = Eigen::Vector3f::UnitY() * sign * max_vel;     // Move along y-axis
+        
+//         path_len += velocities[i].norm() * period;
+        
+//         for (pcl::PointCloud<pcl::PointXYZRGB>::iterator point = cluster->begin(); point < cluster->end(); point++)
+//         {
+//             point->x += velocities[i].x() * period;
+//             point->y += velocities[i].y() * period;
+//             point->z += velocities[i].z() * period;
+//         }
+//         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%ld. Obstacle pos: (%f, %f, %f)", i, pos.x(), pos.y(), pos.z());
+//     }
+//     clusters = obstacles;
+// }
+
 // Reflect obstacles in random directions
 // void perception_etflab::Obstacles::move(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters)
 // {
@@ -69,7 +153,7 @@ perception_etflab::Obstacles::Obstacles(const std::string &config_file_path)
 //     Eigen::Vector3f pos {}, vel {};
 //     float vel_intensity {};
 
-//     for (size_t i = 0; i < num_obstacles; i++)
+//     for (size_t i = 0; i < num_rand_obstacles; i++)
 //     {
 //         cluster = obstacles[i];
 //         pos = Eigen::Vector3f(cluster->points.front().x, cluster->points.front().y, cluster->points.front().z);
@@ -106,7 +190,7 @@ void perception_etflab::Obstacles::move(std::vector<pcl::PointCloud<pcl::PointXY
     Eigen::Vector3f pos {}, pos_next {}, vec_normal {};
     bool change { true };
 
-    for (size_t i = 0; i < num_obstacles; i++)
+    for (size_t i = 0; i < num_rand_obstacles; i++)
     {
         cluster = obstacles[i];
         tol_radius = std::max(velocities[i].norm() / robot_max_vel, base_radius);

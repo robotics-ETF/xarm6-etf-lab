@@ -24,7 +24,8 @@ namespace perception_etflab
 
     private:
         size_t num_obstacles;
-        Eigen::Vector3f dim;
+        size_t num_rand_obstacles;
+        Eigen::Vector3f dim_rand;
 		float robot_max_vel;                                            // Maximal velocity for each obstacle
         Eigen::Vector3f WS_center;								        // Workspace center point in [m]
         float WS_radius; 										        // Workspace radius in [m]
@@ -34,6 +35,7 @@ namespace perception_etflab
         float max_vel;                                                  // Maximal velocity of each obstacle in [m/s]
 		std::vector<Eigen::Vector3f> velocities; 		                // Velocity vector for each obstacle
         std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> obstacles;  // Each obstacle represents a single cluster
-
+        float path_len { 0 };
+        int sign { 1 };
     };
 }
