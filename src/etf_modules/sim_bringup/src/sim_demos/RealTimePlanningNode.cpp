@@ -255,7 +255,16 @@ void sim_bringup::RealTimePlanningNode::replanningCallback([[maybe_unused]] cons
 /// @brief Compute trajectory points from 'spline_next' and publish them.
 void sim_bringup::RealTimePlanningNode::computeTrajectory()
 {
-    float t_delay { DP::updateCurrentState(true) };
+    DP::visited_states = { DP::q_next };
+    DP::updating_state->setNonZeroFinalVel(DP::q_next->getIsReached() && DP::q_next->getIndex() != -1 && 
+                                           DP::q_next->getStatus() != planning::drbt::HorizonState::Status::Goal);
+    DP::updating_state->setTimeIterStart(DP::time_iter_start);
+    DP::updating_state->setNextState(DP::q_next->getState());
+    DP::updating_state->setMeasureTime(true);
+    std::shared_ptr<base::State> q_next_reached { DP::q_next->getStateReached() };
+    DP::updating_state->update(DP::q_previous, DP::q_current, q_next_reached, DP::status);
+
+    float t_delay { DP::updating_state->getRemainingTime() };
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "New trajectory is computed! Delay time: %f [ms]", t_delay * 1e3);
     if (DP::splines->spline_next != DP::splines->spline_current)  // New spline is computed
         DP::splines->spline_next->setTimeStart(t_delay);

@@ -1,9 +1,56 @@
+environment:
+  # - box:
+  #     label: "ground"
+  #     dim: [1.5, 1.5, 0.1]
+  #     pos: [0, 0, -0.05]
+  # - box:
+  #     dim: [0.5, 0.5, 1]
+  #     pos: [0.55, 0.55, 0.5]
+  # - box:
+  #     dim: [0.5, 0.5, 1]
+  #     pos: [-0.55, 0.55, 0.5]
+  # - box:
+  #     dim: [0.5, 0.5, 1]
+  #     pos: [0.55, -0.55, 0.5]
+  # - box:
+  #     dim: [0.5, 0.5, 1]
+  #     pos: [-0.55, -0.55, 0.5]
+
+  # - box:
+  #     dim: [0.1, 0.4, 0.7]
+  #     pos: [-0.3, 0.8, 0.35]
+  # - box:
+  #     dim: [0.1, 0.4, 0.7]
+  #     pos: [0.3, 0.8, 0.35]
+  # - box:
+  #     dim: [0.5, 0.4, 0.1]
+  #     pos: [0, 0.8, 0.65]
+  # - box:
+  #     dim: [0.5, 0.4, 0.1]
+  #     pos: [0, 0.8, 0.05]
+  # - box:
+  #     dim: [0.1, 0.4, 0.7]
+  #     pos: [-0.3, -0.8, 0.35]
+  # - box:
+  #     dim: [0.1, 0.4, 0.7]
+  #     pos: [0.3, -0.8, 0.35]
+  # - box:
+  #     dim: [0.5, 0.4, 0.1]
+  #     pos: [0, -0.8, 0.65]
+  # - box:
+  #     dim: [0.5, 0.4, 0.1]
+  #     pos: [0, -0.8, 0.05]
+
+random_obstacles:
+  num: 5	                          # Number of random obstacles to be added
+  dim: [0.05, 0.05, 0.05]           # Dimensions of each random obstacle in [m]
+
 robot:
   type: "xarm6"
   urdf: "/RPMPLv2/data/xarm6/xarm6.urdf"
   q_start: [0, 0, 0, 3.1415, 1.5708, 0]
   num_DOFs: 6
-  capsules_radius: [0.047, 0.12, 0.11, 0.09, 0.05, 0.1]     # When the gripper is attached
+  capsules_radius: [0.047, 0.12, 0.11, 0.09, 0.05, 0.05]    # When the gripper is attached
   gripper_length: 0.17                                      # In [m]
   ground_included: 2                                      
   ground_radius: 0.67                                       # In [m]
@@ -14,9 +61,6 @@ robot:
 perception:
   max_dim_subcluster: [0.1, 0.1, 0.1]                       # Max. dimensions of a subcluster
   concatenation_tolerance: 0.05                             # Abs. tolerance when concatenating two subclusters
-
-random_obstacles:
-  num: 3	                        # Number of random obstacles to be added
-  max_vel: 0.6 			              # Maximal velocity of each obstacle in [m/s]
-  dim: [0.1, 0.1, 0.1]            # Dimensions of each random obstacle in [m]
-  period: 0.020                   # Period in [s]
+  motion_type: "light_directions"                           # Options: "circular", "two_tunnels", "random_directions", "light_directions". See 'Obstacles.cpp' for more details.
+  max_vel: 0.5 			                                        # Maximal velocity of each obstacle in [m/s]
+  period: 0.020                                             # Refreshing period of each obstacle in [s]
