@@ -52,7 +52,7 @@ def generate_launch_description():
 
     tf_node_link_base_camera_left_link = Node(package="tf2_ros", 
             executable = "static_transform_publisher",
-            arguments = ["0.48", "-1.08", "0.95", "1.9918", "0.7026", "0.1101", "link_base", "camera_left_link"]    # (x,y,z, yaw(z), pich(y), roll(x))
+            arguments = ["0.48", "-1.08", "0.95", "1.9918", "0.7026", "0.10", "link_base", "camera_left_link"]    # (x,y,z, yaw(z), pich(y), roll(x))
     )
 
     tf_node_link_base_camera_right_link = Node(package="tf2_ros", 

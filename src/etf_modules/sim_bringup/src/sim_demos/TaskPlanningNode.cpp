@@ -276,7 +276,7 @@ int sim_bringup::TaskPlanningNode::chooseObject()
 bool sim_bringup::TaskPlanningNode::whetherToRemove(const Eigen::Vector3f &object_pos, [[maybe_unused]] const Eigen::Vector3f &object_dim)
 {
     // Remove the destination box from the scene
-    if (object_pos.x() < -0.4 && std::abs(object_pos.y()) < 0.2 && object_pos.z() < 0.25)
+    if (object_pos.x() < -0.4 && std::abs(object_pos.y()) < 0.2 && object_pos.z() < 0.3)
         return true;
     
     return false;

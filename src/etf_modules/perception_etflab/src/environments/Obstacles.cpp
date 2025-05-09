@@ -35,8 +35,11 @@ perception_etflab::Obstacles::Obstacles(const std::string &config_file_path)
 
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%ld. Obstacle pos: (%f, %f, %f)", i, pos.x(), pos.y(), pos.z());
     }
+    
     sign = Eigen::VectorXi::Ones(num_obstacles);
     path_len = Eigen::VectorXf::Zero(num_obstacles);
+    max_vel = node["perception"]["max_vel"].as<float>();
+    period = node["perception"]["period"].as<float>();
 
     num_rand_obstacles = node["random_obstacles"]["num"].as<size_t>();
     if (num_rand_obstacles > 0)
@@ -98,9 +101,6 @@ perception_etflab::Obstacles::Obstacles(const std::string &config_file_path)
         motion_type = MotionType::light_directions;
         RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Motion type is not specified! Using 'light_directions'.");
     }
-    
-    max_vel = node["perception"]["max_vel"].as<float>();
-    period = node["perception"].as<float>();
 }
 
 // Check whether an object position 'pos' is valid when the object moves at 'vel' velocity
