@@ -43,7 +43,7 @@ environment:
 
 random_obstacles:
   num: 5	                          # Number of random obstacles to be added
-  dim: [0.05, 0.05, 0.05]           # Dimensions of each random obstacle in [m]
+  dim: [0.3, 0.3, 0.3]              # Dimensions of each random obstacle in [m]
 
 robot:
   type: "xarm6"
@@ -56,11 +56,11 @@ robot:
   ground_radius: 0.67                                       # In [m]
   max_vel_first_joint: 3.1415                               # Maximal velocity of the first robot's joint in [rad/s]
   WS_center: [0.0, 0.0, 0.267]                              # Workspace center point in [m]
-  WS_radius: 1.0                                            # Workspace radius in [m] assuming spherical workspace shape
+  WS_radius: 1.5                                            # Workspace radius in [m] assuming spherical workspace shape
   
 perception:
   max_dim_subcluster: [0.1, 0.1, 0.1]                       # Max. dimensions of a subcluster
   concatenation_tolerance: 0.05                             # Abs. tolerance when concatenating two subclusters
   motion_type: "light_directions"                           # Options: "circular", "two_tunnels", "random_directions", "light_directions". See 'Obstacles.cpp' for more details.
-  max_vel: 0.5 			                                        # Maximal velocity of each obstacle in [m/s]
+  max_vel: 0.3 			                                        # Maximal velocity of each obstacle in [m/s]
   period: 0.020                                             # Refreshing period of each obstacle in [s]
