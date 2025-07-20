@@ -11,6 +11,7 @@ perception_etflab::Obstacles::Obstacles(const std::string &config_file_path)
 		project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
     
     YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
+    YAML::Node node2 { YAML::LoadFile(project_abs_path + config_file_path.substr(0, config_file_path.find_last_of("/\\")) + "/random_scenarios.yaml") };
     Eigen::Vector3f pos {}, vel {}, dim {};
     num_obstacles = node["environment"].size();
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Adding %ld predefined obstacles...", num_obstacles);
@@ -56,6 +57,7 @@ perception_etflab::Obstacles::Obstacles(const std::string &config_file_path)
         base_radius = std::max(robot_node["capsules_radius"][0].as<float>(), robot_node["capsules_radius"][1].as<float>()) + dim_rand.norm();
         robot_max_vel = robot_node["max_vel_first_joint"].as<float>();
 
+        // First option (generating here in the code):
         float r {}, fi {}, theta {};
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Adding %ld random obstacles...", num_rand_obstacles);
         for (size_t i = 0; i < num_rand_obstacles; i++)
@@ -86,6 +88,29 @@ perception_etflab::Obstacles::Obstacles(const std::string &config_file_path)
                 RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%ld. Obstacle pos: (%f, %f, %f)", i, pos.x(), pos.y(), pos.z());
             }
         }
+
+        // Second option (reading from a yaml file):
+        // size_t num_test = 5;
+        // for (size_t j = 0; j < num_rand_obstacles; j++)
+        // {
+        //     for (size_t i = 0; i < 3; i++)
+        //     {
+        //         pos(i) = node2["scenario_" + std::to_string(num_rand_obstacles)]["run_" + std::to_string(num_test-1)]
+        //                     ["object_" + std::to_string(j)]["pos"][i].as<float>();
+        //         vel(i) = node2["scenario_" + std::to_string(num_rand_obstacles)]["run_" + std::to_string(num_test-1)]
+        //                     ["object_" + std::to_string(j)]["vel"][i].as<float>();
+        //     }
+            
+        //     std::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cluster = std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
+        //     cluster->emplace_back(pcl::PointXYZRGB(pos.x(), pos.y(), pos.z()));
+        //     cluster->emplace_back(pcl::PointXYZRGB(pos.x() - dim_rand.x()/2, pos.y() - dim_rand.y()/2, pos.z() - dim_rand.z()/2));
+        //     cluster->emplace_back(pcl::PointXYZRGB(pos.x() + dim_rand.x()/2, pos.y() + dim_rand.y()/2, pos.z() + dim_rand.z()/2));
+        //     obstacles.emplace_back(cluster);
+        //     velocities.emplace_back(vel*0.5);
+
+        //     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%ld. Obstacle pos: (%f, %f, %f)", j, pos.x(), pos.y(), pos.z());
+        // }
+        // ------------------------------------------------------------------------------- //
     }
 	
     if (node["perception"]["motion_type"].as<std::string>() == "circular")

@@ -1,4 +1,5 @@
 #include "sim_demos/RealTimePlanningNode.h"
+#include "sim_demos/RealTimePlanningNode2.h"
 #include <glog/logging.h>
 
 int main(int argc, char *argv[])
@@ -20,6 +21,7 @@ int main(int argc, char *argv[])
 	{
 		std::make_shared<sim_bringup::RealTimePlanningNode>(node_name, config_file_path, true)
 		// std::make_shared<sim_bringup::RealTimePlanningNode>(node_name, config_file_path, true, "_test.log")
+		// std::make_shared<sim_bringup::RealTimePlanningNode2>(node_name, config_file_path, true)
 	};
 	
 	rclcpp::executors::MultiThreadedExecutor executor;
