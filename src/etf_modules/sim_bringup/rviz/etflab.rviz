@@ -50,7 +50,7 @@ Visualization Manager:
         Y: 0
         Z: 0
       Plane: XY
-      Plane Cell Count: 20
+      Plane Cell Count: 14
       Reference Frame: <Fixed Frame>
       Value: true
     - Alpha: 1
@@ -251,7 +251,7 @@ Visualization Manager:
       Enabled: true
       Name: MarkerArray
       Namespaces:
-        {}
+        robot_workspace: true
       Topic:
         Depth: 5
         Durability Policy: Volatile
@@ -317,25 +317,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz_default_plugins/Orbit
-      Distance: 2.2789900302886963
+      Distance: 3.0050132274627686
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 0.03385082632303238
-        Y: 0.18783923983573914
-        Z: 0.4212617874145508
+        X: -0.13996045291423798
+        Y: -0.012027076445519924
+        Z: 0.4341852366924286
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.2597968578338623
+      Pitch: 0.5347963571548462
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 5.398507595062256
+      Yaw: 5.433515548706055
     Saved: ~
 Window Geometry:
   Displays:

@@ -56,7 +56,7 @@ void perception_etflab::AABB::visualize()
     marker.color.r = 0.0;
     marker.color.g = 0.0;
     marker.color.b = 0.0;
-    marker.color.a = 0.5;
+    marker.color.a = 0.7;
     for (size_t i = 0; i < boxes->size(); i += 2)
     {
         marker.id = i / 2;

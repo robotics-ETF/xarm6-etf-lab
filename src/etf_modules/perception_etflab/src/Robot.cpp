@@ -320,14 +320,14 @@ void perception_etflab::Robot::visualizeWorkspace()
     marker.id = 0;
     marker.pose.position.x = 0.0;
     marker.pose.position.y = 0.0;
-    marker.pose.position.z = -0.05;
+    marker.pose.position.z = -0.025;
     marker.pose.orientation.x = 0.0;
     marker.pose.orientation.y = 0.0;
     marker.pose.orientation.z = 0.0;
     marker.pose.orientation.w = 1.0;
     marker.scale.x = 2 * ground_radius;
     marker.scale.y = 2 * ground_radius;
-    marker.scale.z = 0.1;
+    marker.scale.z = 0.05;
     marker.color.r = 0.0;
     marker.color.g = 1.0;
     marker.color.b = 0.0;
