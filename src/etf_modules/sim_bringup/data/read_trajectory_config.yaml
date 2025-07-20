@@ -44,4 +44,4 @@ environment:
 cameras:
   min_num_captures: 1                                         # Minimal number of captures/frames of a single obstacle to become valid
 
-traj_file_path: "/sim_bringup/data/MARS_trajectories/MARS_trajectory_scenario2_v2.yaml"
+traj_file_path: "/sim_bringup/data/trajectories/scenario1_v1.yaml"
