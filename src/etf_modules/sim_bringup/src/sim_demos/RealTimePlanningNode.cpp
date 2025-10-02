@@ -79,12 +79,12 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
     
     // ------------------------------------------------------------------------------- //
     // Current robot position and velocity (measured vs computed)
-    DP::q_current = DP::ss->getNewState(DP::splines->spline_next->getPosition(DP::splines->spline_next->getTimeCurrent(true)));
+    DP::q_current = DP::ss->getNewState(DP::traj->spline_next->getPosition(DP::traj->spline_next->getTimeCurrent(true)));
     // DP::q_current = Robot::getJointsPositionPtr();
     // std::cout << "Current position (measured): " << Robot::getJointsPositionPtr() << "\n";
     // std::cout << "Current position (computed): " << DP::q_current << "\n";
     // std::cout << "Current velocity (measured): " << Robot::getJointsVelocityPtr() << "\n";
-    // std::cout << "Current velocity (computed): " << DP::ss->getNewState(DP::splines->spline_next->getVelocity(DP::splines->spline_next->getTimeCurrent(true))) << "\n";
+    // std::cout << "Current velocity (computed): " << DP::ss->getNewState(DP::traj->spline_next->getVelocity(DP::traj->spline_next->getTimeCurrent(true))) << "\n";
     // ------------------------------------------------------------------------------- //
 
     if (replanning_result == 1)  // New path is found within the specified time limit, thus update predefined path to the goal
@@ -264,14 +264,14 @@ void sim_bringup::RealTimePlanningNode::computeTrajectory()
 
     float t_delay { DP::updating_state->getRemainingTime() };
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "New trajectory is computed! Delay time: %f [ms]", t_delay * 1e3);
-    if (DP::splines->spline_next != DP::splines->spline_current)  // New spline is computed
-        DP::splines->spline_next->setTimeStart(t_delay);
+    if (DP::traj->spline_next != DP::traj->spline_current)  // New spline is computed
+        DP::traj->spline_next->setTimeStart(t_delay);
 
     std::chrono::steady_clock::time_point time_start_ { std::chrono::steady_clock::now() };
     Trajectory::clear();
-    Trajectory::addPoints(DP::splines->spline_next, 
-                          DP::splines->spline_next->getTimeCurrent() + trajectory_advance_time, 
-                          DP::splines->spline_next->getTimeEnd() + DRGBTConfig::MAX_TIME_TASK1 + trajectory_advance_time);
+    Trajectory::addPoints(DP::traj->spline_next, 
+                          DP::traj->spline_next->getTimeCurrent() + trajectory_advance_time, 
+                          DP::traj->spline_next->getTimeEnd() + DRGBTConfig::MAX_TIME_TASK1 + trajectory_advance_time);
     // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Elapsed time: %f [ms] for adding %ld points", 
     //             DP::getElapsedTime(time_start_) * 1e3, Trajectory::getNumPoints());
 
@@ -284,23 +284,23 @@ void sim_bringup::RealTimePlanningNode::recordingTrajectoryCallback()
     if (DP::getPlannerInfo()->getNumIterations() == 0)
         return;
 
-    float time_spline { DP::splines->spline_next->getTimeCurrent(true) };
+    float time_spline { DP::traj->spline_next->getTimeCurrent(true) };
     output_file << "Time [s]: \n";
     output_file << DP::getElapsedTime(DP::time_alg_start) << "\n";
 
     output_file << "Position (referent): \n";
-    Eigen::VectorXf pos_ref { DP::splines->spline_next->getPosition(time_spline) };
+    Eigen::VectorXf pos_ref { DP::traj->spline_next->getPosition(time_spline) };
     output_file << pos_ref.transpose() << "\n";
     output_file << "Position (measured): \n";
     output_file << Robot::getJointsPosition().transpose() << "\n";
 
     output_file << "Velocity (referent): \n";
-    output_file << DP::splines->spline_next->getVelocity(time_spline).transpose() << "\n";
+    output_file << DP::traj->spline_next->getVelocity(time_spline).transpose() << "\n";
     output_file << "Velocity (measured): \n";
     output_file << Robot::getJointsVelocity().transpose() << "\n";
 
     // output_file << "Acceleration (referent): \n";
-    // output_file << DP::splines->spline_next->getAcceleration(time_spline).transpose() << "\n";
+    // output_file << DP::traj->spline_next->getAcceleration(time_spline).transpose() << "\n";
     // output_file << "Acceleration (measured): \n";
     // output_file << Robot::getJointsAcceleration().transpose() << "\n";
 

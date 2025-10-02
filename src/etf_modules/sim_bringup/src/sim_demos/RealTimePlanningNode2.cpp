@@ -230,14 +230,14 @@ void sim_bringup::RealTimePlanningNode2::computeTrajectory()
 
     float t_delay { DP::updating_state->getRemainingTime() };
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "New trajectory is computed! Delay time: %f [ms]", t_delay * 1e3);
-    if (DP::splines->spline_next != DP::splines->spline_current)  // New spline is computed
-        DP::splines->spline_next->setTimeStart(t_delay);
+    if (DP::traj->spline_next != DP::traj->spline_current)  // New spline is computed
+        DP::traj->spline_next->setTimeStart(t_delay);
 
     std::chrono::steady_clock::time_point time_start_ { std::chrono::steady_clock::now() };
     Trajectory::clear();
-    Trajectory::addPoints(DP::splines->spline_next, 
-                        DP::splines->spline_next->getTimeCurrent() + trajectory_advance_time, 
-                        DP::splines->spline_next->getTimeEnd() + DRGBTConfig::MAX_TIME_TASK1 + trajectory_advance_time);
+    Trajectory::addPoints(DP::traj->spline_next, 
+                        DP::traj->spline_next->getTimeCurrent() + trajectory_advance_time, 
+                        DP::traj->spline_next->getTimeEnd() + DRGBTConfig::MAX_TIME_TASK1 + trajectory_advance_time);
     // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Elapsed time: %f [ms] for adding %ld points", 
     //             DP::getElapsedTime(time_start_) * 1e3, Trajectory::getNumPoints());
 

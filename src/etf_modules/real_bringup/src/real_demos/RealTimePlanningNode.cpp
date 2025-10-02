@@ -33,16 +33,16 @@ void real_bringup::RealTimePlanningNode::computeTrajectory()
 
     float t_delay { DP::updating_state->getRemainingTime() };
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "New trajectory is computed! Delay time: %f [ms]", t_delay * 1e3);
-    if (DP::splines->spline_next != DP::splines->spline_current)  // New spline is computed
-        DP::splines->spline_next->setTimeStart(t_delay);
+    if (DP::traj->spline_next != DP::traj->spline_current)  // New spline is computed
+        DP::traj->spline_next->setTimeStart(t_delay);
 }
 
 void real_bringup::RealTimePlanningNode::publishingTrajectoryCallback()
 {
     // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Inside publishingTrajectoryCallback...");
     std::vector<float> position(Robot::getNumDOFs());
-    float t { DP::splines->spline_next->getTimeCurrent(true) + Trajectory::getTrajectoryMaxTimeStep() + trajectory_advance_time };
-    Eigen::VectorXf pos { DP::splines->spline_next->getPosition(t) };
+    float t { DP::traj->spline_next->getTimeCurrent(true) + Trajectory::getTrajectoryMaxTimeStep() + trajectory_advance_time };
+    Eigen::VectorXf pos { DP::traj->spline_next->getPosition(t) };
     // if (Robot::getNumDOFs() == 6)
     //     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Time: %f [s]\t Position: (%f, %f, %f, %f, %f, %f)",
     //                                    t, pos(0), pos(1), pos(2), pos(3), pos(4), pos(5));
