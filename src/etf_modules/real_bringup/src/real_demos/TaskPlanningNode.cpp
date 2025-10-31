@@ -62,10 +62,8 @@ void real_bringup::TaskPlanningNode::taskPlanningCallback()
     case going_towards_object:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going towards the object...");
         xarm_client.set_gripper_position(opened_gripper_pos);
-        Planner::preprocessPath({q_object_approach1, q_object_approach2, q_object_pick}, path);
         Trajectory::clear();
-        Trajectory::addPath(path);
-        // Trajectory::addPath(path, false);
+        Trajectory::addTrajectory(Planner::convertPathToTraj({q_object_approach1, q_object_approach2, q_object_pick}));
         Trajectory::publish();
         task = picking_object;
         break;
@@ -84,10 +82,8 @@ void real_bringup::TaskPlanningNode::taskPlanningCallback()
 
     case raising_object:
         RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Raising the object...");
-        Planner::preprocessPath({q_object_pick, q_object_approach1}, path);
         Trajectory::clear();
-        Trajectory::addPath(path);
-        // Trajectory::addPath(path, false);
+        Trajectory::addTrajectory(Planner::convertPathToTraj({q_object_pick, q_object_approach1}));
         Trajectory::publish();
         task = moving_object_to_destination;
         break;

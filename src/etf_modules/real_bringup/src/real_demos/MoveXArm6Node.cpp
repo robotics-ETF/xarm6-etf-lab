@@ -232,7 +232,7 @@ void real_bringup::MoveXArm6Node::moveInJointSpace()
     time_instances.emplace_back(5);
 
     Trajectory::clear();
-    Trajectory::addPath(path, time_instances);
+    Trajectory::addTrajectory(path, time_instances);
     Trajectory::publish();
 }
 

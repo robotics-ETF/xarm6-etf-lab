@@ -33,7 +33,6 @@ namespace sim_bringup
 
         std::shared_ptr<base::State> q_start;
         std::shared_ptr<base::State> q_goal;
-        std::vector<std::shared_ptr<base::State>> path;
         int planning_result;
         bool loop_execution;    // If true, after reaching the goal, start and goal will be switched, and algorithm will automatically continue its execution.
     };

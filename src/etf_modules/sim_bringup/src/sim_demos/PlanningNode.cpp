@@ -24,7 +24,6 @@ sim_bringup::PlanningNode::PlanningNode(const std::string &node_name, const std:
     state = waiting;
     q_start = Planner::scenario->getStart();
     q_goal = Planner::scenario->getGoal();
-    path = {};
     planning_result = -1;
     loop_execution = loop_execution_;
 }
@@ -53,10 +52,8 @@ void sim_bringup::PlanningNode::planningCallback()
     case planning:
         if (planning_result == 1)
         {
-            Planner::preprocessPath(Planner::getPath(), path);
             Trajectory::clear();
-            // Trajectory::addPath(path);
-            Trajectory::addPath(path, false);
+            Trajectory::addTrajectory(Planner::convertPathToTraj(Planner::getPath()));
             Trajectory::publish();
             planning_result = -1;
             state = executing_trajectory;

@@ -69,12 +69,13 @@ void sim_bringup::Trajectory::addPoint(float time_instance, const Eigen::VectorX
     msg.points.emplace_back(point);
 }
 
-/// @brief Add points from 'spline' to 'msg.points' using a time discretization step 'trajectory_max_time_step'.
-/// @param spline Spline whose points are added.
-/// @param t_begin Time instance from 'spline' which determines a first point that will be added.
-/// @param t_end Time instance from 'spline' which determines a last point that will be added.
+/// @brief Add points from 'trajectory' to 'msg.points' using a time discretization step 'trajectory_max_time_step'.
+/// @param trajectory Trajectory whose points are added.
+/// @param t_begin Time instance from 'trajectory' which determines a first point that will be added.
+/// @param t_end Time instance from 'trajectory' which determines a last point that will be added.
 /// @param t_offset Time offset for which all points are time shifted. Default: 0.
-void sim_bringup::Trajectory::addPoints(std::shared_ptr<planning::trajectory::Spline> spline, float t_begin, float t_end, float t_offset)
+void sim_bringup::Trajectory::addPoints(const std::shared_ptr<planning::trajectory::AbstractTrajectory> trajectory, 
+                                        float t_begin, float t_end, float t_offset)
 {
     float t { t_begin };
     
@@ -84,241 +85,54 @@ void sim_bringup::Trajectory::addPoints(std::shared_ptr<planning::trajectory::Sp
         if (t > t_end)
             t = t_end;
 
-        addPoint(t - t_begin + t_offset, spline->getPosition(t), spline->getVelocity(t), spline->getAcceleration(t));
+        addPoint
+        (
+            t - t_begin + t_offset, 
+            trajectory->getPosition(t), 
+            trajectory->getVelocity(t), 
+            trajectory->getAcceleration(t)
+        );
         
-        // std::cout << "Adding point at time: " << t - t_begin + t_offset << " [s] \t Spline time: " << t << " [s] \n";
-        // std::cout << "Position:     " << spline->getPosition(t).transpose() << "\n";
-        // std::cout << "Velocity:     " << spline->getVelocity(t).transpose() << "\n";
-        // std::cout << "Acceleration: " << spline->getAcceleration(t).transpose() << "\n\n";
+        // std::cout << "Adding point at time: " << t - t_begin + t_offset << " [s] \t Trajectory time: " << t << " [s] \n";
+        // std::cout << "Position:     " << trajectory->getPosition(t).transpose() << "\n";
+        // std::cout << "Velocity:     " << trajectory->getVelocity(t).transpose() << "\n";
+        // std::cout << "Acceleration: " << trajectory->getAcceleration(t).transpose() << "\n\n";
     } 
     while (t < t_end);
 }
 
-void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::State>> &path, const std::vector<float> &time_instances)
+void sim_bringup::Trajectory::addTrajectory(const std::vector<std::shared_ptr<base::State>> &path, const std::vector<float> &time_instances)
 {
     for (size_t i = 0; i < path.size(); i++)
         addPoint(time_instances[i], path[i]->getCoord());
 }
 
-void sim_bringup::Trajectory::addPath(const std::vector<Eigen::VectorXf> &path, const std::vector<float> &time_instances)
+void sim_bringup::Trajectory::addTrajectory(const std::vector<Eigen::VectorXf> &path, const std::vector<float> &time_instances)
 {
     for (size_t i = 0; i < path.size(); i++)
         addPoint(time_instances[i], path[i]);
 }
 
-/// @brief First method to add a path 'path' containing all points that robot should visit (not guaranteed). 
-/// Converting this path to trajectory (i.e., assigning time instances to these points) will be automatically done by this function.
-/// This is done by creating a sequence of quintic splines in a way that all constraints on robot's maximal velocity, 
-/// acceleration and jerk are surely always satisfied.
-/// @param path Path containing all points that robot should visit.
-/// @note Be careful since the distance between each two adjacent points from 'path' should not be too long! 
-/// The robot motion between them is generally not a straight line in C-space. 
-/// Consider using 'preprocessPath' function from 'Planner' class before using this function.
-void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::State>> &path)
+void sim_bringup::Trajectory::addTrajectory(const std::shared_ptr<planning::trajectory::AbstractTrajectory> trajectory)
 {
-    std::shared_ptr<planning::trajectory::Spline> spline_current { nullptr };
-    std::shared_ptr<planning::trajectory::Spline> spline_next { nullptr };
-
-    addPoint(0, path.front()->getCoord());
-    spline_current = std::make_shared<planning::trajectory::Spline5>
-    (
-        Robot::getRobot(), 
-        path.front()->getCoord(), 
-        Eigen::VectorXf::Zero(Robot::getNumDOFs()), 
-        Eigen::VectorXf::Zero(Robot::getNumDOFs())
-    );
-
-    if (path.size() == 2)
-        spline_current->compute(path[1]->getCoord());
-    else
-        spline_current->compute(path[2]->getCoord());
+    if (trajectory == nullptr)
+        return;
     
-    float t_current { 0 };
-    float t {}, t_min {}, t_max {};
-    bool found { false };
-    size_t num { 0 };
-    const size_t max_num_iter { 5 };
-    
-    for (size_t i = 3; i < path.size(); i++)
+    for (float t = 0; t <= trajectory->getTimeFinal(); t += trajectory_max_time_step)
     {
-        // std::cout << "i: " << i << " ---------------------------\n";
-        found = false;
-        num = 0;
-        t_min = 0;
-        t_max = spline_current->getTimeFinal();
-
-        while (true)
-        {
-            t = (t_min + t_max) / 2;
-            // std::cout << "t: " << t << " [s] \n";
-
-            spline_next = std::make_shared<planning::trajectory::Spline5>
-            (
-                Robot::getRobot(), 
-                spline_current->getPosition(t), 
-                spline_current->getVelocity(t), 
-                spline_current->getAcceleration(t)
-            );
-            found = spline_next->compute(path[i]->getCoord());
-
-            if (found)
-                break;
-            else if (++num == max_num_iter)
-                t_min = t_max;  // Solution surely exists, and 'found' will become true.
-            else
-                t_min = t;
-        }
-
-        addPoints(spline_current, 0, t, t_current);        
-        t_current += t;
-        spline_current = spline_next;
-        // std::cout << "t_current: " << t_current << " [s] \n";
-    }
-
-    addPoints(spline_current, 0, spline_current->getTimeFinal(), t_current);
-}
-
-/// @brief Second method to add a path 'path' containing all points that robot (must) visit. 
-/// Converting this path to trajectory (i.e., assigning time instances to these points) will be automatically done by this function.
-/// This is done by creating a sequence of quintic splines in a way that all constraints on robot's maximal velocity, 
-/// acceleration and jerk are surely always satisfied.
-/// @param path Path containing all points that robot (must) visit.
-/// @param must_visit Whether path points must be visited.
-/// @note Be careful since the distance between each two adjacent points from 'path' should not be too long! 
-/// The robot motion between them is generally not a straight line in C-space. 
-/// Consider using 'preprocessPath' function from 'Planner' class before using this function.
-void sim_bringup::Trajectory::addPath(const std::vector<std::shared_ptr<base::State>> &path, bool must_visit)
-{
-    std::vector<std::shared_ptr<planning::trajectory::Spline>> splines(path.size(), nullptr);
-    bool found { false };
-    size_t num_iter {};
-    size_t max_num_iter { 5 };
-    float delta_t_max {};
-    Eigen::VectorXf q_final_dot_max {};
-    Eigen::VectorXf q_final_dot_min {};
-    Eigen::VectorXf q_final_dot {};
-    Eigen::VectorXf q_final {};
-    std::vector<float> vel_coeff(path.size(), 1.0);
-    const float vel_coeff_const { 0.9 };
-    auto time_start = std::chrono::steady_clock::now();
-    float max_time { 1.0 };
-    bool monotonic { true };
-
-    splines.front() = std::make_shared<planning::trajectory::Spline5>
-    (
-        Robot::getRobot(), 
-        path.front()->getCoord(), 
-        Eigen::VectorXf::Zero(Robot::getNumDOFs()), 
-        Eigen::VectorXf::Zero(Robot::getNumDOFs())
-    );
-    
-    for (size_t i = 1; i < path.size(); i++)
-    {
-        splines[i] = std::make_shared<planning::trajectory::Spline5>
+        addPoint
         (
-            Robot::getRobot(), 
-            splines[i-1]->getPosition(splines[i-1]->getTimeFinal()), 
-            splines[i-1]->getVelocity(splines[i-1]->getTimeFinal()), 
-            splines[i-1]->getAcceleration(splines[i-1]->getTimeFinal())
+            t, 
+            trajectory->getPosition(t), 
+            trajectory->getVelocity(t), 
+            trajectory->getAcceleration(t)
         );
-
-        if (i == path.size() - 1)   // Final configuration will be reached, thus final velocity and acceleration must be zero!
-        {
-            found = splines[i]->compute(path.back()->getCoord()) && splines[i]->checkPositionMonotonicity() != 0;
-            if (!found) 
-            {
-                // std::cout << "Not found! \n";
-                vel_coeff[--i] *= vel_coeff_const;
-                --i;
-            }
-            else
-                break;
-        }
-
-        if (i > 1)
-        {
-            monotonic = true;
-            for (size_t k = 1; k < Robot::getNumDOFs(); k++)
-            {
-                if (std::abs((path[i]->getCoord(k) - path[i-1]->getCoord(k)) / (path[i-1]->getCoord(k) - path[i-2]->getCoord(k)) - 
-                             (path[i]->getCoord(k-1) - path[i-1]->getCoord(k-1)) / (path[i-1]->getCoord(k-1) - path[i-2]->getCoord(k-1))) > 
-                    RealVectorSpaceConfig::EQUALITY_THRESHOLD)  // Two vectors are non-linearly dependent
-                {
-                    monotonic = false;
-                    break;
-                }
-            }
-        }
         
-        if (!must_visit)
-            q_final = (path[i-1]->getCoord() + path[i]->getCoord()) / 2;
-        else
-            q_final = path[i]->getCoord();
-        
-        found = false;
-        num_iter = 0;
-        delta_t_max = ((q_final - path[i-1]->getCoord()).cwiseQuotient(Robot::getMaxVel())).cwiseAbs().maxCoeff();
-        q_final_dot_max = (q_final - path[i-1]->getCoord()) / delta_t_max;
-        q_final_dot_min = Eigen::VectorXf::Zero(Robot::getNumDOFs());
-
-        do
-        {
-            q_final_dot = vel_coeff[i] * (q_final_dot_max + q_final_dot_min) / 2;
-            std::shared_ptr<planning::trajectory::Spline> spline_new {
-                std::make_shared<planning::trajectory::Spline5>
-                (
-                    Robot::getRobot(), 
-                    splines[i-1]->getPosition(splines[i-1]->getTimeFinal()), 
-                    splines[i-1]->getVelocity(splines[i-1]->getTimeFinal()), 
-                    splines[i-1]->getAcceleration(splines[i-1]->getTimeFinal())
-                )
-            };
-            
-            if (spline_new->compute(q_final, q_final_dot) && 
-                ((monotonic && spline_new->checkPositionMonotonicity() != 0) || !monotonic))
-            {
-                *splines[i] = *spline_new;
-                q_final_dot_min = q_final_dot;
-                found = true;
-            }
-            else
-                q_final_dot_max = q_final_dot;
-        }
-        while (++num_iter < max_num_iter);
-
-        if (!found)
-        {
-            found = splines[i]->compute(q_final) && 
-                    ((monotonic && splines[i]->checkPositionMonotonicity() != 0) || !monotonic);
-            if (!found)
-            {
-                // std::cout << "Not found! \n";
-                vel_coeff[--i] *= vel_coeff_const;
-                --i;
-            }
-            // else std::cout << "Found with zero final velocity! \n";
-        }
-
-        if (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - time_start).count() * 1e-3 > max_time)
-        {
-            found = false;
-            break;
-        }
+        // std::cout << "Adding point at time: " << t << " [s] \t Trajectory time: " << t << " [s] \n";
+        // std::cout << "Position:     " << trajectory->getPosition(t).transpose() << "\n";
+        // std::cout << "Velocity:     " << trajectory->getVelocity(t).transpose() << "\n";
+        // std::cout << "Acceleration: " << trajectory->getAcceleration(t).transpose() << "\n\n";
     }
-
-    if (found)
-    {
-        float t_current { 0 };
-        addPoint(t_current, path.front()->getCoord());
-        for (size_t i = 1; i < path.size(); i++)
-        {
-            addPoints(splines[i], 0, splines[i]->getTimeFinal(), t_current);
-            t_current += splines[i]->getTimeFinal();
-            // std::cout << "t_current: " << t_current << " [s] \n";
-        }
-    }
-    else
-        addPath(path);      // Add path using another method.
 }
 
 /// @brief Publish a trajectory stored in 'msg.points'.

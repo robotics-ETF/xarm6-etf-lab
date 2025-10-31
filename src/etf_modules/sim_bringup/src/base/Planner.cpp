@@ -41,6 +41,7 @@ sim_bringup::Planner::Planner(const std::string &config_file_path)
         }
 
         robot = std::make_shared<Robot>(config_file_path);
+        trajectory = nullptr;
     }
     catch (std::exception &e)
     {
@@ -164,17 +165,24 @@ bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shar
     return result;
 }
 
-/// @brief Generate a new path 'new_path' from a path 'original_path' in a way that the distance between two adjacent nodes
+/// @brief Generate a new path 'new_path' from a path 'path' in a way that the distance between two adjacent nodes
 /// is fixed (if possible) to a length of 'max_edge_length'. Geometrically, the new path remains the same as the original one,
 /// but only their nodes may differ.
-/// @param original_path Original path that will be transformed.
-/// @param new_path New resulting path.
+/// Afterwards, 'new_path' is converted to a corresponding trajectory using the proposed approach from RPMPLv2 library.
+/// @param path Original path that will be transformed.
 /// @param max_edge_length Maximal edge length (default value can be specified in a yaml file).
-void sim_bringup::Planner::preprocessPath(const std::vector<std::shared_ptr<base::State>> &original_path, 
-    std::vector<std::shared_ptr<base::State>> &new_path, float max_edge_length_)
+/// @return A corresponding computed trajectory.
+std::shared_ptr<planning::trajectory::AbstractTrajectory> sim_bringup::Planner::convertPathToTraj
+    (const std::vector<std::shared_ptr<base::State>> &path, float max_edge_length_)
 {
     if (max_edge_length_ == -1)
         max_edge_length_ = max_edge_length;
     
-    scenario->getStateSpace()->preprocessPath(original_path, new_path, max_edge_length_);
+    std::vector<std::shared_ptr<base::State>> new_path {};
+    scenario->getStateSpace()->preprocessPath(path, new_path, max_edge_length_);
+
+    trajectory = std::make_shared<planning::trajectory::Trajectory>(scenario->getStateSpace());
+    bool success {trajectory->convertPathToTraj(new_path) };
+
+    return (success ? trajectory : nullptr);
 }
