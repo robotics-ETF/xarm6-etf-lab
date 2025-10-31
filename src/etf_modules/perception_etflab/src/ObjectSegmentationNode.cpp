@@ -166,8 +166,8 @@ void perception_etflab::ObjectSegmentationNode::simPointCloudCallback()
     // ConvexHulls::publish();
     // ConvexHulls::visualize();
  
-   	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Time elapsed: %ld [ms] ", 
-		std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - time_start).count());
+   	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Time elapsed: %ld [us] ", 
+		std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - time_start).count());
    	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "---------------------------------------------------------------------");
 }
 

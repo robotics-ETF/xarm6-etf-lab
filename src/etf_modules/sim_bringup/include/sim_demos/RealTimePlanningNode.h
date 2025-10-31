@@ -28,6 +28,7 @@ namespace sim_bringup
         void replanningCallback(const std::shared_ptr<std_srvs::srv::Empty::Request> request,
                                 const std::shared_ptr<std_srvs::srv::Empty::Response> response);
         virtual void computeTrajectory();
+        float getCurrTrajTime();
 
         bool iteration_completed;
         int planning_result;
@@ -39,6 +40,7 @@ namespace sim_bringup
         std::shared_ptr<base::State> q_goal_init;
         float trajectory_advance_time;
         float max_obs_vel;
+        std::chrono::steady_clock::time_point time_traj_computed;
 
         rclcpp::CallbackGroup::SharedPtr callback_group;
         rclcpp::Service<std_srvs::srv::Empty>::SharedPtr replanning_service;

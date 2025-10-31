@@ -157,13 +157,13 @@ void sim_bringup::RealTimePlanningNode2::planningCallback()
         // std::cout << "q_current_new: " << DP::q_current << "\n\n";
 
         // Checking the real-time execution
-        // float time_iter_remain = RRTxConfig::MAX_ITER_TIME * 1e3 - DP::getElapsedTime(DP::time_iter_start, planning::TimeUnit::ms);
-        // std::cout << "Remaining iteration time is " << time_iter_remain << " [ms] \n";
+        // float time_iter_remain = RRTxConfig::MAX_ITER_TIME - DP::getElapsedTime(DP::time_iter_start);
+        // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Remaining iteration time is %f [ms].", time_iter_remain * 1e3);
         // if (time_iter_remain < 0)
-        //     std::cout << "*************** Real-time is broken. " << -time_iter_remain << " [ms] exceeded!!! *************** \n";
+        //     RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "********** Real-time is broken. %f [ms] exceeded!!! **********", -time_iter_remain * 1e3);
 
-        // Update environment and check if the collision occurs
-        if (!DP::motion_validity->check(DP::q_previous, DP::q_current))
+        // Checking whether the collision occurs
+        if (!DP::ss->isValid(DP::q_current))
         {
             RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "********** Robot is stopping. Collision has been occurred!!! **********");
             status = base::State::Status::Trapped;
@@ -213,7 +213,7 @@ void sim_bringup::RealTimePlanningNode2::planningCallback()
     // std::cout << "----------------------------------------------------------------------------------------\n";
 }
 
-/// @brief Compute trajectory points from 'spline_next' and publish them.
+/// @brief Compute trajectory and publish trajectory points.
 void sim_bringup::RealTimePlanningNode2::computeTrajectory()
 {
     // Procedure of updating current state
@@ -225,23 +225,19 @@ void sim_bringup::RealTimePlanningNode2::computeTrajectory()
     std::shared_ptr<base::State> q_current_new = DP::ss->getNewState(DP::q_current->getCoord());
     DP::updating_state->setNonZeroFinalVel(!DP::ss->isEqual(DP::q_next, DP::q_goal));
     DP::updating_state->setTimeIterStart(DP::time_iter_start);
-    DP::updating_state->setMeasureTime(true);
     DP::updating_state->update(DP::q_previous, q_current_new, DP::q_next, status);
-
-    float t_delay { DP::updating_state->getRemainingTime() };
-    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "New trajectory is computed! Delay time: %f [ms]", t_delay * 1e3);
-    if (DP::traj->spline_next != DP::traj->spline_current)  // New spline is computed
-        DP::traj->spline_next->setTimeStart(t_delay);
 
     std::chrono::steady_clock::time_point time_start_ { std::chrono::steady_clock::now() };
     Trajectory::clear();
-    Trajectory::addPoints(DP::traj->spline_next, 
-                        DP::traj->spline_next->getTimeCurrent() + trajectory_advance_time, 
-                        DP::traj->spline_next->getTimeEnd() + DRGBTConfig::MAX_TIME_TASK1 + trajectory_advance_time);
-    // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Elapsed time: %f [ms] for adding %ld points", 
-    //             DP::getElapsedTime(time_start_) * 1e3, Trajectory::getNumPoints());
+    Trajectory::addPoints(DP::traj, 
+                          DP::traj->getTimeCurrent() + trajectory_advance_time, 
+                          DP::traj->getTimeEnd() + DRGBTConfig::MAX_TIME_TASK1 + trajectory_advance_time);
+    // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Elapsed time: %f [us] for adding %ld points", 
+    //             DP::getElapsedTime(time_start_) * 1e6, Trajectory::getNumPoints());
 
-    while (DP::getElapsedTime(time_start_) < t_delay) {}    // Wait for 't_delay' to exceed...
+    float t_wait { DP::updating_state->getWaitingTime() };
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting time: %f [us]", t_wait * 1e6);
+    while (DP::getElapsedTime(time_start_) < t_wait) {}    // Wait for 't_wait' to exceed...
     Trajectory::publish();
 
     if (status == base::State::Status::Advanced ||
