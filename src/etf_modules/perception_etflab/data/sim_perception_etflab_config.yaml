@@ -43,7 +43,8 @@ environment:
 
 random_obstacles:
   num: 5	                          # Number of random obstacles to be added
-  dim: [0.3, 0.3, 0.3]              # Dimensions of each random obstacle in [m]
+  dim: [0.05, 0.05, 0.05]           # Dimensions of each random obstacle in [m]
+  num_run: 2                        # If 'num_run' >= 0, obstacles info will be read from a yaml file. If 'num_run' == -1, obstacles info will be generated randomly.
 
 robot:
   type: "xarm6"

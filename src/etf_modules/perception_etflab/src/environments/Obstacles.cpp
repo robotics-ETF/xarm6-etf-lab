@@ -56,62 +56,65 @@ perception_etflab::Obstacles::Obstacles(const std::string &config_file_path)
         WS_radius = robot_node["WS_radius"].as<float>();
         base_radius = std::max(robot_node["capsules_radius"][0].as<float>(), robot_node["capsules_radius"][1].as<float>()) + dim_rand.norm();
         robot_max_vel = robot_node["max_vel_first_joint"].as<float>();
+        int num_run = node["random_obstacles"]["num_run"].as<int>();
 
-        // First option (generating here in the code):
-        float r {}, fi {}, theta {};
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Adding %ld random obstacles...", num_rand_obstacles);
-        for (size_t i = 0; i < num_rand_obstacles; i++)
+        if (num_run == -1)      // First option (generating here in the code):
         {
-            // Initial settings for each random obstacle
-            r = float(rand()) / RAND_MAX * WS_radius;
-            fi = float(rand()) / RAND_MAX * 2 * M_PI;
-            theta = float(rand()) / RAND_MAX * M_PI;
-            pos.x() = WS_center.x() + r * std::cos(fi) * std::sin(theta);
-            pos.y() = WS_center.y() + r * std::sin(fi) * std::sin(theta);
-            pos.z() = WS_center.z() + r * std::cos(theta);
-
-            vel = Eigen::Vector3f::Random(3);
-            vel.normalize();
-            vel *= float(rand()) / RAND_MAX * max_vel;
-
-            if (!isValid(pos, vel.norm()))   
-                i--;
-            else
+            float r {}, fi {}, theta {};
+            RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Adding %ld random obstacles...", num_rand_obstacles);
+            for (size_t i = 0; i < num_rand_obstacles; i++)
             {
+                // Initial settings for each random obstacle
+                r = float(rand()) / RAND_MAX * WS_radius;
+                fi = float(rand()) / RAND_MAX * 2 * M_PI;
+                theta = float(rand()) / RAND_MAX * M_PI;
+                pos.x() = WS_center.x() + r * std::cos(fi) * std::sin(theta);
+                pos.y() = WS_center.y() + r * std::sin(fi) * std::sin(theta);
+                pos.z() = WS_center.z() + r * std::cos(theta);
+
+                vel = Eigen::Vector3f::Random(3);
+                vel.normalize();
+                vel *= float(rand()) / RAND_MAX * max_vel;
+
+                if (!isValid(pos, vel.norm()))   
+                    i--;
+                else
+                {
+                    std::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cluster = std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
+                    cluster->emplace_back(pcl::PointXYZRGB(pos.x(), pos.y(), pos.z()));
+                    cluster->emplace_back(pcl::PointXYZRGB(pos.x() - dim_rand.x()/2, pos.y() - dim_rand.y()/2, pos.z() - dim_rand.z()/2));
+                    cluster->emplace_back(pcl::PointXYZRGB(pos.x() + dim_rand.x()/2, pos.y() + dim_rand.y()/2, pos.z() + dim_rand.z()/2));
+                    obstacles.emplace_back(cluster);
+                    velocities.emplace_back(vel);
+
+                    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%ld. Obstacle pos: (%f, %f, %f)", i, pos.x(), pos.y(), pos.z());
+                }
+            }
+        }
+        else    // Second option (reading from a yaml file):
+        {
+            for (size_t j = 0; j < num_rand_obstacles; j++)
+            {
+                for (size_t i = 0; i < 3; i++)
+                {
+                    pos(i) = node2["scenario_" + std::to_string(num_rand_obstacles)]["run_" + std::to_string(num_run-1)]
+                                ["object_" + std::to_string(j)]["pos"][i].as<float>();
+                    vel(i) = node2["scenario_" + std::to_string(num_rand_obstacles)]["run_" + std::to_string(num_run-1)]
+                                ["object_" + std::to_string(j)]["vel"][i].as<float>();
+                }
+                
                 std::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cluster = std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
                 cluster->emplace_back(pcl::PointXYZRGB(pos.x(), pos.y(), pos.z()));
                 cluster->emplace_back(pcl::PointXYZRGB(pos.x() - dim_rand.x()/2, pos.y() - dim_rand.y()/2, pos.z() - dim_rand.z()/2));
                 cluster->emplace_back(pcl::PointXYZRGB(pos.x() + dim_rand.x()/2, pos.y() + dim_rand.y()/2, pos.z() + dim_rand.z()/2));
                 obstacles.emplace_back(cluster);
-                velocities.emplace_back(vel);
+                velocities.emplace_back(vel*0.5);
 
-                RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%ld. Obstacle pos: (%f, %f, %f)", i, pos.x(), pos.y(), pos.z());
+                RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%ld. Obstacle pos: (%f, %f, %f)", j, pos.x(), pos.y(), pos.z());
             }
         }
-
-        // Second option (reading from a yaml file):
-        // size_t num_test = 5;
-        // for (size_t j = 0; j < num_rand_obstacles; j++)
-        // {
-        //     for (size_t i = 0; i < 3; i++)
-        //     {
-        //         pos(i) = node2["scenario_" + std::to_string(num_rand_obstacles)]["run_" + std::to_string(num_test-1)]
-        //                     ["object_" + std::to_string(j)]["pos"][i].as<float>();
-        //         vel(i) = node2["scenario_" + std::to_string(num_rand_obstacles)]["run_" + std::to_string(num_test-1)]
-        //                     ["object_" + std::to_string(j)]["vel"][i].as<float>();
-        //     }
-            
-        //     std::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cluster = std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
-        //     cluster->emplace_back(pcl::PointXYZRGB(pos.x(), pos.y(), pos.z()));
-        //     cluster->emplace_back(pcl::PointXYZRGB(pos.x() - dim_rand.x()/2, pos.y() - dim_rand.y()/2, pos.z() - dim_rand.z()/2));
-        //     cluster->emplace_back(pcl::PointXYZRGB(pos.x() + dim_rand.x()/2, pos.y() + dim_rand.y()/2, pos.z() + dim_rand.z()/2));
-        //     obstacles.emplace_back(cluster);
-        //     velocities.emplace_back(vel*0.5);
-
-        //     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "%ld. Obstacle pos: (%f, %f, %f)", j, pos.x(), pos.y(), pos.z());
-        // }
-        // ------------------------------------------------------------------------------- //
     }
+    // ------------------------------------------------------------------------------- //
 	
     if (node["perception"]["motion_type"].as<std::string>() == "circular")
         motion_type = MotionType::circular;
