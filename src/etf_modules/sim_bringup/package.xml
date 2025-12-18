@@ -25,7 +25,7 @@
   <depend>pcl_conversions</depend>
   <depend>rpmpl_library</depend>
   <depend>backward_ros</depend>
-  <depend>gazebo_ros_plugins</depend>
+  <depend>gazebo_ros_pkgs</depend>
 
   <exec_depend>ros2launch</exec_depend>
 
