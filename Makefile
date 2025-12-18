@@ -28,8 +28,8 @@ cameras:
 packages:
 	pip3 install git+https://github.com/dirk-thomas/vcstool.git
 	sudo apt-get -y install python3-vcstool python3-rosdep python3-colcon-common-extensions 
-	sudo apt-get -y ros-humble-gazebo-ros-pkgs ros-humble-rviz2
-	sudo apt-get -y libnanoflann-dev libgoogle-glog-dev libkdl-parser-dev libeigen3-dev octomap-tools
+	sudo apt-get -y install ros-humble-gazebo-ros-pkgs ros-humble-rviz2
+	sudo apt-get -y install libnanoflann-dev libgoogle-glog-dev libkdl-parser-dev libeigen3-dev octomap-tools
 
 submodules:
 	$(foreach folder, src, \
