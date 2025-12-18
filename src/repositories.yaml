@@ -3,6 +3,10 @@ repositories:
     type: git
     url: https://github.com/roboticsETF/RPMPLv2.git
     version: main
+  etf_modules/RPMPLv2/external/ruckig:
+    type: git
+    url: https://github.com/pantor/ruckig.git
+    version: v0.15.3
   external_modules/gazebo_ros2_control:
     type: git
     url: https://github.com/ros-controls/gazebo_ros2_control.git

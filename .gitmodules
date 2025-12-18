@@ -10,3 +10,7 @@ branch = humble
 path = src/etf_modules/RPMPLv2
 url = https://github.com/roboticsETF/RPMPLv2.git
 branch = feat/docker
+[submodule "src/etf_modules/RPMPLv2/external/ruckig"]
+path = src/etf_modules/RPMPLv2/external/ruckig
+url = https://github.com/pantor/ruckig.git
+branch = v0.15.3

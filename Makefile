@@ -27,9 +27,9 @@ cameras:
 
 packages:
 	pip3 install git+https://github.com/dirk-thomas/vcstool.git
-	sudo apt-get -y install libnanoflann-dev libgoogle-glog-dev libkdl-parser-dev libeigen3-dev octomap-tools 
-		ament-* python3-geometry-msgs ros-humble-geometry-* ros-humble-aruco-* ros-humble-angles ros-humble-std-* 
-		ros-humble-rosidl-* ros-humble-builtin-interfaces-*
+	sudo apt-get -y install python3-vcstool python3-rosdep python3-colcon-common-extensions 
+	sudo apt-get -y ros-humble-gazebo-ros-pkgs ros-humble-rviz2
+	sudo apt-get -y libnanoflann-dev libgoogle-glog-dev libkdl-parser-dev libeigen3-dev octomap-tools
 
 submodules:
 	$(foreach folder, src, \
@@ -42,6 +42,7 @@ make full_build_container:
 	make packages
 	make submodules
 	cd src/etf_modules/RPMPLv2 && git checkout main && cd ../../..
+	cd src/etf_modules/RPMPLv2/external/ruckig && git checkout v0.15.3 && cd ../../../../..
 	cd src/external_modules/gazebo_ros2_control && git checkout humble && cd ../../..
 	cd src/external_modules/xarm_ros2 && git checkout humble && cd ../../..
 	cd src/external_modules/xarm_ros2/xarm_sdk/cxx && git checkout master && cd ../../../../..
