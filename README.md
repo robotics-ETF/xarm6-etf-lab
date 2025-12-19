@@ -35,12 +35,6 @@ git submodule update --init --remote
 ```
 Please upload the file [xarm_user_params.yaml](https://github.com/user-attachments/files/24239995/xarm_user_params.yaml) to the folder ```xarm6-etf-lab/src/external_modules/xarm_ros2/xarm_api/config```.
 
-Please replace the existing file ```/xarm6-etf-lab/src/external_modules/xarm_ros2/xarm_api/src/xarm_ros_client.cpp``` with the file [xarm_ros_client.cpp](https://github.com/user-attachments/files/24240046/xarm_ros_client.cpp). In the file ```/xarm6-etf-lab/src/external_modules/xarm_ros2/xarm_api/include/xarm_api/xarm_ros_client.h``` please define:
-```
-void spin_node();
-```
-as the public function of ```XArmROSClient``` class.
-
 ## 2.4 Update "gazebo_ros2_control" submodule
 ```
 cd ~/xarm6-etf-lab/src/external_modules/gazebo_ros2_control
