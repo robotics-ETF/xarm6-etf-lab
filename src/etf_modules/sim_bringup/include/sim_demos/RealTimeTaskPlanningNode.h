@@ -13,7 +13,9 @@ namespace sim_bringup
         RealTimeTaskPlanningNode(const std::string &node_name, const std::string &config_file_path);
 
     protected:
-        void planningCase() override;
+        void plannerSolving() override;
+        void plannerChecking() override;
+        void executingTrajectory() override;
 
         std::shared_ptr<sim_bringup::RealTimePlanningNode> real_time_planning_node;
         std::string dynamic_planner_config_file_path;

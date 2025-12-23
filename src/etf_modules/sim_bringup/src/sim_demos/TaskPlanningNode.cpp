@@ -20,77 +20,35 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
     switch (task)
     {
     case waiting_for_object:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting for the object...");
-        AABB::resetMeasurements();
-        if (Robot::isReady() && AABB::isReady())
-            task = choosing_object;
-        else
-            RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Robot or environment is not ready...");
+        waitingForObject();
         break;
 
     case choosing_object:
-        obj_idx = chooseObject();
-        if (obj_idx != -1)
-        {
-            task = computing_IK;
-            IK_computed = computeObjectApproachAndPickStates();
-        }
-        else
-            task = waiting_for_object;
+        choosingObject();
         break;
 
     case computing_IK:
-        if (IK_computed == 1)
-        {
-            AABB::resetMeasurements();
-            Planner::scenario->setStart(Robot::getJointsPositionPtr());
-            Planner::scenario->setGoal(q_object_approach1);
-            task = planning;
-            task_next = going_towards_object;
-            IK_computed = -1;
-        }
-        else if (IK_computed == 0)
-            task = waiting_for_object;
-        
+        computingIK();        
         break;
 
     case going_towards_object:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going towards the object...");
-        // Robot::moveGripper(1);
-        Trajectory::clear();
-        Trajectory::addTrajectory(Planner::convertPathToTraj({q_object_approach1, q_object_approach2, q_object_pick}));
-        Trajectory::publish();
-        task = picking_object;
+        goingTowardsObject();
         break;
 
     case picking_object:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Picking the object...");
-        // Robot::moveGripper(0);
-        task = raising_object;
+        pickingObject();
         break;
 
     case raising_object:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Raising the object...");
-        Trajectory::clear();
-        Trajectory::addTrajectory(Planner::convertPathToTraj({q_object_pick, q_object_approach1}));
-        Trajectory::publish();
-        task = moving_object_to_destination;
+        raisingObject();
         break;
 
     case moving_object_to_destination:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Moving the object to destination...");
-        AABB::resetMeasurements();
-        q_object_approach1 = Planner::scenario->getStateSpace()->getNewState(q_object_approach1->getCoord());   // Reset all additional data set before for 'q_object_approach1'
-        Planner::scenario->setStart(q_object_approach1);
-        Planner::scenario->setGoal(q_goal);
-        task = planning;
-        task_next = releasing_object;
+        movingObjectToDestination();
         break;
     
     case releasing_object:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Releasing the object...");
-        // Robot::moveGripper(1);
-        task = waiting_for_object;
+        releasingObject();
         break;
 
     case planning:
@@ -100,52 +58,148 @@ void sim_bringup::TaskPlanningNode::taskPlanningCallback()
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "----------------------------------------------------------------\n");
 }
 
+void sim_bringup::TaskPlanningNode::waitingForObject()
+{
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting for the object...");
+    AABB::resetMeasurements();
+    if (Robot::isReady() && AABB::isReady())
+        task = choosing_object;
+    else
+        RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Robot or environment is not ready...");
+}
+
+void sim_bringup::TaskPlanningNode::choosingObject()
+{
+    obj_idx = chooseObject();
+    if (obj_idx != -1)
+    {
+        task = computing_IK;
+        IK_computed = computeObjectApproachAndPickStates();
+    }
+    else
+        task = waiting_for_object;
+}
+
+void sim_bringup::TaskPlanningNode::computingIK()
+{
+    if (IK_computed == 1)
+    {
+        AABB::resetMeasurements();
+        Planner::scenario->setStart(Robot::getJointsPositionPtr());
+        Planner::scenario->setGoal(q_object_approach1);
+        task = planning;
+        task_next = going_towards_object;
+        IK_computed = -1;
+    }
+    else if (IK_computed == 0)
+        task = waiting_for_object;
+}
+
+void sim_bringup::TaskPlanningNode::goingTowardsObject()
+{
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Going towards the object...");
+    // Robot::moveGripper(1);
+    Trajectory::clear();
+    Trajectory::addTrajectory(Planner::convertPathToTraj({q_object_approach1, q_object_approach2, q_object_pick}));
+    Trajectory::publish();
+    task = picking_object;
+}
+
+void sim_bringup::TaskPlanningNode::pickingObject()
+{
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Picking the object...");
+    // Robot::moveGripper(0);
+    task = raising_object;
+}
+
+void sim_bringup::TaskPlanningNode::raisingObject()
+{
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Raising the object...");
+    Trajectory::clear();
+    Trajectory::addTrajectory(Planner::convertPathToTraj({q_object_pick, q_object_approach1}));
+    Trajectory::publish();
+    task = moving_object_to_destination;
+}
+
+void sim_bringup::TaskPlanningNode::movingObjectToDestination()
+{
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Moving the object to destination...");
+    AABB::resetMeasurements();
+    q_object_approach1 = Planner::scenario->getStateSpace()->getNewState(q_object_approach1->getCoord());   // Reset all additional data set before for 'q_object_approach1'
+    Planner::scenario->setStart(q_object_approach1);
+    Planner::scenario->setGoal(q_goal);
+    task = planning;
+    task_next = releasing_object;
+}
+
+void sim_bringup::TaskPlanningNode::releasingObject()
+{
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Releasing the object...");
+    // Robot::moveGripper(1);
+    task = waiting_for_object;
+}
+
 void sim_bringup::TaskPlanningNode::planningCase()
 {
     switch (state)
     {
     case State::waiting:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting...");
-        if (Robot::isReady() && AABB::isReady() && Planner::isReady())
-        {
-            AABB::updateEnvironment(Planner::scenario->getEnvironment());
-            std::thread planning_thread([this]() 
-            {
-                planning_result = Planner::solve();
-            });
-            planning_thread.detach();
-            state = State::planning;
-        }
-        else
-            RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Waiting for the initial setup...");
+        plannerSolving();
         break;
     
     case State::planning:
-        if (planning_result == 1)
-        {
-            Trajectory::clear();
-            Trajectory::addTrajectory(Planner::convertPathToTraj(Planner::getPath()));
-            Trajectory::publish();
-            planning_result = -1;
-            state = State::executing_trajectory;
-        }
-        else if (planning_result == 0)
-        {
-            planning_result = -1;
-            state = State::waiting;
-        }
-        else
-            RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Waiting for the planner to finish...");
+        plannerChecking();
         break;
 
     case State::executing_trajectory:
-        RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Executing trajectory...");            
-        if (Robot::isReached(Planner::scenario->getGoal()))
-        {
-            state = State::waiting;
-            task = task_next;
-        }
+        executingTrajectory();
         break;
+    }
+}
+
+void sim_bringup::TaskPlanningNode::plannerSolving()
+{
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting...");
+    if (Robot::isReady() && AABB::isReady() && Planner::isReady())
+    {
+        AABB::updateEnvironment(Planner::scenario->getEnvironment());
+        std::thread planning_thread([this]() 
+        {
+            planning_result = Planner::solve();
+        });
+        planning_thread.detach();
+        state = State::planning;
+    }
+    else
+        RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Waiting for the initial setup...");
+}
+
+void sim_bringup::TaskPlanningNode::plannerChecking()
+{
+    if (planning_result == 1)
+    {
+        Trajectory::clear();
+        Trajectory::addTrajectory(Planner::convertPathToTraj(Planner::getPath()));
+        Trajectory::publish();
+        planning_result = -1;
+        state = State::executing_trajectory;
+    }
+    else if (planning_result == 0)
+    {
+        planning_result = -1;
+        state = State::waiting;
+    }
+    else
+        RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Waiting for the planner to finish...");
+}
+
+void sim_bringup::TaskPlanningNode::executingTrajectory()
+{
+    RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Executing trajectory...");            
+    if (Robot::isReached(Planner::scenario->getGoal()))
+    {
+        state = State::waiting;
+        task = task_next;
     }
 }
 

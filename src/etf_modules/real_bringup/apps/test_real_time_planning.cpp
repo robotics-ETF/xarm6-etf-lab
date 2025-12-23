@@ -22,6 +22,13 @@ int main(int argc, char *argv[])
 		// std::make_shared<real_bringup::RealTimePlanningNode>(node_name, config_file_path, true, "_test.log")
 	};
 	
+	// Also, it is possible to call 'sim_bringup' here
+	// std::shared_ptr<sim_bringup::RealTimePlanningNode> real_time_planning_node
+	// {
+	// 	// std::make_shared<sim_bringup::RealTimePlanningNode>(node_name, config_file_path, true)
+	// 	std::make_shared<sim_bringup::RealTimePlanningNode>(node_name, config_file_path, true, "_test.log")
+	// };
+	
 	// Works with a corresponding modification of the files 'xarm_ros_client.h' and 'xarm_ros_client.cpp' 
 	rclcpp::executors::MultiThreadedExecutor executor;
 	executor.add_node(real_time_planning_node);
