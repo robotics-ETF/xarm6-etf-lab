@@ -294,8 +294,7 @@ void sim_bringup::RealTimePlanningNode::recordingTrajectoryCallback()
     output_file << DP::getElapsedTime(DP::time_alg_start) << "\n";
 
     output_file << "Position (referent): \n";
-    Eigen::VectorXf pos_ref { DP::traj->getPosition(traj_time) };
-    output_file << pos_ref.transpose() << "\n";
+    output_file << DP::traj->getPosition(traj_time).transpose() << "\n";
     output_file << "Position (measured): \n";
     output_file << Robot::getJointsPosition().transpose() << "\n";
 
@@ -304,15 +303,20 @@ void sim_bringup::RealTimePlanningNode::recordingTrajectoryCallback()
     output_file << "Velocity (measured): \n";
     output_file << Robot::getJointsVelocity().transpose() << "\n";
 
-    // output_file << "Acceleration (referent): \n";
-    // output_file << DP::traj->getAcceleration(traj_time).transpose() << "\n";
-    // output_file << "Acceleration (measured): \n";    // If possible
-    // output_file << Robot::getJointsAcceleration().transpose() << "\n";
+    output_file << "Acceleration (referent): \n";
+    output_file << DP::traj->getAcceleration(traj_time).transpose() << "\n";
+    output_file << "Acceleration (measured): \n";    // If possible
+    output_file << Robot::getJointsAcceleration().transpose() << "\n";
+
+    output_file << "Jerk (referent): \n";
+    output_file << DP::traj->getJerk(traj_time).transpose() << "\n";
+    output_file << "Jerk (measured): \n";    // If possible
+    output_file << Robot::getJointsJerk().transpose() << "\n";
 
     output_file << "--------------------------------------------------------------------\n";
 
-    Eigen::VectorXf error { (pos_ref - Robot::getJointsPosition()).cwiseAbs() };
-    max_error = max_error.cwiseMax(error);
+    // Eigen::VectorXf error { (DP::traj->getPosition(traj_time) - Robot::getJointsPosition()).cwiseAbs() };
+    // max_error = max_error.cwiseMax(error);
     // std::cout << "Curr. error: " << error.transpose() << "\n";
     // std::cout << "Max. error:  " << max_error.transpose() << "\n";
 }
