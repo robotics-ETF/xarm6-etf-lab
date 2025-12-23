@@ -16,8 +16,11 @@ source-dirs:
 	/bin/bash 
 	/root/etf-xarm-lab/source-dirs.bash
 
-sim:
-	ros2 launch sim_bringup xarm6_etflab.launch.py
+sim_static:
+	ros2 launch sim_bringup static_xarm6_etflab.launch.py
+
+sim_dynamic:
+	ros2 launch sim_bringup dynamic_xarm6_etflab.launch.py
 	
 real:
 	ros2 launch real_bringup real_xarm6_etflab.launch.py

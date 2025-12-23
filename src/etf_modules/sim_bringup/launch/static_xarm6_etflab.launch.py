@@ -120,10 +120,10 @@ def generate_launch_description():
             ]
     )
     
-    sim_object_segmentation_node = Node(
+    sim_static_object_segmentation_node = Node(
         package='perception_etflab',
-        executable='sim_object_segmentation',
-        name='sim_object_segmentation',
+        executable='sim_static_object_segmentation',
+        name='sim_static_object_segmentation',
         parameters=[
         	{'input_cloud': 'pointcloud_combined'},
         	{'objects_cloud': 'objects_cloud'}
@@ -151,7 +151,7 @@ def generate_launch_description():
             actions=[
                      rviz_node, 
                      pointcloud_combiner_node, 
-                     sim_object_segmentation_node
+                     sim_static_object_segmentation_node
                     ]
         ),
 		robot_gazebo_launch,

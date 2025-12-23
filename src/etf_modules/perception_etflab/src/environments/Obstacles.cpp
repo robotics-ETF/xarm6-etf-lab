@@ -21,11 +21,10 @@ perception_etflab::Obstacles::Obstacles(const std::string &config_file_path)
         YAML::Node obstacle = node["environment"][i];
         YAML::Node d = obstacle["box"]["dim"];
         YAML::Node p = obstacle["box"]["pos"];
-        YAML::Node r = obstacle["box"]["rot"];
-        YAML::Node min_dist_tol = obstacle["box"]["min_dist_tol"];
         
         dim << d[0].as<float>(), d[1].as<float>(), d[2].as<float>();
         pos << p[0].as<float>(), p[1].as<float>(), p[2].as<float>();
+        vel = Eigen::Vector3f::Zero();
 
         std::shared_ptr<pcl::PointCloud<pcl::PointXYZRGB>> cluster = std::make_shared<pcl::PointCloud<pcl::PointXYZRGB>>();
         cluster->emplace_back(pcl::PointXYZRGB(pos.x(), pos.y(), pos.z()));

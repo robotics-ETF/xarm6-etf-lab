@@ -2,9 +2,13 @@ add_executable(pointcloud_combiner pointcloud_combiner.cpp)
 target_compile_features(pointcloud_combiner PUBLIC c_std_99 cxx_std_17)
 target_link_libraries(pointcloud_combiner PUBLIC perception_etflab_library)
 
-add_executable(sim_object_segmentation sim_object_segmentation.cpp)
-target_compile_features(sim_object_segmentation PUBLIC c_std_99 cxx_std_17)
-target_link_libraries(sim_object_segmentation PUBLIC perception_etflab_library)
+add_executable(sim_static_object_segmentation sim_static_object_segmentation.cpp)
+target_compile_features(sim_static_object_segmentation PUBLIC c_std_99 cxx_std_17)
+target_link_libraries(sim_static_object_segmentation PUBLIC perception_etflab_library)
+
+add_executable(sim_dynamic_object_segmentation sim_dynamic_object_segmentation.cpp)
+target_compile_features(sim_dynamic_object_segmentation PUBLIC c_std_99 cxx_std_17)
+target_link_libraries(sim_dynamic_object_segmentation PUBLIC perception_etflab_library)
 
 add_executable(real_object_segmentation real_object_segmentation.cpp)
 target_compile_features(real_object_segmentation PUBLIC c_std_99 cxx_std_17)
@@ -12,7 +16,8 @@ target_link_libraries(real_object_segmentation PUBLIC perception_etflab_library)
 
 install(TARGETS
   	pointcloud_combiner
-  	sim_object_segmentation
+  	sim_static_object_segmentation
+	sim_dynamic_object_segmentation
 	real_object_segmentation
   	DESTINATION lib/${PROJECT_NAME}
 )
