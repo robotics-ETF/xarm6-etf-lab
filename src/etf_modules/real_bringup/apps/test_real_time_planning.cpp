@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 		std::make_shared<real_bringup::RealTimePlanningNode>(node_name, config_file_path, true)
 		// std::make_shared<real_bringup::RealTimePlanningNode>(node_name, config_file_path, true, "_test.log")
 	};
-	
+
 	// Also, it is possible to call 'sim_bringup' here
 	// std::shared_ptr<sim_bringup::RealTimePlanningNode> real_time_planning_node
 	// {

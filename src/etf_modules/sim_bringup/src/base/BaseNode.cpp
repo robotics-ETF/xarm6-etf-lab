@@ -16,8 +16,8 @@ sim_bringup::BaseNode::BaseNode(const std::string &node_name, const std::string 
         Trajectory::publisher = this->create_publisher<trajectory_msgs::msg::JointTrajectory>
             ("/xarm6_traj_controller/joint_trajectory", 10);
         
-        // Robot::joints_state_subscription = this->create_subscription<control_msgs::msg::JointTrajectoryControllerState>
-        //     ("/xarm6_traj_controller/controller_state", 10, std::bind(&Robot::jointsStateCallback, this, std::placeholders::_1));
+        Robot::joints_state_subscription = this->create_subscription<control_msgs::msg::JointTrajectoryControllerState>
+            ("/xarm6_traj_controller/state", 10, std::bind(&Robot::jointsStateCallback, this, std::placeholders::_1));
         Robot::joints_state_subscription2 = this->create_subscription<sensor_msgs::msg::JointState>
             ("/xarm/joint_states", 10, std::bind(&Robot::jointsStateCallback2, this, std::placeholders::_1));
         Robot::gripper_node = std::make_shared<rclcpp::Node>("gripper_node");

@@ -42,7 +42,7 @@ perception_etflab::ObjectSegmentationNode::ObjectSegmentationNode(const std::str
 	object_pcl_publisher = this->create_publisher<sensor_msgs::msg::PointCloud2>(objects_cloud, 10);
     
     // Robot::joints_state_subscription = this->create_subscription<control_msgs::msg::JointTrajectoryControllerState>
-	// 	("/xarm6_traj_controller/controller_state", 10, std::bind(&Robot::jointsStateCallback, this, std::placeholders::_1));
+	// 	("/xarm6_traj_controller/state", 10, std::bind(&Robot::jointsStateCallback, this, std::placeholders::_1));
 	Robot::joints_state_subscription2 = this->create_subscription<sensor_msgs::msg::JointState>
 		("/xarm/joint_states", 10, std::bind(&Robot::jointsStateCallback2, this, std::placeholders::_1));
     Robot::marker_array_publisher = this->create_publisher<visualization_msgs::msg::MarkerArray>("/free_cells_vis_array", 10);

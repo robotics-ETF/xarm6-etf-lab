@@ -140,6 +140,7 @@ sim_bringup::Robot::Robot(const std::string &config_file_path)
     ready = true;
 }
 
+// This function will be called in simulation.
 void sim_bringup::Robot::jointsStateCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg)
 {
     for (size_t i = 0; i < num_DOFs; i++)
@@ -160,6 +161,7 @@ void sim_bringup::Robot::jointsStateCallback(const control_msgs::msg::JointTraje
     // }
 }
 
+// This function will be called on a real robot.
 void sim_bringup::Robot::jointsStateCallback2(const sensor_msgs::msg::JointState::SharedPtr msg)
 {
     for (size_t i = 0; i < num_DOFs; i++)
