@@ -136,6 +136,7 @@ sim_bringup::Robot::Robot(const std::string &config_file_path)
     joints_position = Eigen::VectorXf(num_DOFs);
     joints_velocity = Eigen::VectorXf(num_DOFs);
     joints_acceleration = Eigen::VectorXf(num_DOFs);
+    joints_jerk = Eigen::VectorXf(num_DOFs);
     ready = false;
 }
 
@@ -158,6 +159,30 @@ void sim_bringup::Robot::jointsStateCallback(const control_msgs::msg::JointTraje
     //         joints_velocity(0), joints_velocity(1), joints_velocity(2), joints_velocity(3), joints_velocity(4), joints_velocity(5));
     //     // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Robot joints acceleration: (%f, %f, %f, %f, %f, %f).", 
     //     //     joints_acceleration(0), joints_acceleration(1), joints_acceleration(2), joints_acceleration(3), joints_acceleration(4), joints_acceleration(5));
+    // }
+}
+
+void sim_bringup::Robot::jointsStateCallback2(const sensor_msgs::msg::JointState::SharedPtr msg)
+{
+    ready = false;
+    for (size_t i = 0; i < num_DOFs; i++)
+    {
+        if (!std::isnan(msg->position[i]) && !std::isnan(msg->velocity[i]))
+        {
+            joints_position(i) = msg->position[i];
+            joints_velocity(i) = msg->velocity[i];
+        }
+        else
+            return;
+    }
+	ready = true;
+    
+    // if (num_DOFs == 6)
+    // {
+    //     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Robot joints position:     (%f, %f, %f, %f, %f, %f).", 
+    //         joints_position(0), joints_position(1), joints_position(2), joints_position(3), joints_position(4), joints_position(5));
+    //     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Robot joints velocity:     (%f, %f, %f, %f, %f, %f).", 
+    //         joints_velocity(0), joints_velocity(1), joints_velocity(2), joints_velocity(3), joints_velocity(4), joints_velocity(5));
     // }
 }
 
