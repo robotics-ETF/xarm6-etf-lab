@@ -171,9 +171,10 @@ bool sim_bringup::Planner::solve(std::shared_ptr<base::State> q_start, std::shar
 /// Afterwards, 'new_path' is converted to a corresponding trajectory using the proposed approach from RPMPLv2 library.
 /// @param path Original path that will be transformed.
 /// @param max_edge_length Maximal edge length (default value can be specified in a yaml file).
+/// @param is_safe Whether computed trajectory must be safe for the environment under bounded maximal obstacle velocity.
 /// @return A corresponding computed trajectory.
 std::shared_ptr<planning::trajectory::AbstractTrajectory> sim_bringup::Planner::convertPathToTraj
-    (const std::vector<std::shared_ptr<base::State>> &path, float max_edge_length_)
+    (const std::vector<std::shared_ptr<base::State>> &path, float max_edge_length_, float is_safe)
 {
     if (max_edge_length_ == -1)
         max_edge_length_ = max_edge_length;
@@ -182,7 +183,7 @@ std::shared_ptr<planning::trajectory::AbstractTrajectory> sim_bringup::Planner::
     scenario->getStateSpace()->preprocessPath(path, new_path, max_edge_length_);
 
     trajectory = std::make_shared<planning::trajectory::Trajectory>(scenario->getStateSpace());
-    bool success {trajectory->convertPathToTraj(new_path) };
+    bool success {trajectory->convertPathToTraj(new_path, is_safe) };
 
     return (success ? trajectory : nullptr);
 }

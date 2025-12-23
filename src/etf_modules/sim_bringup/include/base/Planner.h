@@ -33,7 +33,7 @@ namespace sim_bringup
         bool solve(std::shared_ptr<base::State> q_start = nullptr, std::shared_ptr<base::State> q_goal = nullptr, 
                    float max_planning_time_ = -1);
         std::shared_ptr<planning::trajectory::AbstractTrajectory> convertPathToTraj
-            (const std::vector<std::shared_ptr<base::State>> &path, float max_edge_length_ = -1);
+            (const std::vector<std::shared_ptr<base::State>> &path, float max_edge_length_ = -1, float is_safe = false);
 
         std::shared_ptr<scenario::Scenario> scenario;
 
