@@ -137,19 +137,17 @@ sim_bringup::Robot::Robot(const std::string &config_file_path)
     joints_velocity = Eigen::VectorXf(num_DOFs);
     joints_acceleration = Eigen::VectorXf(num_DOFs);
     joints_jerk = Eigen::VectorXf(num_DOFs);
-    ready = false;
+    ready = true;
 }
 
 void sim_bringup::Robot::jointsStateCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg)
 {
-    ready = false;
     for (size_t i = 0; i < num_DOFs; i++)
     {
         joints_position(i) = msg->actual.positions[i];
         joints_velocity(i) = msg->actual.velocities[i];
         // joints_acceleration(i) = msg->actual.accelerations[i];   // Not supported for xarm6.
     }
-	ready = true;
     
     // if (num_DOFs == 6)
     // {
@@ -164,7 +162,6 @@ void sim_bringup::Robot::jointsStateCallback(const control_msgs::msg::JointTraje
 
 void sim_bringup::Robot::jointsStateCallback2(const sensor_msgs::msg::JointState::SharedPtr msg)
 {
-    ready = false;
     for (size_t i = 0; i < num_DOFs; i++)
     {
         if (!std::isnan(msg->position[i]) && !std::isnan(msg->velocity[i]))
@@ -175,7 +172,6 @@ void sim_bringup::Robot::jointsStateCallback2(const sensor_msgs::msg::JointState
         else
             return;
     }
-	ready = true;
     
     // if (num_DOFs == 6)
     // {
