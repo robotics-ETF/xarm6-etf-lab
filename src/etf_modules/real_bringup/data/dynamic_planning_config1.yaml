@@ -35,7 +35,7 @@ planner:
   type: "RGBMT*"
   configurations: "/RPMPLv2"
   trajectory_max_time_step: 0.004                             # In [s]
-  trajectory_advance_time: 0.090                              # How much time in [s] a desired trajectory will be published in advance
+  trajectory_advance_time: 0.050                              # How much time in [s] a desired trajectory will be published in advance
   guaranteed_safe_motion: false                               # Whether robot motion is surely safe for environment
   max_obs_vel: 1.0                                            # Maximal velocity of dynamic obstacles used to generate dynamic bubbles. Only available when 'guaranteed_safe_motion' is true.
 
