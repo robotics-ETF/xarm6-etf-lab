@@ -51,7 +51,7 @@ sim_bringup::DynamicPlanningNode::DynamicPlanningNode(const std::string &node_na
     
     if (!output_file_name.empty())
     {
-        std::cout << "Recorded data will be saved to: " 
+        std::cout << "Recorded trajectory will be saved to: " 
                   << project_abs_path + config_file_path.substr(0, config_file_path.size()-5) + output_file_name << "\n";
         output_file.open(project_abs_path + config_file_path.substr(0, config_file_path.size()-5) + output_file_name, std::ofstream::out);
         recording_trajectory_timer = this->create_wall_timer(std::chrono::microseconds(size_t(Trajectory::getTrajectoryMaxTimeStep() * 1e6)), 

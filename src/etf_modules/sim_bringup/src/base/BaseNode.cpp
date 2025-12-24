@@ -18,8 +18,8 @@ sim_bringup::BaseNode::BaseNode(const std::string &node_name, const std::string 
         
         Robot::joints_state_subscription = this->create_subscription<control_msgs::msg::JointTrajectoryControllerState>
             ("/xarm6_traj_controller/state", 10, std::bind(&Robot::jointsStateCallback, this, std::placeholders::_1));
-        Robot::joints_state_subscription2 = this->create_subscription<sensor_msgs::msg::JointState>
-            ("/xarm/joint_states", 10, std::bind(&Robot::jointsStateCallback2, this, std::placeholders::_1));
+        // Robot::joints_state_subscription2 = this->create_subscription<sensor_msgs::msg::JointState>
+        //     ("/xarm/joint_states", 10, std::bind(&Robot::jointsStateCallback2, this, std::placeholders::_1));
         Robot::gripper_node = std::make_shared<rclcpp::Node>("gripper_node");
         Robot::gripper_client = rclcpp_action::create_client<control_msgs::action::GripperCommand>
             (gripper_node, "/xarm_gripper/gripper_action");

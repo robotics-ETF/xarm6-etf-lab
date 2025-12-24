@@ -24,6 +24,7 @@ planner:
   configurations: /RPMPLv2
   trajectory_max_time_step: 0.004
   trajectory_advance_time: 0.050
+  trajectory_recording: false                                  
   guaranteed_safe_motion: false
   max_obs_vel: 1.0
 environment:

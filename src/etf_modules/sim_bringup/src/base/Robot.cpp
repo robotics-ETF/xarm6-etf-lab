@@ -133,14 +133,13 @@ sim_bringup::Robot::Robot(const std::string &config_file_path)
         std::cout << e.what() << "\n";
     }
 
-    joints_position = Eigen::VectorXf(num_DOFs);
-    joints_velocity = Eigen::VectorXf(num_DOFs);
-    joints_acceleration = Eigen::VectorXf(num_DOFs);
-    joints_jerk = Eigen::VectorXf(num_DOFs);
+    joints_position = Eigen::VectorXf::Zero(num_DOFs);
+    joints_velocity = Eigen::VectorXf::Zero(num_DOFs);
+    joints_acceleration = Eigen::VectorXf::Zero(num_DOFs);
+    joints_jerk = Eigen::VectorXf::Zero(num_DOFs);
     ready = true;
 }
 
-// This function will be called in simulation.
 void sim_bringup::Robot::jointsStateCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg)
 {
     for (size_t i = 0; i < num_DOFs; i++)
@@ -159,9 +158,41 @@ void sim_bringup::Robot::jointsStateCallback(const control_msgs::msg::JointTraje
     //     // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Robot joints acceleration: (%f, %f, %f, %f, %f, %f).", 
     //     //     joints_acceleration(0), joints_acceleration(1), joints_acceleration(2), joints_acceleration(3), joints_acceleration(4), joints_acceleration(5));
     // }
+
+    if (trajectory_recording)
+    {
+        output_file << "Time [s]: \n";
+        output_file << std::chrono::duration_cast<std::chrono::microseconds>
+                       (std::chrono::steady_clock::now() - time_recording).count() * 1e-6 << "\n";
+
+        output_file << "Position (referent): \n";
+        for (size_t i = 0; i < num_DOFs; i++)
+            output_file << msg->desired.positions[i] << "\t";
+        output_file << "\n";
+
+        output_file << "Position (measured): \n";
+        output_file << joints_position.transpose() << "\n";
+
+        output_file << "Velocity (referent): \n";
+        for (size_t i = 0; i < num_DOFs; i++)
+            output_file << msg->desired.velocities[i] << "\t";
+        output_file << "\n";
+
+        output_file << "Velocity (measured): \n";
+        output_file << joints_velocity.transpose() << "\n";
+
+        // output_file << "Acceleration (referent): \n";
+        // for (size_t i = 0; i < num_DOFs; i++)
+        //     output_file << msg->desired.accelerations[i] << "\t";
+        // output_file << "\n";
+
+        // output_file << "Acceleration (measured): \n";    // If possible
+        // output_file << joints_acceleration.transpose() << "\n";
+
+        output_file << "--------------------------------------------------------------------\n";
+    }
 }
 
-// This function will be called on a real robot.
 void sim_bringup::Robot::jointsStateCallback2(const sensor_msgs::msg::JointState::SharedPtr msg)
 {
     for (size_t i = 0; i < num_DOFs; i++)

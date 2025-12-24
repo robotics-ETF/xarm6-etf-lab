@@ -3,23 +3,45 @@
 sim_bringup::Trajectory::Trajectory(const std::string &config_file_path) : 
     Robot(config_file_path)
 {
-    if (Robot::getNumDOFs() == 6)
-        msg.joint_names = {"joint1", "joint2", "joint3", "joint4", "joint5", "joint6"};
-    else
-        RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Such number of robot DOFs is not supported!");
-
-    std::string project_abs_path(__FILE__);
-    for (size_t i = 0; i < 4; i++)
-        project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
-    
-    YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
-    YAML::Node planner_node { node["planner"] };
-    if (planner_node["trajectory_max_time_step"].IsDefined())
-        trajectory_max_time_step = planner_node["trajectory_max_time_step"].as<float>();
-    else
+    try
     {
-        trajectory_max_time_step = 0.1;
-        RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Maximal edge length is not defined! Using default value of %f", trajectory_max_time_step);
+        if (Robot::getNumDOFs() == 6)
+            msg.joint_names = {"joint1", "joint2", "joint3", "joint4", "joint5", "joint6"};
+        else
+            RCLCPP_ERROR(rclcpp::get_logger("rclcpp"), "Such number of robot DOFs is not supported!");
+
+        std::string project_abs_path(__FILE__);
+        for (size_t i = 0; i < 4; i++)
+            project_abs_path = project_abs_path.substr(0, project_abs_path.find_last_of("/\\"));
+        
+        YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
+        YAML::Node planner_node { node["planner"] };
+        if (planner_node["trajectory_max_time_step"].IsDefined())
+            trajectory_max_time_step = planner_node["trajectory_max_time_step"].as<float>();
+        else
+        {
+            trajectory_max_time_step = 0.1;
+            RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Maximal edge length is not defined! Using default value of %f", trajectory_max_time_step);
+        }
+
+        if (planner_node["trajectory_recording"].IsDefined())
+        {
+            trajectory_recording = planner_node["trajectory_recording"].as<bool>();
+            if (trajectory_recording)
+            {
+                std::string filename { project_abs_path + config_file_path.substr(0, config_file_path.size()-5) + "_traj_recording.log" };
+                std::cout << "Recorded trajectory will be saved to: " << filename << "\n";
+                output_file.open(filename, std::ofstream::out);
+                time_recording = std::chrono::steady_clock::now();
+            }
+        }
+        else
+            trajectory_recording = false;
+        
+    }
+    catch (std::exception &e)
+    {
+        std::cout << e.what() << "\n";
     }
 }
 

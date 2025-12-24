@@ -23,6 +23,7 @@ planner:
   max_edge_length: 0.5                                        # In [rad]
   trajectory_max_time_step: 0.004                             # In [s]
   trajectory_advance_time: 0.050                              # How much time in [s] a desired trajectory will be published in advance
+  trajectory_recording: false                                  
   dynamic_planner_config_file_path: "/sim_bringup/data/dynamic_planning_config2.yaml"
 
 environment:

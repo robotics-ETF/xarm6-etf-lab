@@ -67,6 +67,11 @@ namespace sim_bringup
         std::shared_ptr<rclcpp::Node> gripper_node;
         rclcpp_action::Client<control_msgs::action::GripperCommand>::SharedPtr gripper_client;
 
+    protected:
+        bool trajectory_recording;
+        std::ofstream output_file;
+        std::chrono::steady_clock::time_point time_recording;
+
     private:
         std::shared_ptr<robots::AbstractRobot> robot;
         Eigen::VectorXf joints_position;
