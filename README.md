@@ -254,9 +254,11 @@ https://github.com/user-attachments/assets/6d78350e-9e64-4400-be94-df87fc070c46
 
 
 # 6. Run the real robot in dynamic environments
+First, open the file ```xarm6-etf-lab/src/external_modules/xarm_ros2/xarm_controller/config/xarm6_controllers.yaml```. It is recommended to set ```controller_manager/ros__parameters/update_rate``` to 500 [Hz] and ```xarm6_traj_controller/ros__parameters/state_publish_rate``` to 250 [Hz].
+
 Note: For each test file in the sequel (which is located in ```apps``` folder), there is a corresponding yaml file withing ```data``` folder, where all necessary configurations can be set.
 
-First, launch the robot:
+Now, launch the robot:
 ```
 cd ~/xarm6-etf-lab
 ros2 launch real_bringup real_xarm6_etflab.launch.py
