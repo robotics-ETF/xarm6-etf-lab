@@ -1,9 +1,9 @@
-#include "sim_demos/RealTimePlanningNode2.h"
+#include "sim_demos/DynamicPlanningNode2.h"
 
 typedef planning::rrtx::RRTx DP;    // 'DP' is Dynamic Planner
 
-sim_bringup::RealTimePlanningNode2::RealTimePlanningNode2(const std::string &node_name, const std::string &config_file_path, 
-                                                          bool loop_execution_) : 
+sim_bringup::DynamicPlanningNode2::DynamicPlanningNode2(const std::string &node_name, const std::string &config_file_path, 
+                                                        bool loop_execution_) : 
     BaseNode(node_name, config_file_path),
     AABB(config_file_path),
     RRTx(Planner::scenario->getStateSpace(), Planner::scenario->getStart(), Planner::scenario->getGoal())
@@ -29,7 +29,7 @@ sim_bringup::RealTimePlanningNode2::RealTimePlanningNode2(const std::string &nod
     q_goal_init = DP::q_goal;
 }
 
-void sim_bringup::RealTimePlanningNode2::planningCallback()
+void sim_bringup::DynamicPlanningNode2::planningCallback()
 {
     if (!iteration_completed)
     {
@@ -214,7 +214,7 @@ void sim_bringup::RealTimePlanningNode2::planningCallback()
 }
 
 /// @brief Compute trajectory and publish trajectory points.
-void sim_bringup::RealTimePlanningNode2::computeTrajectory()
+void sim_bringup::DynamicPlanningNode2::computeTrajectory()
 {
     // Procedure of updating current state
     DP::q_next = DP::q_current->getParent();

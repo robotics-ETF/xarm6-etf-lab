@@ -1,6 +1,6 @@
-#include "real_demos/BottleAndGlassNode.h"
+#include "real_demos/DemoNode1.h"
 
-real_bringup::BottleAndGlassNode::BottleAndGlassNode(const std::string &node_name, const std::string &config_file_path) : 
+real_bringup::DemoNode1::DemoNode1(const std::string &node_name, const std::string &config_file_path) : 
     MoveXArm6Node(node_name, config_file_path) 
 {
     YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
@@ -26,7 +26,7 @@ real_bringup::BottleAndGlassNode::BottleAndGlassNode(const std::string &node_nam
     sign = 1;
 }
 
-void real_bringup::BottleAndGlassNode::bottleAndGlassCallback()
+void real_bringup::DemoNode1::demoCallback()
 {
     switch (state)
     {

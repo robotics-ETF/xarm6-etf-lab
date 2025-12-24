@@ -1,4 +1,4 @@
-#include "real_demos/PickAndPlaceNode.h"
+#include "real_demos/DemoNode2.h"
 #include "environments/AABB.h"
 
 #include <sensor_msgs/msg/point_cloud2.hpp>
@@ -7,14 +7,13 @@
 
 namespace real_bringup
 {
-    class PickAndPlaceUsingCamerasNode : public real_bringup::PickAndPlaceNode,
-                                         public sim_bringup::AABB
+    class DemoNode3 : public real_bringup::DemoNode2,
+                      public sim_bringup::AABB
     {
     public:
-        PickAndPlaceUsingCamerasNode(const std::string &node_name, const std::string &config_file_path);
+        DemoNode3(const std::string &node_name, const std::string &config_file_path);
         
-        void pickAndPlaceCallback() override { pickAndPlaceUsingCamerasCallback(); };
-        void pickAndPlaceUsingCamerasCallback();
+        void demoCallback() override;
         int chooseObject() override;
         void computeObjectApproachAndPickPose();
 

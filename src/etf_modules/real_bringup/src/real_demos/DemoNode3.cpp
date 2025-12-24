@@ -1,7 +1,7 @@
-#include "real_demos/PickAndPlaceUsingCamerasNode.h"
+#include "real_demos/DemoNode3.h"
 
-real_bringup::PickAndPlaceUsingCamerasNode::PickAndPlaceUsingCamerasNode(const std::string &node_name, const std::string &config_file_path) : 
-    PickAndPlaceNode(node_name, config_file_path),
+real_bringup::DemoNode3::DemoNode3(const std::string &node_name, const std::string &config_file_path) : 
+    DemoNode2(node_name, config_file_path),
     AABB(config_file_path)
 {
     YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
@@ -16,7 +16,7 @@ real_bringup::PickAndPlaceUsingCamerasNode::PickAndPlaceUsingCamerasNode(const s
     task = waiting_for_object;
 }
 
-void real_bringup::PickAndPlaceUsingCamerasNode::pickAndPlaceUsingCamerasCallback()
+void real_bringup::DemoNode3::demoCallback()
 {
     // Robot::testOrientation();
 
@@ -105,7 +105,7 @@ void real_bringup::PickAndPlaceUsingCamerasNode::pickAndPlaceUsingCamerasCallbac
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "---------------------------------------------"); 
 }
 
-int real_bringup::PickAndPlaceUsingCamerasNode::chooseObject()
+int real_bringup::DemoNode3::chooseObject()
 {
     float z_max { -INFINITY };
     int obj_idx_ { -1 };
@@ -128,7 +128,7 @@ int real_bringup::PickAndPlaceUsingCamerasNode::chooseObject()
     return obj_idx_;
 }
 
-void real_bringup::PickAndPlaceUsingCamerasNode::computeObjectApproachAndPickPose()
+void real_bringup::DemoNode3::computeObjectApproachAndPickPose()
 {
     const Eigen::Vector3f pos { AABB::getPositions(obj_idx) };
     const Eigen::Vector3f dim { AABB::getDimensions(obj_idx) };

@@ -9,12 +9,12 @@
 
 namespace sim_bringup
 {
-    class RealTimePlanningNode2 : public sim_bringup::BaseNode, 
+    class DynamicPlanningNode2 : public sim_bringup::BaseNode, 
                                  public sim_bringup::AABB, 
                                  public planning::rrtx::RRTx
     {
     public:
-        RealTimePlanningNode2(const std::string &node_name, const std::string &config_file_path, bool loop_execution_);
+        DynamicPlanningNode2(const std::string &node_name, const std::string &config_file_path, bool loop_execution_);
         
         int getPlanningResult() const { return planning_result; }
 

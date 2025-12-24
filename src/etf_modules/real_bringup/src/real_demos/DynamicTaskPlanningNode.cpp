@@ -1,6 +1,6 @@
-#include "real_demos/RealTimeTaskPlanningNode.h"
+#include "real_demos/DynamicTaskPlanningNode.h"
 
-real_bringup::RealTimeTaskPlanningNode::RealTimeTaskPlanningNode(const std::string &node_name, const std::string &config_file_path) : 
+real_bringup::DynamicTaskPlanningNode::DynamicTaskPlanningNode(const std::string &node_name, const std::string &config_file_path) : 
     TaskPlanningNode(node_name, config_file_path) 
 {
     YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
@@ -9,7 +9,7 @@ real_bringup::RealTimeTaskPlanningNode::RealTimeTaskPlanningNode(const std::stri
     state = State::waiting;
 }
 
-void real_bringup::RealTimeTaskPlanningNode::plannerSolving()
+void real_bringup::DynamicTaskPlanningNode::plannerSolving()
 {
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Preparing dynamic planner...");
     // Update start and goal configuration
@@ -24,19 +24,19 @@ void real_bringup::RealTimeTaskPlanningNode::plannerSolving()
 
     dynamic_planner_thread = std::thread([this]() 
     {
-        real_time_planning_node = std::make_shared<sim_bringup::RealTimePlanningNode>
-                                    ("real_time_planning_node", dynamic_planner_config_file_path, false);
-        rclcpp::spin(real_time_planning_node);
+        dynamic_planning_node = std::make_shared<sim_bringup::DynamicPlanningNode>
+                                ("dynamic_planning_node", dynamic_planner_config_file_path, false);
+        rclcpp::spin(dynamic_planning_node);
     });
     dynamic_planner_thread.detach();
     state = State::planning;
 }
 
-void real_bringup::RealTimeTaskPlanningNode::plannerChecking()
+void real_bringup::DynamicTaskPlanningNode::plannerChecking()
 {
-    if (real_time_planning_node->getPlanningResult() == 1)
+    if (dynamic_planning_node->getPlanningResult() == 1)
     {
-        real_time_planning_node = nullptr;
+        dynamic_planning_node = nullptr;
         state = State::waiting;
         task = task_next;
     }
@@ -44,7 +44,7 @@ void real_bringup::RealTimeTaskPlanningNode::plannerChecking()
         RCLCPP_WARN(rclcpp::get_logger("rclcpp"), "Dynamic planning is in progress...");
 }
 
-void real_bringup::RealTimeTaskPlanningNode::executingTrajectory()
+void real_bringup::DynamicTaskPlanningNode::executingTrajectory()
 {
     // Trajectory is executed simultaneously during the process of planning.
     return;

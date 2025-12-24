@@ -1,9 +1,9 @@
-#include "sim_demos/RealTimePlanningNode.h"
+#include "sim_demos/DynamicPlanningNode.h"
 
 typedef planning::drbt::DRGBT DP;    // 'DP' is Dynamic Planner
 
-sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_name, const std::string &config_file_path, 
-                                                        bool loop_execution_, const std::string &output_file_name) : 
+sim_bringup::DynamicPlanningNode::DynamicPlanningNode(const std::string &node_name, const std::string &config_file_path, 
+                                                      bool loop_execution_, const std::string &output_file_name) : 
     BaseNode(node_name, config_file_path),
     AABB(config_file_path),
     DP(Planner::scenario->getStateSpace(), Planner::scenario->getStart(), Planner::scenario->getGoal())
@@ -45,7 +45,7 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
     callback_group = this->create_callback_group(rclcpp::CallbackGroupType::Reentrant); // Enable all callbacks to run concurrently
     timer = this->create_wall_timer(std::chrono::microseconds(size_t(period * 1e6)), std::bind(&BaseNode::baseCallback, this), callback_group);
     replanning_service = this->create_service<std_srvs::srv::Empty>("replanning_service",
-                         std::bind(&RealTimePlanningNode::replanningCallback, this, std::placeholders::_1, std::placeholders::_2), 
+                         std::bind(&DynamicPlanningNode::replanningCallback, this, std::placeholders::_1, std::placeholders::_2), 
                          rmw_qos_profile_services_default, callback_group);
     replanning_client = this->create_client<std_srvs::srv::Empty>("replanning_service", rmw_qos_profile_services_default, callback_group);
     
@@ -55,12 +55,12 @@ sim_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_
                   << project_abs_path + config_file_path.substr(0, config_file_path.size()-5) + output_file_name << "\n";
         output_file.open(project_abs_path + config_file_path.substr(0, config_file_path.size()-5) + output_file_name, std::ofstream::out);
         recording_trajectory_timer = this->create_wall_timer(std::chrono::microseconds(size_t(Trajectory::getTrajectoryMaxTimeStep() * 1e6)), 
-                                     std::bind(&RealTimePlanningNode::recordingTrajectoryCallback, this), callback_group);
+                                     std::bind(&DynamicPlanningNode::recordingTrajectoryCallback, this), callback_group);
         max_error = Eigen::VectorXf::Zero(Robot::getNumDOFs());
     }
 }
 
-void sim_bringup::RealTimePlanningNode::planningCallback()
+void sim_bringup::DynamicPlanningNode::planningCallback()
 {
     if (!iteration_completed)
     {
@@ -182,7 +182,7 @@ void sim_bringup::RealTimePlanningNode::planningCallback()
     iteration_completed = true;
 }
 
-void sim_bringup::RealTimePlanningNode::taskComputingNextConfiguration()
+void sim_bringup::DynamicPlanningNode::taskComputingNextConfiguration()
 {
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "TASK 1: Computing next configuration... ");
     
@@ -199,7 +199,7 @@ void sim_bringup::RealTimePlanningNode::taskComputingNextConfiguration()
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Elapsed time for TASK 1: %f [ms].", DP::getElapsedTime(DP::time_iter_start, planning::TimeUnit::ms));
 }
 
-void sim_bringup::RealTimePlanningNode::taskReplanning(bool replanning_required_explicitly)
+void sim_bringup::DynamicPlanningNode::taskReplanning(bool replanning_required_explicitly)
 {
     if (replanning_required_explicitly)
         DP::replanning_required = true;
@@ -220,7 +220,7 @@ void sim_bringup::RealTimePlanningNode::taskReplanning(bool replanning_required_
 }
 
 /// @brief Try to replan the predefined path from 'q_current' to 'q_goal' during a specified time limit 'max_replanning_time'.
-void sim_bringup::RealTimePlanningNode::replanningCallback([[maybe_unused]] const std::shared_ptr<std_srvs::srv::Empty::Request> request,
+void sim_bringup::DynamicPlanningNode::replanningCallback([[maybe_unused]] const std::shared_ptr<std_srvs::srv::Empty::Request> request,
                                                            [[maybe_unused]] const std::shared_ptr<std_srvs::srv::Empty::Response> response)
 {
     try
@@ -254,7 +254,7 @@ void sim_bringup::RealTimePlanningNode::replanningCallback([[maybe_unused]] cons
 }
 
 /// @brief Compute trajectory and publish trajectory points.
-void sim_bringup::RealTimePlanningNode::computeTrajectory()
+void sim_bringup::DynamicPlanningNode::computeTrajectory()
 {
     DP::visited_states = { DP::q_next };
     DP::updating_state->setNonZeroFinalVel(DP::q_next->getIsReached() && 
@@ -279,12 +279,12 @@ void sim_bringup::RealTimePlanningNode::computeTrajectory()
     Trajectory::publish();
 }
 
-float sim_bringup::RealTimePlanningNode::getCurrTrajTime() 
+float sim_bringup::DynamicPlanningNode::getCurrTrajTime() 
 { 
     return DP::traj->getTimeCurrent() + DP::getElapsedTime(time_traj_computed);
 }
 
-void sim_bringup::RealTimePlanningNode::recordingTrajectoryCallback()
+void sim_bringup::DynamicPlanningNode::recordingTrajectoryCallback()
 {
     if (DP::getPlannerInfo()->getNumIterations() == 0)
         return;

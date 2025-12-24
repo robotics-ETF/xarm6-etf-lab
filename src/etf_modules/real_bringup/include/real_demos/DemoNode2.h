@@ -2,14 +2,14 @@
 
 namespace real_bringup
 {
-    class PickAndPlaceNode : public real_bringup::MoveXArm6Node
+    class DemoNode2 : public real_bringup::MoveXArm6Node
     {
     public:
-        PickAndPlaceNode(const std::string &node_name, const std::string &config_file_path);
+        DemoNode2(const std::string &node_name, const std::string &config_file_path);
 
     protected:    
-        void moveXArm6Callback() override { pickAndPlaceCallback(); }
-        virtual void pickAndPlaceCallback();
+        void moveXArm6Callback() override { demoCallback(); }
+        virtual void demoCallback();
 
     private:
         size_t num;

@@ -1,13 +1,13 @@
-#include "real_demos/RealTimePlanningNode.h"
+#include "real_demos/DynamicPlanningNode.h"
 
 typedef planning::drbt::DRGBT DP;    // 'DP' is Dynamic Planner
 
-real_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node_name, const std::string &config_file_path, 
-                                                         bool loop_execution_, const std::string &output_file_name) : 
-    sim_bringup::RealTimePlanningNode(node_name, config_file_path, loop_execution_, output_file_name)
+real_bringup::DynamicPlanningNode::DynamicPlanningNode(const std::string &node_name, const std::string &config_file_path, 
+                                                       bool loop_execution_, const std::string &output_file_name) : 
+    sim_bringup::DynamicPlanningNode(node_name, config_file_path, loop_execution_, output_file_name)
 {    
     publishing_trajectory_timer = this->create_wall_timer(std::chrono::microseconds(size_t(Trajectory::getTrajectoryMaxTimeStep() * 1e6)), 
-                                  std::bind(&RealTimePlanningNode::publishingTrajectoryCallback, this), callback_group);
+                                  std::bind(&DynamicPlanningNode::publishingTrajectoryCallback, this), callback_group);
     
     xarm_client_node = std::make_shared<rclcpp::Node>("xarm_client_node");
     xarm_client.init(xarm_client_node, "xarm");
@@ -21,7 +21,7 @@ real_bringup::RealTimePlanningNode::RealTimePlanningNode(const std::string &node
     xarm_client.save_conf();
 }
 
-void real_bringup::RealTimePlanningNode::computeTrajectory()
+void real_bringup::DynamicPlanningNode::computeTrajectory()
 {
     // Only the following code is necessary, since trajectory is published in 'publishingTrajectoryCallback' function using 'xarm_client'.
     DP::visited_states = { DP::q_next };
@@ -38,7 +38,7 @@ void real_bringup::RealTimePlanningNode::computeTrajectory()
     time_traj_computed = std::chrono::steady_clock::now();
 }
 
-void real_bringup::RealTimePlanningNode::publishingTrajectoryCallback()
+void real_bringup::DynamicPlanningNode::publishingTrajectoryCallback()
 {
     // RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Inside publishingTrajectoryCallback...");
     std::vector<float> position(Robot::getNumDOFs());

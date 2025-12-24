@@ -2,14 +2,14 @@
 
 namespace real_bringup
 {
-    class BottleAndGlassNode : public real_bringup::MoveXArm6Node
+    class DemoNode1 : public real_bringup::MoveXArm6Node
     {
     public:
-        BottleAndGlassNode(const std::string &node_name, const std::string &config_file_path);
+        DemoNode1(const std::string &node_name, const std::string &config_file_path);
 
     protected:
-        void moveXArm6Callback() override { bottleAndGlassCallback(); }
-        void bottleAndGlassCallback();
+        void moveXArm6Callback() override { demoCallback(); }
+        void demoCallback();
 
     private:
         int sign;

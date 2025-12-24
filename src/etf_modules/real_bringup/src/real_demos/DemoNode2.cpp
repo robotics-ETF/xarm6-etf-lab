@@ -1,6 +1,6 @@
-#include "real_demos/PickAndPlaceNode.h"
+#include "real_demos/DemoNode2.h"
 
-real_bringup::PickAndPlaceNode::PickAndPlaceNode(const std::string &node_name, const std::string &config_file_path) : 
+real_bringup::DemoNode2::DemoNode2(const std::string &node_name, const std::string &config_file_path) : 
     MoveXArm6Node(node_name, config_file_path) 
 {
     YAML::Node node { YAML::LoadFile(project_abs_path + config_file_path) };
@@ -22,7 +22,7 @@ real_bringup::PickAndPlaceNode::PickAndPlaceNode(const std::string &node_name, c
     num = 0;
 }
 
-void real_bringup::PickAndPlaceNode::pickAndPlaceCallback()
+void real_bringup::DemoNode2::demoCallback()
 {
     switch (task)
     {
