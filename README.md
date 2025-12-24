@@ -82,7 +82,7 @@ cd ~/xarm6-etf-lab
 ```
 Then, launch the robot using one of the following four options: 
 
-1. option (RViz2 + Gazebo):
+### 1. option (RViz2 + Gazebo):
 ```
 ros2 launch sim_bringup static_xarm6_etflab.launch.py
 
@@ -91,7 +91,7 @@ make sim_static
 ```
 Obstacles are static, and they are defined within ```world/etflab.world``` file in ```sim_bringup``` library (e.g., see example in ```world/etflab1.world```). After combining point clouds from two cameras (left and right one), a combined point cloud is read from ```pointcloud_combined``` topic. Then, obstacles are published at a rate of cca. 5 [Hz] to ```objects_cloud``` topic after their segmentation is done. All configuration settings can be set within ```perception``` node in the yaml file ```/perception_etflab/data/real_perception_etflab_config.yaml``` from ```perception_etflab``` library. Use this option if you want to simulate readings from cameras with their uncertainties.
 
-2. option (RViz2 + Gazebo):
+### 2. option (RViz2 + Gazebo):
 ```
 ros2 launch sim_bringup dynamic_xarm6_etflab.launch.py
 
@@ -102,19 +102,19 @@ Obstacles are randomly generated and they are dynamic (they move in robot's work
 
 Note that if there are defined static obstacles in ```world/etflab.world``` file from ```sim_bringup``` library, they will be shown, but NOT considered during the planning!!! This option does not simulate readings from cameras, yet assume that all obstacles' info are already read.
 
-3. option (MoveIt2 + RViz2 + Gazebo):
+### 3. option (MoveIt2 + RViz2 + Gazebo):
 ```
 ros2 launch sim_bringup xarm6_moveit_gazebo.launch.py
 ```
 
-4. option (MoveIt2 + RViz2):
+### 4. option (MoveIt2 + RViz2):
 ```
 ros2 launch xarm_moveit_config xarm6_moveit_realmove.launch.py robot_ip:=192.168.1.236 [add_gripper:=true]
 ```
 
 Note: For each test file from ```apps``` folder, there is a corresponding yaml file withing ```data``` folder, where all necessary configurations can be set.
 
-## 3.1 Test demo 1 (xarm6 moving)
+## 3.1 Test xarm6 moving
 ```
 # In the new tab type:
 cd ~/xarm6-etf-lab
@@ -126,7 +126,7 @@ ros2 run sim_bringup test_move_xarm6
 ros2 run sim_bringup test_move_xarm6.py
 ```
 
-## 3.2 Test demo 2 (planners from RPMPLv2 library using cameras)
+## 3.2 Test planners from RPMPLv2 library while using cameras
 ```
 # In the new tab type:
 cd ~/xarm6-etf-lab
@@ -135,25 +135,28 @@ ros2 run sim_bringup test_planners
 
 https://github.com/user-attachments/assets/d47a7aae-8bd0-4d07-8e0b-74627740194f
 
-## 3.3 Test demo 3 (task planning using planners from RPMPLv2 library and using cameras)
+## 3.3 Test task planning using planners from RPMPLv2 library while using cameras
 ```
 # In the new tab type:
 cd ~/xarm6-etf-lab
 ros2 run sim_bringup test_task_planning
 ```
 
-## 3.4 Test demo 4 (real-time planning using DRGBT planner from RPMPLv2 library and using cameras)
+## 3.4 Test real-time planning using DRGBT or RRTx planner from RPMPLv2 library while using cameras
 ```
 # In the new tab type:
 cd ~/xarm6-etf-lab
+# DRGBT planner:
 ros2 run sim_bringup test_dynamic_planning
+# RRTx planner:
+ros2 run sim_bringup test_dynamic_planning2
 ```
 
 https://github.com/user-attachments/assets/bbbb9d0d-48d0-4280-9f06-73b950a28b6c
 
 https://github.com/user-attachments/assets/1dbe400c-6fd7-4ac3-8c03-2cfc0e70e3fa
 
-## 3.5 Test demo 5 (real-time task planning using DRGBT planner from RPMPLv2 library and using cameras)
+## 3.5 Test real-time task planning using DRGBT planner from RPMPLv2 library while using cameras
 ```
 # In the new tab type:
 cd ~/xarm6-etf-lab
