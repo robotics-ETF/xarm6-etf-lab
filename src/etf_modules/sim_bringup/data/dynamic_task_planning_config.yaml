@@ -12,7 +12,7 @@ robot:
   self_collision_checking: true                               # Whether self-collision should be checked
   max_vel:  [1.5, 1.5, 1.5, 1.5, 1.5, 1.5]                    # Maximal velocity of each robot's joint in [rad/s]
   max_acc:  [10, 10, 10, 10, 10, 10]                          # Maximal acceleration of each robot's joint in [rad/s²]
-  max_jerk: [50, 50, 50, 50, 50, 50]                          # Maximal jerk of each robot's joint in [rad/s³]
+  max_jerk: [100, 100, 100, 100, 100, 100]                    # Maximal jerk of each robot's joint in [rad/s³]
 
 planner:
   # type: "RRT-Connect"

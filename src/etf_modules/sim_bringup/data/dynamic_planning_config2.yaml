@@ -18,7 +18,7 @@ robot:
   WS_radius: 1.5
   max_vel: [1.5, 1.5, 1.5, 1.5, 1.5, 1.5]
   max_acc: [10, 10, 10, 10, 10, 10]
-  max_jerk: [50, 50, 50, 50, 50, 50]
+  max_jerk: [100, 100, 100, 100, 100, 100]
 planner:
   type: RGBMT*
   configurations: /RPMPLv2

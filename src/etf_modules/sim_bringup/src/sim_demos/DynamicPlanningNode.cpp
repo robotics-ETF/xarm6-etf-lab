@@ -221,7 +221,7 @@ void sim_bringup::DynamicPlanningNode::taskReplanning(bool replanning_required_e
 
 /// @brief Try to replan the predefined path from 'q_current' to 'q_goal' during a specified time limit 'max_replanning_time'.
 void sim_bringup::DynamicPlanningNode::replanningCallback([[maybe_unused]] const std::shared_ptr<std_srvs::srv::Empty::Request> request,
-                                                           [[maybe_unused]] const std::shared_ptr<std_srvs::srv::Empty::Response> response)
+                                                          [[maybe_unused]] const std::shared_ptr<std_srvs::srv::Empty::Response> response)
 {
     try
     {
