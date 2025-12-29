@@ -14,13 +14,13 @@ add_executable(test_task_planning test_task_planning.cpp)
 target_compile_features(test_task_planning PUBLIC c_std_99 cxx_std_17)
 target_link_libraries(test_task_planning PUBLIC sim_bringup)
 
-add_executable(test_real_time_planning test_real_time_planning.cpp)
-target_compile_features(test_real_time_planning PUBLIC c_std_99 cxx_std_17)
-target_link_libraries(test_real_time_planning PUBLIC sim_bringup)
+add_executable(test_dynamic_planning test_dynamic_planning.cpp)
+target_compile_features(test_dynamic_planning PUBLIC c_std_99 cxx_std_17)
+target_link_libraries(test_dynamic_planning PUBLIC sim_bringup)
 
-add_executable(test_real_time_task_planning test_real_time_task_planning.cpp)
-target_compile_features(test_real_time_task_planning PUBLIC c_std_99 cxx_std_17)
-target_link_libraries(test_real_time_task_planning PUBLIC sim_bringup)
+add_executable(test_dynamic_task_planning test_dynamic_task_planning.cpp)
+target_compile_features(test_dynamic_task_planning PUBLIC c_std_99 cxx_std_17)
+target_link_libraries(test_dynamic_task_planning PUBLIC sim_bringup)
 
 add_executable(test_read_trajectory test_read_trajectory.cpp)
 target_compile_features(test_read_trajectory PUBLIC c_std_99 cxx_std_17)
@@ -31,7 +31,7 @@ install(TARGETS
   test_read_octomap
   test_planning
   test_task_planning
-  test_real_time_planning
-  test_real_time_task_planning
+  test_dynamic_planning
+  test_dynamic_task_planning
   test_read_trajectory
   DESTINATION lib/${PROJECT_NAME})

@@ -16,6 +16,7 @@
 #include <control_msgs/action/gripper_command.hpp>
 #include <control_msgs/msg/gripper_command.hpp>
 #include <rclcpp_action/rclcpp_action.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 
 #include <RealVectorSpaceState.h>
 #include <xArm6.h>
@@ -40,6 +41,7 @@ namespace sim_bringup
         inline const Eigen::VectorXf &getJointsPosition() const { return joints_position; }
         inline const Eigen::VectorXf &getJointsVelocity() const { return joints_velocity; }
         inline const Eigen::VectorXf &getJointsAcceleration() const { return joints_acceleration; }
+        inline const Eigen::VectorXf &getJointsJerk() const { return joints_jerk; }
         inline const Eigen::VectorXf &getHomeJointsPosition() const { return home_joints_position; }
 
         inline float getMaxLinVel() const { return max_lin_vel; }
@@ -55,19 +57,27 @@ namespace sim_bringup
         inline size_t getNumDOFs() const { return num_DOFs; }
 
         void jointsStateCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg);
+        void jointsStateCallback2(const sensor_msgs::msg::JointState::SharedPtr msg);
         inline bool isReady() { return ready; }
         bool isReached(std::shared_ptr<base::State> q, float tol = 0.1);
         void moveGripper(float position, float max_effort = 5.0);
         
         rclcpp::Subscription<control_msgs::msg::JointTrajectoryControllerState>::SharedPtr joints_state_subscription;
+        rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joints_state_subscription2;
         std::shared_ptr<rclcpp::Node> gripper_node;
         rclcpp_action::Client<control_msgs::action::GripperCommand>::SharedPtr gripper_client;
+
+    protected:
+        bool trajectory_recording;
+        std::ofstream output_file;
+        std::chrono::steady_clock::time_point time_recording;
 
     private:
         std::shared_ptr<robots::AbstractRobot> robot;
         Eigen::VectorXf joints_position;
         Eigen::VectorXf joints_velocity;
         Eigen::VectorXf joints_acceleration;
+        Eigen::VectorXf joints_jerk;
         Eigen::VectorXf home_joints_position;
         float max_lin_vel;      // in [m/s]
         float max_lin_acc;      // in [m/s²]

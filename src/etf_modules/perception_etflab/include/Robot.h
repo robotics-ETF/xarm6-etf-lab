@@ -7,6 +7,7 @@
 
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <sensor_msgs/msg/joint_state.hpp>
 #include <control_msgs/msg/joint_trajectory_controller_state.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 #include <pcl/point_cloud.h>
@@ -27,6 +28,7 @@ namespace perception_etflab
         inline size_t getNumDOFs() const { return num_DOFs; }
 
 		void jointsStateCallback(const control_msgs::msg::JointTrajectoryControllerState::SharedPtr msg);
+        void jointsStateCallback2(const sensor_msgs::msg::JointState::SharedPtr msg);
 		void removeFromScene(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters);
 		void removeFromScene2(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr pcl);
 		void removeFromScene3(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters);
@@ -35,6 +37,7 @@ namespace perception_etflab
 		void visualizeWorkspace();
 
 		rclcpp::Subscription<control_msgs::msg::JointTrajectoryControllerState>::SharedPtr joints_state_subscription;
+        rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr joints_state_subscription2;
 		rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr marker_array_publisher;
 
     private:

@@ -1,0 +1,37 @@
+period: 0.050
+real_time:
+  scheduling: FPS
+  max_time_task1: 0.050
+robot:
+  type: xarm6
+  urdf: /RPMPLv2/data/xarm6/xarm6.urdf
+  space: RealVectorSpace
+  num_DOFs: 6
+  q_home: [0, 0, 0, 3.1415, 1.5708, 0]
+  q_start: [-0.54972887, -0.134923011, -1.22414398, 7.47779814e-06, 1.35906708, -4.49810477e-06]
+  q_goal: [-3.14159584, 0.0933324993, -1.64074731, 7.36003585e-06, 1.54741478, -3.72911859e-06]
+  capsules_radius: [0.047, 0.12, 0.11, 0.09, 0.05, 0.1]
+  gripper_length: 0.17
+  ground_included: 2
+  self_collision_checking: true
+  WS_center: [0.0, 0.0, 0.267]
+  WS_radius: 1.5
+  max_vel: [1.5, 1.5, 1.5, 1.5, 1.5, 1.5]
+  max_acc: [10, 10, 10, 10, 10, 10]
+  max_jerk: [100, 100, 100, 100, 100, 100]
+planner:
+  type: RGBMT*
+  configurations: /RPMPLv2
+  trajectory_max_time_step: 0.004
+  trajectory_advance_time: 0.050
+  trajectory_recording: false
+  guaranteed_safe_motion: false
+  max_obs_vel: 1.0
+environment:
+  - box:
+      label: ground
+      dim: [1.5, 1.5, 0.1]
+      pos: [0, 0, -0.05]
+      min_dist_tol: 0.05
+cameras:
+  min_num_captures: 1

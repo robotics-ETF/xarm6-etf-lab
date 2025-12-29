@@ -50,6 +50,6 @@ void sim_bringup::MoveXArm6Node::moveInJointSpace()
     time_instances.emplace_back(4);
 
     Trajectory::clear();
-    Trajectory::addPath(path, time_instances);
+    Trajectory::addTrajectory(path, time_instances);
     Trajectory::publish();
 }

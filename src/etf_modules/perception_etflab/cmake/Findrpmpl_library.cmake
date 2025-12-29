@@ -36,6 +36,7 @@ find_package(orocos_kdl REQUIRED)
 include_directories(${OROCOS_KDL_INCLUDE_DIR})
 find_package(yaml-cpp REQUIRED)
 find_package(fcl 0.7 REQUIRED)
+find_package(ruckig REQUIRED)
 
 # RPMPL_LIBRARIES are libraries needed in order to use rpmpl_library
-set(RPMPL_LIBRARIES gtest glog nanoflann::nanoflann kdl_parser orocos-kdl fcl ccd yaml-cpp gflags)
+set(RPMPL_LIBRARIES gtest glog nanoflann::nanoflann kdl_parser orocos-kdl fcl ccd yaml-cpp gflags ruckig::ruckig)

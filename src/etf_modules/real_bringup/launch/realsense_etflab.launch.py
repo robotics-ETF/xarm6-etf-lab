@@ -52,7 +52,7 @@ def generate_launch_description():
 
     tf_node_link_base_camera_left_link = Node(package="tf2_ros", 
             executable = "static_transform_publisher",
-            arguments = ["0.48", "-1.08", "0.95", "1.9918", "0.7026", "0.10", "link_base", "camera_left_link"]    # (x,y,z, yaw(z), pich(y), roll(x))
+            arguments = ["0.52", "-1.08", "0.92", "2", "0.65", "0.08", "link_base", "camera_left_link"]    # (x,y,z, yaw(z), pich(y), roll(x))
     )
 
     tf_node_link_base_camera_right_link = Node(package="tf2_ros", 
@@ -110,10 +110,10 @@ def generate_launch_description():
         ]
     )
 
-    object_segmentation_node = Node(
+    real_object_segmentation_node = Node(
         package='perception_etflab',
-        executable='object_segmentation',
-        name='object_segmentation',
+        executable='real_object_segmentation',
+        name='real_object_segmentation',
         parameters=[
         	{'input_cloud': 'pointcloud_combined'},
         	{'objects_cloud': 'objects_cloud'}
@@ -156,7 +156,7 @@ def generate_launch_description():
         ),
         TimerAction(
             period=2.0,
-            actions=[object_segmentation_node]
+            actions=[real_object_segmentation_node]
         ),
         # TimerAction(
         #     period=3.0,

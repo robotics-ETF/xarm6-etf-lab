@@ -11,6 +11,7 @@
 #include <RGBMTStar.h>
 #include <Scenario.h>
 #include <ConfigurationReader.h>
+#include <Trajectory.h>
 #include <rclcpp/rclcpp.hpp>
 #include <yaml-cpp/yaml.h>
 
@@ -31,8 +32,8 @@ namespace sim_bringup
 
         bool solve(std::shared_ptr<base::State> q_start = nullptr, std::shared_ptr<base::State> q_goal = nullptr, 
                    float max_planning_time_ = -1);
-        void preprocessPath(const std::vector<std::shared_ptr<base::State>> &original_path, 
-            std::vector<std::shared_ptr<base::State>> &new_path, float max_edge_length_ = -1);
+        std::shared_ptr<planning::trajectory::AbstractTrajectory> convertPathToTraj
+            (const std::vector<std::shared_ptr<base::State>> &path, float max_edge_length_ = -1, float is_safe = false);
 
         std::shared_ptr<scenario::Scenario> scenario;
 
@@ -44,6 +45,7 @@ namespace sim_bringup
         bool ready;                                             // Whether planner is ready to take a new planning
         std::shared_ptr<Robot> robot;   // "Another" robot is used when 'solve' function is called, just because this function can be executed
                                         // concurrently with other routines (e.g., those ones for real-time planning in dynamic environments)
+        std::shared_ptr<planning::trajectory::AbstractTrajectory> trajectory;
     };
 }
 

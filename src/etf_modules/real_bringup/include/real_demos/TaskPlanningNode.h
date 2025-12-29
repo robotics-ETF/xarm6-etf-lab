@@ -10,7 +10,11 @@ namespace real_bringup
         TaskPlanningNode(const std::string &node_name, const std::string &config_file_path);
 
     protected:
-        void taskPlanningCallback() override;
+        void goingTowardsObject() override;
+        void pickingObject() override;
+        void raisingObject() override;
+        void movingObjectToDestination() override;
+        void releasingObject() override;
 
         std::shared_ptr<rclcpp::Node> xarm_client_node;
         xarm_api::XArmROSClient xarm_client;

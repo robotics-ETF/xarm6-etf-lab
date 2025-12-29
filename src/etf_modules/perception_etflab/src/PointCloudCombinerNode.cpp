@@ -19,9 +19,9 @@ perception_etflab::PointCloudCombinerNode::PointCloudCombinerNode(const std::str
 
 	for (auto point_cloud_topic : this->point_cloud_topics)
 	{
-		RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Adding subscription for point cloud at path: %s", point_cloud_topic.c_str());
+		RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Adding subscription for point cloud at path: /camera%s", point_cloud_topic.c_str());
 		subscriptions.push_back(this->create_subscription<sensor_msgs::msg::PointCloud2>
-			(point_cloud_topic, rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_sensor_data)),
+			("/camera" + point_cloud_topic, rclcpp::QoS(rclcpp::QoSInitialization::from_rmw(rmw_qos_profile_sensor_data)),
 			std::bind(&PointCloudCombinerNode::pointCloudCallback, this, std::placeholders::_1)));
 	}
 }

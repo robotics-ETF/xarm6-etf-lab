@@ -56,6 +56,23 @@ void perception_etflab::Robot::jointsStateCallback(const control_msgs::msg::Join
 	//     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Robot joint states: (%f, %f, %f, %f, %f, %f).", q(0), q(1), q(2), q(3), q(4), q(5));
 }
 
+void perception_etflab::Robot::jointsStateCallback2(const sensor_msgs::msg::JointState::SharedPtr msg)
+{
+	Eigen::VectorXf q(num_DOFs);
+    for (size_t i = 0; i < num_DOFs; i++)
+    {
+        if (!std::isnan(msg->position[i]) && !std::isnan(msg->velocity[i]))
+            q(i) = msg->position[i];
+        else
+            return;
+    }
+
+    joints_state = std::make_shared<base::RealVectorSpaceState>(q);
+    
+    // if (num_DOFs == 6)
+	//     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Robot joint states: (%f, %f, %f, %f, %f, %f).", q(0), q(1), q(2), q(3), q(4), q(5));
+}
+
 // Remove all PCL points occupied by the robot's capsules.
 // If a single point from cluster (i-th component of 'clusters') is occupied, such cluster is completely removed.
 void perception_etflab::Robot::removeFromScene(std::vector<pcl::PointCloud<pcl::PointXYZRGB>::Ptr> &clusters)

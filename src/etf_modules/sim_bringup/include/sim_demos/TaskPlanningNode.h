@@ -13,8 +13,21 @@ namespace sim_bringup
 
     protected:
         void planningCallback() override { taskPlanningCallback(); }
-        virtual void taskPlanningCallback();
-        virtual void planningCase();
+        void taskPlanningCallback();
+        void waitingForObject();
+        void choosingObject();
+        void computingIK();
+        virtual void goingTowardsObject();
+        virtual void pickingObject();
+        virtual void raisingObject();
+        virtual void movingObjectToDestination();
+        virtual void releasingObject();
+
+        void planningCase();
+        virtual void plannerSolving();
+        virtual void plannerChecking();
+        virtual void executingTrajectory();
+
         bool computeObjectApproachAndPickStates();
         int chooseObject() override;
         bool whetherToRemove(const Eigen::Vector3f &object_pos, const Eigen::Vector3f &object_dim) override;

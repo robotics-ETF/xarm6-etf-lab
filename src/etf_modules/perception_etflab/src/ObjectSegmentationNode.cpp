@@ -43,6 +43,8 @@ perception_etflab::ObjectSegmentationNode::ObjectSegmentationNode(const std::str
     
     Robot::joints_state_subscription = this->create_subscription<control_msgs::msg::JointTrajectoryControllerState>
 		("/xarm6_traj_controller/state", 10, std::bind(&Robot::jointsStateCallback, this, std::placeholders::_1));
+	// Robot::joints_state_subscription2 = this->create_subscription<sensor_msgs::msg::JointState>
+	// 	("/xarm/joint_states", 10, std::bind(&Robot::jointsStateCallback2, this, std::placeholders::_1));
     Robot::marker_array_publisher = this->create_publisher<visualization_msgs::msg::MarkerArray>("/free_cells_vis_array", 10);
 	
     AABB::publisher = this->create_publisher<sensor_msgs::msg::PointCloud2>("/bounding_boxes", 10);
@@ -166,8 +168,8 @@ void perception_etflab::ObjectSegmentationNode::simPointCloudCallback()
     // ConvexHulls::publish();
     // ConvexHulls::visualize();
  
-   	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Time elapsed: %ld [ms] ", 
-		std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - time_start).count());
+   	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Time elapsed: %ld [us] ", 
+		std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - time_start).count());
    	RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "---------------------------------------------------------------------");
 }
 
