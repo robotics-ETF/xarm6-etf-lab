@@ -22,26 +22,16 @@ and then clone the repository:
 git clone https://github.com/roboticsETF/xarm6-etf-lab.git
 ```
 
-## 2.2 Update "xarm6-etf-lab" repository
+## 2.2 Install required packages and dependencies, update "xarm6-etf-lab" repository and its submodules, and then build the full container
 ```
 cd ~/xarm6-etf-lab  # Not required if you are cloning through IDE (e.g., VS Code)
-make submodules
+make full_build_container
 ```
 
-## 2.3 Update "xarm_ros2" submodule
-```
-cd ~/xarm6-etf-lab/src/external_modules/xarm_ros2
-git submodule sync
-git submodule update --init --remote
-```
+## 2.3 Modify "xarm_ros2" submodule
 Please upload the file [xarm_user_params.yaml](https://github.com/user-attachments/files/24239995/xarm_user_params.yaml) to the folder ```xarm6-etf-lab/src/external_modules/xarm_ros2/xarm_api/config```.
 
-## 2.4 Update "gazebo_ros2_control" submodule
-```
-cd ~/xarm6-etf-lab/src/external_modules/gazebo_ros2_control
-git submodule sync
-git submodule update --init --remote
-```
+## 2.4 Optionally, modify "gazebo_ros2_control" submodule
 Optionally, if you want to change the robot initial configuration (all joint angles are set to zero by default), open the file ```~/xarm6-etf-lab/src/external_modules/gazebo_ros2_control/gazebo_ros2_control/src/gazebo_system.cpp```, and find the function ```GazeboSystem::registerJoints```. Then, find the following code line:
 ```
 initial_position = get_initial_value(joint_info.state_interfaces[i]);
@@ -57,19 +47,17 @@ else
 ```
 Similarly, you can set any desired angle for the ```j```-th joint.
 
-## 2.5 Install dependencies
-```
-cd ~/xarm6-etf-lab
-rosdep update
-make dependencies
-```
-
-## 2.6 Build "xarm6-etf-lab" repository
+After this, build "xarm6-etf-lab" repository again by using:
 ```
 make build
 ```
 
-## 2.7 Source ros2 and gazebo environment
+## 2.5 Build "xarm6-etf-lab" repository after any change
+```
+make build
+```
+
+## 2.6 Source ros2 and gazebo environment
 ```
 source source_dirs.bash
 ```

@@ -3,7 +3,6 @@
 dependencies:
 	rosdep update
 	sudo apt update
-	sudo apt upgrade
 	rosdep install --from-paths src --ignore-src -r -y --rosdistro humble
 
 clean:
@@ -51,5 +50,4 @@ make full_build_container:
 	cd src/external_modules/xarm_ros2/xarm_sdk/cxx && git checkout master && cd ../../../../..
 	make dependencies
 	make build
-	source source-dirs
 	
