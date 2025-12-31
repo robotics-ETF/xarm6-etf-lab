@@ -49,5 +49,4 @@ make full_build_container:
 	cd src/external_modules/xarm_ros2 && git checkout humble && cd ../../..
 	cd src/external_modules/xarm_ros2/xarm_sdk/cxx && git checkout master && cd ../../../../..
 	make dependencies
-	make build
-	
+	make build	
