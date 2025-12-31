@@ -37,6 +37,8 @@ sim_bringup::Trajectory::Trajectory(const std::string &config_file_path) :
         }
         else
             trajectory_recording = false;
+
+        ready = false;
         
     }
     catch (std::exception &e)

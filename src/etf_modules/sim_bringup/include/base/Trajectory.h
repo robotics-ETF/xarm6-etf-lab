@@ -38,6 +38,7 @@ namespace sim_bringup
         inline float getTrajectoryMaxTimeStep() const { return trajectory_max_time_step; }
         
         rclcpp::Publisher<trajectory_msgs::msg::JointTrajectory>::SharedPtr publisher;
+        bool ready;
 
     private:
         trajectory_msgs::msg::JointTrajectory msg;

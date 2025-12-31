@@ -24,6 +24,7 @@ real_bringup::DynamicPlanningNode::DynamicPlanningNode(const std::string &node_n
 void real_bringup::DynamicPlanningNode::computeTrajectory()
 {
     // Only the following code is necessary, since trajectory is published in 'publishingTrajectoryCallback' function using 'xarm_client'.
+    Trajectory::ready = false;
     DP::visited_states = { DP::q_next };
     DP::updating_state->setNonZeroFinalVel(DP::q_next->getIsReached() && 
                                            DP::q_next->getIndex() != -1 && 
@@ -36,6 +37,7 @@ void real_bringup::DynamicPlanningNode::computeTrajectory()
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting time: %f [us]", t_wait * 1e6);
     while (DP::getElapsedTime(time_start_) < t_wait) {}    // Wait for 't_wait' to exceed...
     time_traj_computed = std::chrono::steady_clock::now();
+    Trajectory::ready = true;
 }
 
 void real_bringup::DynamicPlanningNode::publishingTrajectoryCallback()

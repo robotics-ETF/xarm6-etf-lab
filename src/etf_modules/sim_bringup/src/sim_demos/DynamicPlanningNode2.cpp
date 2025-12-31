@@ -21,6 +21,7 @@ sim_bringup::DynamicPlanningNode2::DynamicPlanningNode2(const std::string &node_
     RRTxConfig::MAX_ITER_TIME = BaseNode::period;
     trajectory_advance_time = node["planner"]["trajectory_advance_time"].as<float>();
     max_obs_vel = node["planner"]["max_obs_vel"].as<float>();
+    TrajectoryConfig::SCALE_TARGET = false;     // Recommended false on a real robot to reduce jerk changes (i.e., to increase the lifespan of actuators). 
     
     iteration_completed = true;
     planning_result = -1;
@@ -216,6 +217,7 @@ void sim_bringup::DynamicPlanningNode2::planningCallback()
 /// @brief Compute trajectory and publish trajectory points.
 void sim_bringup::DynamicPlanningNode2::computeTrajectory()
 {
+    Trajectory::ready = false;
     // Procedure of updating current state
     DP::q_next = DP::q_current->getParent();
     // std::cout << "DP::q_current: " << DP::q_current << "\n";
@@ -238,6 +240,8 @@ void sim_bringup::DynamicPlanningNode2::computeTrajectory()
     float t_wait { DP::updating_state->getWaitingTime() };
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting time: %f [us]", t_wait * 1e6);
     while (DP::getElapsedTime(time_start_) < t_wait) {}    // Wait for 't_wait' to exceed...
+    Trajectory::ready = true;
+    
     Trajectory::publish();
 
     if (status == base::State::Status::Advanced ||

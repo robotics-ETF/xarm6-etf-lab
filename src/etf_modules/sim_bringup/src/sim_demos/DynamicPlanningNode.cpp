@@ -33,6 +33,7 @@ sim_bringup::DynamicPlanningNode::DynamicPlanningNode(const std::string &node_na
     DRGBTConfig::GUARANTEED_SAFE_MOTION = node["planner"]["guaranteed_safe_motion"].as<bool>();
     trajectory_advance_time = node["planner"]["trajectory_advance_time"].as<float>();
     max_obs_vel = node["planner"]["max_obs_vel"].as<float>();
+    TrajectoryConfig::SCALE_TARGET = false;     // Recommended false on a real robot to reduce jerk changes (i.e., to increase the lifespan of actuators). 
     
     iteration_completed = true;
     planning_result = -1;
@@ -256,6 +257,7 @@ void sim_bringup::DynamicPlanningNode::replanningCallback([[maybe_unused]] const
 /// @brief Compute trajectory and publish trajectory points.
 void sim_bringup::DynamicPlanningNode::computeTrajectory()
 {
+    Trajectory::ready = false;
     DP::visited_states = { DP::q_next };
     DP::updating_state->setNonZeroFinalVel(DP::q_next->getIsReached() && 
                                            DP::q_next->getIndex() != -1 && 
@@ -275,6 +277,7 @@ void sim_bringup::DynamicPlanningNode::computeTrajectory()
     RCLCPP_INFO(rclcpp::get_logger("rclcpp"), "Waiting time: %f [us]", t_wait * 1e6);
     while (DP::getElapsedTime(time_start_) < t_wait) {}    // Wait for 't_wait' to exceed...
     time_traj_computed = std::chrono::steady_clock::now();
+    Trajectory::ready = true;
 
     Trajectory::publish();
 }
@@ -286,7 +289,7 @@ float sim_bringup::DynamicPlanningNode::getCurrTrajTime()
 
 void sim_bringup::DynamicPlanningNode::recordingTrajectoryCallback()
 {
-    if (DP::getPlannerInfo()->getNumIterations() == 0)
+    if (!Trajectory::ready)
         return;
 
     float traj_time { getCurrTrajTime() };
